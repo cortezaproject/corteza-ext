@@ -39,11 +39,6 @@ node-fetch@^1.7.1:
     encoding "^0.1.11"
     is-stream "^1.0.1"
 
-node-fetch@^2.6.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
-  integrity sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==
-
 pexels-api-wrapper@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/pexels-api-wrapper/-/pexels-api-wrapper-1.1.1.tgz#7fe73adf24c94df83440b3eea6fea6cfffa0dd2e"

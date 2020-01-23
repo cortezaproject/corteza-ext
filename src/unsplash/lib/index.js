@@ -1,8 +1,5 @@
 // Require Wrapper Library
 import Unsplash, { toJson } from 'unsplash-js'
-// Wrapper uses fetch
-import fetch from 'node-fetch'
-global.fetch = fetch
 
 export default class UnsplashClient {
   constructor (accessKey, secret) {
