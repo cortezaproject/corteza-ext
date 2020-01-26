@@ -1,0 +1,3 @@
+= Custom Components
+
+Custom component definitions related to this extension.

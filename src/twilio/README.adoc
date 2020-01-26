@@ -1,0 +1,18 @@
+= Corteza Twilio Extension
+
+@todo
+
+== Structure
+@todo
+
+== Modules
+@todo
+
+== Automation Scripts
+@todo
+
+== Components
+@todo
+
+=== DialPad
+@todo
