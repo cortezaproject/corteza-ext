@@ -1,0 +1,177 @@
+= Twilio Data Model
+
+This folder contains data model definition used by the Twilio extension.
+In the following sections we present the model's schema and a detailed overview of the entire data model.
+
+== Breakdown
+=== Workspace
+This module represents the Twilio Workspace resource and it is used as a backbone for the functionality of the extension.
+
+* *module name:*
+Twilio Workspace,
+* *module handle:*
+tw_workspace.
+
+
+.The table represents fields, defined by the data model
+[options="header"]
+|=======================
+|Name|Title|Type|Related To|Multiple|Required|Private|Notes
+|Name|Name|String||No|Yes|No|
+|WorkersCount|Total Workers|Number||No|No|No|This field is auto generated
+|WorkspaceName|Workspace Name|String||No|Yes|No|
+|WorkspaceSid|Workspace SID|String||No|Yes|Yes|Ref for Twilio Workspace resource
+|CallCenter|Call Center|Record|tw_call_center module|Yes|No|No|
+|Worker|Worker|Record|tw_worker module|Yes|No|No|
+|=======================
+
+=== Worker
+This module represents the Twilio Worker resource and it is used for task reservation within the workspace's workflow.
+
+* *module name:*
+Twilio Worker,
+* *module handle:*
+tw_worker.
+
+.The table represents fields, defined by the data model
+[options="header"]
+|=======================
+|Name|Title|Type|Related To|Multiple|Required|Private|Notes
+|Name|Name|String||No|Yes|No|
+|User|User|User|system user resource|No|Yes|Yes|
+|WorkerSid|Worker SID|String||No|Yes|Yes|Ref for Twilio Worker resource
+|Workspace|Workspace|Record|tw_workspace module|No|Yes|No|
+|=======================
+
+
+=== Call Center
+This module represents the call center that can receive inbound calls.
+This module is linked to a Twilio phone number resource.
+
+* *module name:*
+Twilio Call Center,
+* *module handle:*
+tw_call_center.
+
+.The table represents fields, defined by the data model
+[options="header"]
+|=======================
+|Name|Title|Type|Related To|Multiple|Required|Private|Notes
+|Name|Name|String||No|Yes|No|
+|Client|Client|Record|account module|No|Yes|No|referenced module can be replaced with another.
+|Active|Active|Checkbox||No|No|No|
+|Internal|Internal|Checkbox||No|No|No|Specifies if this is an internal call center; eg. QA team, support, ...
+|Workspace|Workspace|Record|tw_workspace|No|Yes|No|
+|PhoneNumber|Phone Number|String||No|Yes|No|The phone number associated with this call center
+|PhoneNumberSid|Phone Number SID|String||No|Yes|Yes|Ref for Twilio phone number resource
+|=======================
+
+=== Call Center
+This module represents the call center that can receive inbound calls.
+This module is linked to a Twilio phone number resource.
+
+* *module name:*
+Twilio Call Center,
+* *module handle:*
+tw_call_center.
+
+.The table represents fields, defined by the data model
+[options="header"]
+|=======================
+|Name|Title|Type|Related To|Multiple|Required|Private|Notes
+|Name|Name|String||No|Yes|No|
+|Client|Client|Record|account module|No|Yes|No|referenced module can be replaced with another.
+|Active|Active|Checkbox||No|No|No|
+|Workspace|Workspace|Record|tw_workspace|No|Yes|No|
+|PhoneNumber|Phone Number|String||No|Yes|No|The phone number associated with this call center
+|PhoneNumberSid|Phone Number SID|String||No|Yes|Yes|Ref for Twilio phone number resource
+|Script|Script|Record|tw_script module|No|Yes|No|
+|Call|Call|Record|tw_call_center_call module|Yes|No|No|This module represents call center's call log
+|=======================
+
+=== Call
+This module represents a call that was logged for the given call center.
+
+* *module name:*
+Twilio Call,
+* *module handle:*
+tw_call.
+
+.The table represents fields, defined by the data model
+[options="header"]
+|=======================
+|Name|Title|Type|Related To|Multiple|Required|Private|Notes
+|Interaction|Interaction|Record|tw_interaction|No|Yes|No|
+|Recording|Recording|URL||No|Yes|No|Link to the call's recording
+|Duration|Duration|String||No|No|No|This field is auto generated based on the DurationRaw field.
+|DurationRaw|Duration Raw|Number||No|Yes|Yes|This field represents the call's duration in seconds.
+|CallType|Call Type|Select||No|Yes|No|[inbound, outbound, inboundMissed, outboundCanceled].
+|Contact|Contact|Record|contact module|No|No|No|Can be populated if a known contact called
+|Lead|Lead|Record|lead module|No|No|No|Can be populated if a known lead called
+|PhoneNumber|PhoneNumber|String||No|Yes|No|Caller's phone number
+|CallSid|Call SID|String||No|Yes|Yes|Ref for Twilio Call resource
+|=======================
+
+=== Interaction
+This module represents an interaction that was was created for the given call.
+
+* *module name:*
+Twilio Interaction,
+* *module handle:*
+tw_interaction.
+
+.The table represents fields, defined by the data model
+[options="header"]
+|=======================
+|Name|Title|Type|Related To|Multiple|Required|Private|Notes
+|Answer|Answer|Record|tw_answer|Yes|Yes|No|
+|=======================
+
+=== Interaction Answer
+This module represents an answer for a script scene inside an interaction for the given call.
+
+* *module name:*
+Twilio Interaction Answer,
+* *module handle:*
+tw_interaction_answer.
+
+.The table represents fields, defined by the data model
+[options="header"]
+|=======================
+|Name|Title|Type|Related To|Multiple|Required|Private|Notes
+|Scene|Scene|Record|tw_scene module|No|Yes|No|
+|Answer|Answer|String||No|Yes|No|
+|=======================
+
+=== Script
+This module represents an script that agents should follow when interacting with a caller.
+
+* *module name:*
+Twilio Script,
+* *module handle:*
+tw_script.
+
+.The table represents fields, defined by the data model
+[options="header"]
+|=======================
+|Name|Title|Type|Related To|Multiple|Required|Private|Notes
+|Scene|Scene|Record|tw_scene module|Yes|Yes|No|
+|=======================
+
+=== Script Scene
+This module represents a scene for the given script.
+A scene can be either a question, a dialogue or an agent's comment.
+
+* *module name:*
+Twilio Script Scene,
+* *module handle:*
+tw_script_scene.
+
+.The table represents fields, defined by the data model
+[options="header"]
+|=======================
+|Name|Title|Type|Related To|Multiple|Required|Private|Notes
+|Type|Type|Select||No|Yes|No|[question, dialogue, comment]
+|Text|Text|Record||No|Yes|No|Content for the given scene
+|=======================
+
