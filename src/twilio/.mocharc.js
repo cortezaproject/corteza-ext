@@ -7,5 +7,5 @@ module.exports = {
   'full-trace': true,
   bail: true,
   recursive: true,
-  extension: ['ts', 'js'],
+  extension: ['.test.ts', '.test.js'],
 }
