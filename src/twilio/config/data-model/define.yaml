@@ -1,12 +1,41 @@
 # This file defines the data model required by the Twilio extension.
 namespace: crm
 modules:
-  tw_script_scene:
-    name: Twilio Script Scene
-    handle: tw_script_scene
+  ext_twilio_configuration:
+    name: Twilio Configuration
     fields:
-      Type:
-        name: Type
+      - name: ProductionSID
+        label: Production Account SID
+        isRequired: true
+        isPrivate: true
+        isMulti: false
+        kind: String
+
+      - name: TestingSID
+        label: Testing Account SID
+        isRequired: true
+        isPrivate: true
+        isMulti: false
+        kind: String
+
+      - name: ProductionToken
+        label: Production Auth Token
+        isRequired: true
+        isPrivate: true
+        isMulti: false
+        kind: String
+
+      - name: TestingToken
+        label: Testing Auth Token
+        isRequired: true
+        isPrivate: true
+        isMulti: false
+        kind: String
+
+  ext_twilio_script_scene:
+    name: Twilio Script Scene
+    fields:
+      - name: Type
         label: Type
         isRequired: true
         isPrivate: false
@@ -17,48 +46,64 @@ modules:
             - Question
             - Dialogue
             - Comment
-      Text:
-        name: Text
+
+      - name: Text
         label: Text
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: String
 
-  tw_script:
+      - name: Script
+        label: Script
+        isRequired: true
+        isPrivate: true
+        isMulti: false
+        kind: Record
+        optios:
+          module: ext_twilio_script
+          labelField: Scene
+          queryFields:
+            - Scene
+
+      - name: Order
+        label: Order
+        isRequired: false
+        isPrivate: false
+        isMulti: false
+        kind: Number
+
+  ext_twilio_script:
     name: Twilio Script
-    handle: tw_script
     fields:
-      CallCenter:
-        name: CallCenter
+      - name: CallCenter
         label: Call Center
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: Record
         options:
-          module: tw_call_center
+          module: ext_twilio_call_center
           labelField: Name
           queryFields:
             - Name
 
-      Scene:
-        name: Scene
+      - name: Scene
         label: Scene
         isRequired: true
         isPrivate: false
         isMulti: true
         kind: Record
         options:
-          module: tw_script_scene
+          module: ext_twilio_script_scene
           labelField: Text
           queryFields:
             - Type
             - Text
 
-  tw_interaction_answer:
+  ext_twilio_interaction_answer:
     name: Twilio Interaction Answer
-    handle: tw_interaction_answer
+    handle: ext_twilio_interaction_answer
     fields:
       Scene:
         name: Scene
@@ -68,7 +113,7 @@ modules:
         isMulti: false
         kind: Record
         options:
-          module: tw_script_scene
+          module: ext_twilio_script_scene
           labelField: Text
           queryFields:
             - Text
@@ -81,67 +126,59 @@ modules:
         isMulti: false
         kind: String
 
-  tw_interaction:
+  ext_twilio_interaction:
     name: Twilio Interaction
-    handle: tw_interaction
     fields:
-      Answer:
-        name: Answer
+      - name: Answer
         label: Answer
         isRequired: true
         isPrivate: false
         isMulti: true
         kind: Record
         options:
-          module: tw_interaction_answer
+          module: ext_twilio_interaction_answer
           labelField: Scene
           queryFields:
             - Scene
             - Answer
 
-  tw_call:
+  ext_twilio_call:
     name: Twilio Call
-    handle: tw_call
     fields:
-      Interaction:
-        name: Interaction
+      - name: Interaction
         label: Interaction
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: Record
         options:
-          module: tw_interaction
+          module: ext_twilio_interaction
           labelField: Answer
           queryFields:
             - Answer
 
-      Recording:
-        name: Recording
+      - name: Recording
         label: Recording
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: Url
 
-      Duration:
-        name: Duration
+      - name: Duration
         label: Duration
         isRequired: false
         isPrivate: false
         isMulti: false
         kind: String
 
-      DurationRaw:
-        name: DurationRaw
+      - name: DurationRaw
         label: Duration Raw
         isRequired: true
         isPrivate: true
         isMulti: false
         kind: Number
 
-      CallType:
-        name: CallType
+      - name: CallType
         label: Call Type
         isRequired: true
         isPrivate: false
@@ -154,8 +191,7 @@ modules:
             - Inbound Missed
             - Outbound Missed
 
-      Contact:
-        name: Contact
+      - name: Contact
         label: Contact
         isRequired: false
         isPrivate: false
@@ -164,8 +200,7 @@ modules:
         options:
           module: contact
 
-      Lead:
-        name: Lead
+      - name: Lead
         label: Lead
         isRequired: false
         isPrivate: false
@@ -174,49 +209,43 @@ modules:
         options:
           module: lead
 
-      PhoneNumber:
-        name: PhoneNumber
+      - name: PhoneNumber
         label: Phone Number
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: String
 
-      CallSid:
-        name: CallSid
+      - name: CallSid
         label: Call SID
         isRequired: true
         isPrivate: true
         isMulti: false
         kind: String
 
-      CallCenter:
-        name: CallCenter
+      - name: CallCenter
         label: Call Center
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: Record
         options:
-          module: tw_call_center
+          module: ext_twilio_call_center
           labelField: Name
           queryFields:
             - Name
 
-  tw_call_center:
+  ext_twilio_call_center:
     name: Twilio Call Center
-    handle: tw_call_center
     fields:
-      Name:
-        name: Name
+      - name: Name
         label: Name
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: String
 
-      Client:
-        name: Client
+      - name: Client
         label: Client
         isRequired: true
         isPrivate: false
@@ -228,143 +257,139 @@ modules:
           queryFields:
             - Name
 
-      Active:
-        name: Active
+      - name: Active
         label: Active
         isRequired: false
         isPrivate: false
         isMulti: false
         kind: Bool
 
-      Internal:
-        name: Internal
+      - name: Internal
         label: Internal
         isRequired: false
         isPrivate: false
         isMulti: false
         kind: Bool
 
-      Workspace:
-        name: Workspace
+      - name: Workspace
         label: Workspace
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: Record
         options:
-          module: tw_workspace
+          module: ext_twilio_workspace
           labelField: Name
           queryFields:
             - Name
 
-      PhoneNumber:
-        name: PhoneNumber
+      - name: CallWebhook
+        label: Call Webhook
+        isRequired: false
+        isPrivate: false
+        isMulti: false
+        kind: URL
+
+      - name: PhoneNumber
         label: Phone Number
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: String
 
-      PhoneNumberSid:
-        name: PhoneNumberSid
+      - name: PhoneNumberSid
         label: Phone Number SID
         isRequired: true
         isPrivate: true
         isMulti: false
         kind: String
 
-  tw_worker:
+  ext_twilio_worker:
     name: Twilio Worker
-    handle: tw_worker
     fields:
-      Name:
-        name: Name
+      - name: Name
         label: Name
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: String
 
-      User:
-        name: User
+      - name: User
         label: User
         isRequired: true
         isPrivate: true
         isMulti: false
         kind: User
 
-      WorkerSid:
-        name: WorkerSid
+      - name: WorkerSid
         label: Worker SID
         isRequired: true
         isPrivate: true
         isMulti: false
         kind: String
 
-      Workspace:
-        name: Workspace
+      - name: Workspace
         label: Workspace
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: Record
         options:
-          module: tw_workspace
+          module: ext_twilio_workspace
           labelField: WorkspaceName
           queryFields:
             - Name
             - WorkspaceName
-            - WorkspaceDescription
             - WorkspaceSid
 
-  tw_workspace:
+  ext_twilio_workspace:
     name: Twilio Workspace
-    handle: tw_workspace
     fields:
-      Name:
-        name: Name
+      - name: Name
         label: Name
         isRequired: true
         isPrivate: false
         isMulti: false
         kind: String
 
-      WorkersCount:
-        name: WorkersCount
+      - name: AssignmentCallbackUrl
+        label: Assignment Callback Url
+        isRequired: true
+        isPrivate: false
+        isMulti: false
+        kind: String
+
+      - name: TaskTimeout
+        label: Task Timeout
+        isRequired: false
+        isPrivate: false
+        isMulti: false
+        kind: Number
+
+      - name: WorkersCount
         label: Total Workers
         isRequired: false
         isPrivate: false
         isMulti: false
         kind: Number
 
-      WorkspaceSid:
-        name: WorkspaceSid
+      - name: WorkspaceSid
         label: Workspace SID
-        isRequired: true
+        isRequired: false
         isPrivate: true
         isMulti: false
         kind: String
 
-      CallCenter:
-        name: CallCenter
-        label: Call Center
+      - name: TaskQueueSid
+        label: Task Queue SID
         isRequired: false
-        isPrivate: false
-        isMulti: true
-        kind: Record
-        options:
-          module: tw_call_center
+        isPrivate: true
+        isMulti: false
+        kind: String
 
-      Worker:
-        name: Worker
-        label: Worker
+      - name: WorkflowSid
+        label: Workflow SID
         isRequired: false
-        isPrivate: false
-        isMulti: true
-        kind: Record
-        options:
-          module: tw_worker
-          labelField: WorkerName
-          queryFields:
-            - Name
-            - WorkerName
+        isPrivate: true
+        isMulti: false
+        kind: String

@@ -4,25 +4,44 @@ This folder contains data model definition used by the Twilio extension.
 In the following sections we present the model's schema and a detailed overview of the entire data model.
 
 == Breakdown
-=== Workspace
-This module represents the Twilio Workspace resource and it is used as a backbone for the functionality of the extension.
+=== Configuration
+This module represents Twilio configuration, such as account SID and access tokens.
 
 * *module name:*
-Twilio Workspace,
+Twilio Configuration,
 * *module handle:*
-tw_workspace.
+ext_twilio_configuration.
 
 
 .The table represents fields, defined by the data model
 [options="header"]
 |=======================
 |Name|Title|Type|Related To|Multiple|Required|Private|Notes
+|ProductionSID|Production Account SID|String||No|Yes|Yes|Production account SID credential.
+|ProductionToken|Production Account Token|String||No|Yes|Yes|Production account token credential.
+|TestingSID|Testing Account SID|String||No|Yes|Yes|Testing account SID credential.
+|TestingToken|Testing Account Token|String||No|Yes|Yes|Testing account token credential.
+|=======================
+
+=== Workspace
+This module represents the Twilio Workspace resource and it is used as a backbone for the functionality of the extension.
+
+* *module name:*
+Twilio Workspace,
+* *module handle:*
+ext_twilio_workspace.
+
+.The table represents fields, defined by the data model
+[options="header"]
+|=======================
+|Name|Title|Type|Related To|Multiple|Required|Private|Notes
 |Name|Name|String||No|Yes|No|
+|AssignmentCallbackUrl|Assignment Callback Url|URL||No|Yes|No|Webhook endpoint to provide worker assignment logic
+|TaskTimeout|Task Timeout|Number||No|No|No|The duration a task can wait before it is timed out
 |WorkersCount|Total Workers|Number||No|No|No|This field is auto generated
-|WorkspaceName|Workspace Name|String||No|Yes|No|
 |WorkspaceSid|Workspace SID|String||No|Yes|Yes|Ref for Twilio Workspace resource
-|CallCenter|Call Center|Record|tw_call_center module|Yes|No|No|
-|Worker|Worker|Record|tw_worker module|Yes|No|No|
+|TaskQueueSid|Task Queue SID|String||No|No|Yes|Ref for Twilio Task Queue resource
+|WorkflowSid|Workflow SID|String||No|No|Yes|Ref for Twilio Workflow resource
 |=======================
 
 === Worker
@@ -31,7 +50,7 @@ This module represents the Twilio Worker resource and it is used for task reserv
 * *module name:*
 Twilio Worker,
 * *module handle:*
-tw_worker.
+ext_twilio_worker.
 
 .The table represents fields, defined by the data model
 [options="header"]
@@ -40,9 +59,8 @@ tw_worker.
 |Name|Name|String||No|Yes|No|
 |User|User|User|system user resource|No|Yes|Yes|
 |WorkerSid|Worker SID|String||No|Yes|Yes|Ref for Twilio Worker resource
-|Workspace|Workspace|Record|tw_workspace module|No|Yes|No|
+|Workspace|Workspace|Record|ext_twilio_workspace module|No|Yes|No|
 |=======================
-
 
 === Call Center
 This module represents the call center that can receive inbound calls.
@@ -51,7 +69,7 @@ This module is linked to a Twilio phone number resource.
 * *module name:*
 Twilio Call Center,
 * *module handle:*
-tw_call_center.
+ext_twilio_call_center.
 
 .The table represents fields, defined by the data model
 [options="header"]
@@ -61,32 +79,10 @@ tw_call_center.
 |Client|Client|Record|account module|No|Yes|No|referenced module can be replaced with another.
 |Active|Active|Checkbox||No|No|No|
 |Internal|Internal|Checkbox||No|No|No|Specifies if this is an internal call center; eg. QA team, support, ...
-|Workspace|Workspace|Record|tw_workspace|No|Yes|No|
+|Workspace|Workspace|Record|ext_twilio_workspace|No|Yes|No|
+|CallWebhook|Call Webhook|URL||No|No|No|Webhook responsible for incoming call management
 |PhoneNumber|Phone Number|String||No|Yes|No|The phone number associated with this call center
 |PhoneNumberSid|Phone Number SID|String||No|Yes|Yes|Ref for Twilio phone number resource
-|=======================
-
-=== Call Center
-This module represents the call center that can receive inbound calls.
-This module is linked to a Twilio phone number resource.
-
-* *module name:*
-Twilio Call Center,
-* *module handle:*
-tw_call_center.
-
-.The table represents fields, defined by the data model
-[options="header"]
-|=======================
-|Name|Title|Type|Related To|Multiple|Required|Private|Notes
-|Name|Name|String||No|Yes|No|
-|Client|Client|Record|account module|No|Yes|No|referenced module can be replaced with another.
-|Active|Active|Checkbox||No|No|No|
-|Workspace|Workspace|Record|tw_workspace|No|Yes|No|
-|PhoneNumber|Phone Number|String||No|Yes|No|The phone number associated with this call center
-|PhoneNumberSid|Phone Number SID|String||No|Yes|Yes|Ref for Twilio phone number resource
-|Script|Script|Record|tw_script module|No|Yes|No|
-|Call|Call|Record|tw_call_center_call module|Yes|No|No|This module represents call center's call log
 |=======================
 
 === Call
@@ -95,13 +91,13 @@ This module represents a call that was logged for the given call center.
 * *module name:*
 Twilio Call,
 * *module handle:*
-tw_call.
+ext_twilio_call.
 
 .The table represents fields, defined by the data model
 [options="header"]
 |=======================
 |Name|Title|Type|Related To|Multiple|Required|Private|Notes
-|Interaction|Interaction|Record|tw_interaction|No|Yes|No|
+|Interaction|Interaction|Record|ext_twilio_interaction|No|Yes|No|
 |Recording|Recording|URL||No|Yes|No|Link to the call's recording
 |Duration|Duration|String||No|No|No|This field is auto generated based on the DurationRaw field.
 |DurationRaw|Duration Raw|Number||No|Yes|Yes|This field represents the call's duration in seconds.
@@ -110,6 +106,7 @@ tw_call.
 |Lead|Lead|Record|lead module|No|No|No|Can be populated if a known lead called
 |PhoneNumber|PhoneNumber|String||No|Yes|No|Caller's phone number
 |CallSid|Call SID|String||No|Yes|Yes|Ref for Twilio Call resource
+|CallCenter|Call Center|Record|ext_twilio_call_center module|No|Yes|No|
 |=======================
 
 === Interaction
@@ -118,7 +115,7 @@ This module represents an interaction that was was created for the given call.
 * *module name:*
 Twilio Interaction,
 * *module handle:*
-tw_interaction.
+ext_twilio_interaction.
 
 .The table represents fields, defined by the data model
 [options="header"]
@@ -133,7 +130,7 @@ This module represents an answer for a script scene inside an interaction for th
 * *module name:*
 Twilio Interaction Answer,
 * *module handle:*
-tw_interaction_answer.
+ext_twilio_interaction_answer.
 
 .The table represents fields, defined by the data model
 [options="header"]
@@ -141,6 +138,7 @@ tw_interaction_answer.
 |Name|Title|Type|Related To|Multiple|Required|Private|Notes
 |Scene|Scene|Record|tw_scene module|No|Yes|No|
 |Answer|Answer|String||No|Yes|No|
+|Interaction|Interaction|Record|ext_twilio_interaction|No|Yes|Yes|
 |=======================
 
 === Script
@@ -149,13 +147,14 @@ This module represents an script that agents should follow when interacting with
 * *module name:*
 Twilio Script,
 * *module handle:*
-tw_script.
+ext_twilio_script.
 
 .The table represents fields, defined by the data model
 [options="header"]
 |=======================
 |Name|Title|Type|Related To|Multiple|Required|Private|Notes
 |Scene|Scene|Record|tw_scene module|Yes|Yes|No|
+|CallCenter|Call Center|Record|ext_twilio_call_center module|No|Yes|No|
 |=======================
 
 === Script Scene
@@ -165,13 +164,15 @@ A scene can be either a question, a dialogue or an agent's comment.
 * *module name:*
 Twilio Script Scene,
 * *module handle:*
-tw_script_scene.
+ext_twilio_script_scene.
 
 .The table represents fields, defined by the data model
 [options="header"]
 |=======================
 |Name|Title|Type|Related To|Multiple|Required|Private|Notes
 |Type|Type|Select||No|Yes|No|[question, dialogue, comment]
-|Text|Text|Record||No|Yes|No|Content for the given scene
+|Text|Text|String||No|Yes|No|Content for the given scene
+|Script|Script|Record|ext_twilio_script|No|Yes|Yes|
+|Order|Order|Number||No|No|No|Allows scene ordering. Scenes with same order or without order will be ordered by createdAt
 |=======================
 
