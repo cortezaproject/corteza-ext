@@ -1,0 +1,13 @@
+= Call Center Automation Script Suite
+
+This automation script suite provides functionalities related to call center resources.
+For more details refer to specific automation script within this suite.
+
+Included automation scripts:
+
+* **validate**:
+Automation script performs validation operations, such as call center uniqueness,
+* **setup**:
+Automation script handles create and update operations for the given call center resource,
+* **teardown**:
+Automation script handles removal operation sof the given call center resource.
