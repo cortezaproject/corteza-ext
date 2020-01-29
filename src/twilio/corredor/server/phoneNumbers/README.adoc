@@ -1,0 +1,11 @@
+= Phone Number Script Suite
+
+This automation script suite provides functionalities related to phone number management.
+For more details refer to specific automation script within this suite.
+
+Included automation scripts:
+
+* **list**:
+Automation script provides a list of available Twilio Phone Numbers that we can provision,
+* **provision**:
+Automation script provides Twilio Phone Number provisioning.
