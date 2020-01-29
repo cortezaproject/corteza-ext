@@ -1,0 +1,9 @@
+= Authentication Script Suite
+
+This automation script suite provides functionalities related to authentication.
+For more details refer to specific automation script within this suite.
+
+Included automation scripts:
+
+* **twilio**:
+Automation script provides Twilio Capability token and Twilio Worker token generator.
