@@ -1,0 +1,14 @@
+= Call Automation Script Suite
+
+This automation script suite provides functionalities related to call resources.
+For more details refer to specific automation script within this suite.
+
+Included automation scripts:
+
+* **enrich**:
+Automation script provides data enrichment based on a provided phone number.
+This is useful if we want to display details about a calling client.
+It also provides agent scripts for a related call center,
+* **log**:
+Automation script handles call logging.
+It logs basic metadata and agent - user interactions.
