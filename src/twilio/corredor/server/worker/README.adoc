@@ -1,0 +1,12 @@
+= Worker Automation Script Suite
+
+This automation script suite provides functionalities related to worker resources.
+For more details refer to specific automation script within this suite.
+
+Included automation scripts:
+
+* **setup**:
+Automation script handles create and update operations for the given worker resource.
+It also handles data validation since it fires before relevant events happen,
+* **teardown**:
+Automation script handles removal operation sof the given worker resource.
