@@ -1,3 +1,0 @@
-= Shared Server-side automation code
-
-Shared logic across server-side scripts.
