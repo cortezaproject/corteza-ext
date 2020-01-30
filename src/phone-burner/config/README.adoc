@@ -1,0 +1,3 @@
+= PhoneBurner Configuration
+
+This is where all configuration related resources go, such as module and page definitions.
