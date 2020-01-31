@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@cortezaproject/corteza-js": "^2020.3.0-alpha.7",
-    "axios": "^0.19.2"
+    "axios": "^0.19.2",
+    "base-64": "^0.1.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.7",
