@@ -3,20 +3,28 @@ export const pn = {
   description:
 `This automation script provides data enrichment for a given phone number.
 It attempts to find a record within compose based on the Twilio Configuration settings (see ext_twilio_configuration.CallEnrichmentSource docs).`,
+  security: {
+    // @todo...
+    runAs: 'tomaz.jerman@kendu.si',
+  },
   triggers (t) {
     return [
-      // @todo .on('request')
+      t.on('request')
+        .where('request.path', '/ext_twilio/call/enrich')
+        // @todo change to GET
+        .where('request.method', 'POST')
+        .for('system:sink'),
     ]
   },
 
-  async exec (args, { Compose }) {
-    // @todo get from request
-    const params = {
-      phoneNumber: '@todo',
-    }
+  async exec ({ request, response }, { Compose }) {
+    response.status = 200
+    response.header = { 'Content-Type': ['application/json'] }
 
     let enriched
-    const config = await Compose.findFirstRecord('ext_twilio_configuration')
+    const ns = await Compose.resolveNamespace(request.query.ns[0])
+    const modConfig = await Compose.findModuleByHandle('ext_twilio_configuration', ns)
+    const config = await Compose.findFirstRecord(modConfig)
 
     // find details about the phone number
     for (const s of config.values.CallEnrichmentSource) {
@@ -27,7 +35,8 @@ It attempts to find a record within compose based on the Twilio Configuration se
       const [, source, name, field] = /(\w+): (\w+)(?:\[)?(\w+)?(?:\])?/.exec(s)
       switch (source) {
         case 'module':
-          enriched = await enrichFromModule(Compose, name, params.phoneNumber, field)
+          const mod = await Compose.findModuleByHandle(name, ns)
+          enriched = await enrichFromModule(Compose, mod, request.query.phoneNumber[0], field)
             .catch(() => undefined)
       }
 
@@ -37,43 +46,51 @@ It attempts to find a record within compose based on the Twilio Configuration se
     }
 
     // payload
-    enriched = (enriched || params)
-    return {
-      name: enriched.Name,
-      email: enriched.Email,
-      organisation: enriched.Organisation,
+    if (!enriched) {
+      response.body = undefined
+      response.status = 400
+    } else {
+      response.body = {
+        name: enriched.Name,
+        email: enriched.Email,
+        organisation: enriched.Organisation,
+      }
     }
+
+    console.log({ response })
+    return response
   },
 }
 
-export default {
+export const scr = {
   label: 'Agent Scripts',
   description: `This automation script provides agent scripts defined by the Call Center.`,
+  security: {
+    // @todo...
+    runAs: 'tomaz.jerman@kendu.si',
+  },
   triggers (t) {
     return [
-      // @todo .on('request')
+      t.on('request')
+        .where('request.path', '/ext_twilio/call/script')
+        // @todo change to GET
+        .where('request.method', 'POST')
+        .for('system:sink'),
     ]
   },
 
-  async exec (args, { Compose }) {
-    // @todo get from request
-    const params = {
-      phoneNumber: '@todo',
-    }
+  async exec ({ request, response }, { Compose }) {
+    response.status = 200
 
-    let enriched
-    const config = await Compose.findFirstRecord('ext_twilio_configuration')
-
-    const { set: [ callCenter ] } = await Compose.findRecords(`PhoneNumber = '${params.phoneNumber}'`, 'ext_twilio_call_center')
-    if (!callCenter) {
-      return undefined
-    }
+    const ns = await Compose.resolveNamespace(request.query.ns[0])
+    const modScript = await Compose.findModuleByHandle('ext_twilio_script', ns)
+    const modScriptScene = await Compose.findModuleByHandle('ext_twilio_script_scene', ns)
 
     // Find scripts for the given call center
     let scripts = []
-    const { set: scriptsRaw } = await Compose.findRecords(`CallCenter = '${callCenter.recordID}'`, 'ext_twilio_script')
+    const { set: scriptsRaw } = await Compose.findRecords(`CallCenter = '${request.query.callCenterID[0]}'`, modScript)
     for (const s of scriptsRaw) {
-      const { set: scenesRaw } = await Compose.findRecords({ filter: `Script = '${s.recordID}'`, sort: 'Order ASC,createdAt ASC', perPage: 0 }, 'ext_twilio_script_scene')
+      const { set: scenesRaw } = await Compose.findRecords({ filter: `Script = '${s.recordID}'`, sort: 'Order ASC,createdAt ASC', perPage: 0 }, modScriptScene)
       scripts.push({
         script: {
           scriptID: s.recordID,
@@ -83,19 +100,10 @@ export default {
       })
     }
 
-    return {
-      callCenter: {
-        callCenterID: callCenter.recordID,
-        meta: {
-          name: callCenter.values.Name,
-          client: callCenter.values.Client,
-          active: callCenter.values.Active,
-          internal: callCenter.values.Internal,
-          workspace: callCenter.values.Workspace,
-        },
-      },
+    response.body = {
       scripts,
     }
+    return response
   },
 }
 
@@ -110,7 +118,7 @@ export default {
  */
 async function enrichFromModule (client, module, query, field = 'PhoneNumber') {
   return await client.findRecords(`${field} = '${query}'`, module)
-    .then(({ set = [] }) => {
+    .then(({ set }) => {
       if (set && set.length) {
         return set[0].values
       }

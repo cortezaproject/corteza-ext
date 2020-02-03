@@ -6,8 +6,8 @@ import Twilio from 'twilio'
  * @param {Object} ComposeAPI Compose API client
  * @returns {Promise<Twilio>} Initialized twilio API client
  */
-export default async function (Compose, testCredentials = false) {
-  const config = await Compose.findFirstRecord('ext_twilio_configuration')
+export default async function (Compose, testCredentials = false, mod = 'ext_twilio_configuration') {
+  const config = await Compose.findFirstRecord(mod)
   if (testCredentials) {
     return new Twilio(config.values.TestingSID, config.values.TestingToken)
   } else {

@@ -1,5 +1,5 @@
 import Twilio from 'twilio'
-import { inSet } from '../shared/lib'
+import { inSet, parseBody } from '../shared/lib'
 
 const ClientCapability = Twilio.jwt.ClientCapability
 const taskrouter = Twilio.jwt.taskrouter
@@ -10,54 +10,83 @@ const version = 'v1';
 export const capability = {
   label: 'Twilio Capability Tokens',
   description: `This automation script handles Twilio capability token creation.`,
+  security: {
+    // @todo...
+    runAs: 'tomaz.jerman@kendu.si',
+  },
   triggers (t) {
     return [
-      // @todo .on('request')
+      t.on('request')
+        .where('request.path', '/ext_twilio/auth/capability')
+        // @todo change to GET
+        .where('request.method', 'POST')
+        .for('system:sink'),
     ]
   },
 
-  async exec (args, { Compose }) {
-    // @todo get from request
-    const params = {
-      userID: '@todo'
-    }
+  async exec ({ request, response }, { Compose }) {
+    parseBody(request)
+    response.status = 200
+    response.header = { 'Content-Type': ['application/json'] }
 
-    const config = await Compose.findFirstRecord('ext_twilio_configuration')
+    const ns = await Compose.resolveNamespace(request.body.ns)
+    const mod = await Compose.findModuleByHandle('ext_twilio_configuration', ns)
+    const config = await Compose.findFirstRecord(mod)
 
     const cpb = new ClientCapability({
       accountSid: config.values.ProductionSID,
       authToken: config.values.ProductionToken,
     })
-    cpb.addScope(new ClientCapability.IncomingClientScope(params.userID))
+    cpb.addScope(new ClientCapability.IncomingClientScope(request.body.userID))
     cpb.addScope(new ClientCapability.OutgoingClientScope({
       applicationSid: config.values.OutboundApplicationSid,
     }))
 
-    return cpb.toJwt()
+    const jwt = cpb.toJwt()
+    console.log({ jwt })
+    response.body = { jwt }
+    return response
   },
 }
 
 export const worker = {
   label: 'Twilio Worker Tokens',
   description: `This automation script handles Twilio Worker token creation.`,
+  security: {
+    // @todo...
+    runAs: 'tomaz.jerman@kendu.si',
+  },
   triggers (t) {
     return [
-      // @todo .on('request')
+      t.on('request')
+        .where('request.path', '/ext_twilio/auth/worker')
+        // @todo change to GET
+        .where('request.method', 'POST')
+        .for('system:sink'),
     ]
   },
 
-  async exec (args, { Compose }) {
-    // @todo get from request
-    const params = {
-      userID: '@todo'
-    }
+  async exec ({ request, response }, { Compose }) {
+    parseBody(request)
+    response.status = 200
+    response.header = { 'Content-Type': ['application/json'] }
 
-    const config = await Compose.findFirstRecord('ext_twilio_configuration')
+    // get config and meta objects
+    const ns = await Compose.resolveNamespace(request.body.ns)
+    const configMod = await Compose.findModuleByHandle('ext_twilio_configuration', ns)
+    const workerMod = await Compose.findModuleByHandle('ext_twilio_worker', ns)
+    const workspaceMod = await Compose.findModuleByHandle('ext_twilio_workspace', ns)
+    const config = await Compose.findFirstRecord(configMod)
 
     // get user's workers and workspace refs
-    const { set: workersRaw } = await Compose.findRecords(`User = '${params.userID}'`, 'ext_twilio_worker')
+    let q = `User = '${request.body.userID}'`
+    // support for specific worker
+    if (request.body.workerID) {
+      q += ` AND recordID = '${request.body.workerID}'`
+    }
+    const { set: workersRaw } = await Compose.findRecords(q, workerMod)
     const workerWorkspaces = Array.from(new Set(workersRaw.map(({ values }) => values.Workspace)))
-    const { set: workspaces } = await Compose.findRecords(inSet('recordID', workerWorkspaces), 'ext_twilio_workspace')
+    const { set: workspaces } = await Compose.findRecords(inSet('recordID', workerWorkspaces), workspaceMod)
     const workers = workersRaw.map(w => {
       const ws = workspaces.find(ws => ws.recordID === w.values.Workspace)
       if (!ws) {
@@ -73,15 +102,19 @@ export const worker = {
     }).filter(w => w)
 
     // create a token for each worker
-    return workers.map(worker => {
-      const token = genWFToken(
-        config.values.ProductionSID,
-        config.values.ProductionToken,
-        worker.workspaceSid,
-        worker.workerSid,
-      )
-      return { token, worker }
-    })
+    response.body = {
+      workers: workers.map(worker => {
+        const token = genWFToken(
+          config.values.ProductionSID,
+          config.values.ProductionToken,
+          worker.workspaceSid,
+          worker.workerSid,
+        )
+        return { token, worker }
+      })
+    }
+    console.log({ workers: response.body.workers })
+    return response
   },
 }
 

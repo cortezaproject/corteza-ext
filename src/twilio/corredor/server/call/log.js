@@ -1,42 +1,45 @@
+import { parseBody } from '../shared/lib'
+
 export default {
   label: 'Call Logging',
   description:
 `This automation script handles call logging.
 It logs basic call metadata such as duration, phone numbers, references and agent's interactions.`,
+  security: {
+    // @todo...
+    runAs: 'tomaz.jerman@kendu.si',
+  },
   triggers (t) {
     return [
-      // @todo .on('request')
+      t.on('request')
+        .where('request.path', '/ext_twilio/call/log')
+        // @todo change to GET
+        .where('request.method', 'POST')
+        .for('system:sink'),
     ]
   },
 
-  async exec (args, { Compose }) {
-    // @todo get from request
-    const params = {
-      interaction: [
-        { sceneID: '@todo', answer: '@todo' },
-      ],
-      recording: '@todo',
-      durationRaw: 0,
-      callType: 'Inbound',
-      CallCenter: '@todo',
-      phoneNumberFrom: '@todo',
-      phoneNumberTo: '@todo',
-      callSid: '@todo',
-    }
+  async exec ({ request, response }, { Compose }) {
+    response.status = 200
+    parseBody(request)
+
+    const ns = await Compose.resolveNamespace(request.query.ns[0])
+    const modCall = await Compose.findModuleByHandle('ext_twilio_call', ns)
+    const modInt = await Compose.findModuleByHandle('ext_twilio_interaction', ns)
 
     // create a call instance and log call metadata
     const log = await Compose.makeRecord({
-      Recording: params.recording,
-      Duration: sToHMS(params.durationRaw),
-      DurationRaw: params.durationRaw,
-      CallType: params.callType,
-      Contact: params.Contact,
-      Lead: params.Lead,
-      CallCenter: params.CallCenter,
-      PhoneNumberFrom: params.phoneNumberFrom,
-      PhoneNumberTo: params.phoneNumberTo,
-      CallSid: params.callSid,
-    }, 'ext_twilio_call')
+      Recording: request.body.recording,
+      Duration: sToHMS(request.body.durationRaw || 0),
+      DurationRaw: request.body.durationRaw || 0,
+      CallType: request.body.callType,
+      Contact: request.body.Contact,
+      Lead: request.body.Lead,
+      CallCenter: request.body.CallCenter,
+      PhoneNumberFrom: request.body.phoneNumberFrom,
+      PhoneNumberTo: request.body.phoneNumberTo,
+      CallSid: request.body.callSid,
+    }, modCall)
     .then(r => {
       r.namespaceID = r.module.namespaceID
       r.moduleID = r.module.moduleID
@@ -44,18 +47,20 @@ It logs basic call metadata such as duration, phone numbers, references and agen
     })
 
     // create interactions for the given script
-    for (const i of params.interaction) {
+    for (const i of request.body.interaction || []) {
       await Compose.makeRecord({
         Scene: i.sceneID,
         Answer: i.answer,
         Call: log.recordID,
-      }, 'ext_twilio_interaction')
+      }, modInt)
       .then(r => {
         r.namespaceID = r.module.namespaceID
         r.moduleID = r.module.moduleID
         return Compose.saveRecord(r)
       })
     }
+
+    return response
   },
 }
 
