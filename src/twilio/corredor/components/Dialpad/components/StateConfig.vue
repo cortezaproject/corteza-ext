@@ -7,7 +7,7 @@
       <!-- Handle worker activity -->
       <b-form-group :label="workerStatusLabel">
         <b-form-select
-          :input="value.activity"
+          :value="value.activity"
           :options="activities"
           @input="updateActivity"
         />
@@ -21,7 +21,7 @@
     >
       <b-form-group :label="callerIDsLabel">
         <b-form-select
-          :input="value.callerID"
+          :value="value.callerID"
           :options="callerIDs"
           @input="updateCallerID"
         />

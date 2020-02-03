@@ -1,44 +1,32 @@
 <template>
   <b-row>
+    <b-col
+      cols="12"
+    >
+      <h5>
+        {{ script.meta.name }}
+      </h5>
+    </b-col>
+
     <!-- Script management section -->
     <b-col
       cols="12"
     >
       <b-form-group
-        v-for="q of script"
-        :key="q.label"
+        v-for="s of script.interaction"
+        :key="s.text"
         label-cols="12"
         label-cols-sm="4"
         label-cols-lg="2"
-        :label="q.label"
+        :label="s.text"
       >
         <b-form-textarea
-          v-model="q.answer"
+          v-if="s.type !== 'dialogue'"
+          v-model="s.answer"
           rows="3"
           max-rows="6"
         />
       </b-form-group>
-    </b-col>
-
-    <!-- Script actions section -->
-    <b-col
-      cols="12"
-      class="text-right"
-    >
-      <b-btn-group size="sm">
-        <b-btn
-          variant="success"
-          @click="$emit('complete')"
-        >
-          <slot name="script.complete.content" />
-        </b-btn>
-        <b-btn
-          variant="danger"
-          @click="$emit('discard')"
-        >
-          <slot name="script.discard.content" />
-        </b-btn>
-      </b-btn-group>
     </b-col>
   </b-row>
 </template>
@@ -54,9 +42,9 @@ export default {
      * An array of questions for the given script.
      */
     script: {
-      type: Array,
+      type: Object,
       required: true,
-      default: () => [],
+      default: () => ({}),
     },
   },
 }

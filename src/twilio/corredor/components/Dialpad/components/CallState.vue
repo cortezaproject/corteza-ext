@@ -9,10 +9,10 @@
         {{ stateLabel }}: {{ call.label }}
       </h4>
       <h6
-        v-if="call.details"
+        v-if="call.description"
         class="mb-1"
       >
-        {{ call.details }}
+        {{ call.description }}
       </h6>
 
       <!-- Call timer -->

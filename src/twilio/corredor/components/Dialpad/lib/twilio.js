@@ -9,13 +9,6 @@ const defaultDeviceConfig = {
   closeProtection: true,
 }
 
-const defaultActivities = {
-  available: 'Available',
-  pending: 'Call Pending',
-  busy: 'On a Call',
-  offline: 'Offline',
-}
-
 /**
  * Twilio class provides an interface for Twilio API.
  *
@@ -44,15 +37,24 @@ export default class Twilio extends EventEmitter {
     callInboundCanceled: 'call.inbound.canceled',
   }
 
-  constructor (user, { deviceConfig = {}, activities = {} } = {}) {
+  constructor (user, apiClient, { deviceConfig = {}, activities = {}, ns = 'ob' } = {}) {
     super()
     this.deviceConfig = { ...defaultDeviceConfig, ...deviceConfig }
-    this.activities = { ...defaultActivities, activities }
+    this.activities = {
+      available: 'Idle',
+      pending: 'Reserved',
+      busy: 'Busy',
+      offline: 'Offline',
+      wrapUp: 'WrapUp',
+    }
 
     this.user = user
+    this.apiClient = apiClient
+    this.ns = ns
     this.workers = []
     this.device = undefined
     this.currentCall = undefined
+    this.currentReservation = undefined
   }
 
   /**
@@ -88,12 +90,7 @@ export default class Twilio extends EventEmitter {
       throw new Error('call.notDefined')
     }
 
-    // Sync workers as busy and accept the call
-    return this.syncWorkerActivities(this.activities.pending)
-      .then(() => {
-        this.currentCall.accept()
-      })
-      .catch(err => this.stdErr(err))
+    this.currentCall.accept()
   }
 
   /**
@@ -104,13 +101,9 @@ export default class Twilio extends EventEmitter {
       throw new Error('call.notDefined')
     }
 
-    // Sync workers as available and reject
-    return this.syncWorkerActivities(this.activities.available)
-      .finally(() => {
-        this.currentCall.reject()
-        this.currentCall = undefined
-        this.device.disconnectAll()
-      })
+    this.currentCall.reject()
+    this.device.disconnectAll()
+    this.currentCall = undefined
   }
 
   /**
@@ -122,8 +115,9 @@ export default class Twilio extends EventEmitter {
       return
     }
 
-    this.device.disconnectAll()
+    this.currentCall.disconnect()
     this.currentCall = undefined
+    this.device.disconnectAll()
   }
 
   /**
@@ -134,16 +128,24 @@ export default class Twilio extends EventEmitter {
   }
 
   /**
-   * allActivities provides a full list of activities that the agent can appear in
-   * @returns {Promise<Array<String>>}
+   * agentWrappingUp updates agent's worker statuses to indicate call finalization
    */
-  async allActivities () {
-    // Get all activities that should be shown to the agent
-    const activities = this.workers
-      .map(({ activities = {} }) => Object.keys(activities))
-      .reduce((acc, cur) => acc.concat(cur), [])
+  async agentWrappingUp () {
+    return this.syncWorkerActivities(this.activities.wrapUp)
+  }
 
-    return Array.from(new Set(activities))
+  /**
+   * agentPending updates agent's worker statuses to indicate a pending call
+   */
+  async agentPending () {
+    return this.syncWorkerActivities(this.activities.pending)
+  }
+
+  /**
+   * agentBusy updates agent's worker statuses to indicate a busy agent
+   */
+  async agentBusy () {
+    return this.syncWorkerActivities(this.activities.busy)
   }
 
   /**
@@ -156,13 +158,11 @@ export default class Twilio extends EventEmitter {
   }
 
   /**
-   * setCallerID sets the caller ID for the given user
-   * @todo implement if needed
-   * @param {String} callerID CallerID to update to
-   * @returns {Promise<*>}
+   * allActivities provides a full list of activities that the agent can appear in
+   * @returns {Promise<Array<String>>}
    */
-  async setCallerID (callerID) {
-    return callerID
+  async allActivities () {
+    return Object.values(this.activities)
   }
 
   /**
@@ -170,8 +170,12 @@ export default class Twilio extends EventEmitter {
    * @todo implement if needed
    * @param {String} number The number that we should call
    */
-  async call (number) {
-    // @todo...
+  async call ({ From, To, RecordType = 'record-from-answer' }) {
+    return this.syncWorkerActivities(this.activities.pending)
+      .then(() => {
+        return this.device.connect({ From, To, RecordType })
+      })
+      .catch(err => this.stdErr(err))
   }
 
   /**
@@ -186,7 +190,7 @@ export default class Twilio extends EventEmitter {
     if (signal === undefined) {
       throw new Error('call.signalNotDefined')
     }
-    // @todo...
+    this.currentCall.sendDigits(signal)
   }
 
   /**
@@ -218,23 +222,29 @@ export default class Twilio extends EventEmitter {
    * initDevice initializes the device with capability token
    */
   async initDevice () {
-    const cpt = await this.getCapabilityToken(this.user)
-    this.device = new TwilioClient.Device(cpt, this.deviceConfig)
+    const { jwt } = await this.apiClient.authCapability({ userID: this.user.userID, ns: this.ns })
+    this.device = new TwilioClient.Device(jwt, this.deviceConfig)
   }
 
   /**
    * initWorkers initializes the current user's workflow workers
    */
   async initWorkers () {
-    const rawWorkers = await this.getWorkerTokens(this.user)
+    const { workers: rawWorkers } = await this.apiClient.authWorker({ userID: this.user.userID, ns: this.ns })
     this.workers = rawWorkers.map(w => {
+      // check if all required activities are there
+      if (Object.values(this.activities).find(a => !w.worker.activities[a])) {
+        console.warn('worker.invalidActivities', w)
+        return undefined
+      }
+
       // Get the offline activity sid
-      const offlineActivity = w.activities[Object.keys(w.activities).find(activity => activity === this.activities.offline)]
+      const offlineActivity = w.worker.activities[Object.keys(w.worker.activities).find(activity => activity === this.activities.offline)]
       // Initialize the worker
       const worker = new window.Twilio.TaskRouter.Worker(w.token, true, '', offlineActivity, true)
       return {
         ...w,
-        worker,
+        client: worker,
         status: offlineActivity,
       }
     })
@@ -244,26 +254,35 @@ export default class Twilio extends EventEmitter {
    * bindDeviceListeners handles important device events
    */
   async bindDeviceListeners () {
-    const isInbound = connection => connection._direction !== 'OUTGOING'
-
     /**
      * Fires when the connection is opened via `.connect()` or via an accepted incoming connection
      */
     this.device.on('connect', connection => {
       console.debug('device.connect', connection)
+      this.currentCall = connection
+
       if (connection._direction === 'OUTGOING') {
-        this.$emit(Twilio.events.callOutboundConnected, connection)
+        this.emit(Twilio.events.callOutboundConnected, connection)
       } else {
-        this.$emit(Twilio.events.callInboundConnected, connection)
+        this.emit(Twilio.events.callInboundConnected, connection)
+      }
+
+      // mark workers as pending for a call
+      if (!this.currentReservation) {
+        // workflow does this automatically
+        this.syncWorkerActivities(this.activities.pending)
+          .catch(err => {
+            this.stdErr(err)
+          })
       }
 
       // This fires when the connection gets terminated
       connection.on('disconnect', conn => {
         console.debug('connection.disconnect', conn)
         if (conn._direction === 'OUTGOING') {
-          this.$emit(Twilio.events.callOutboundDisconnected, conn)
+          this.emit(Twilio.events.callOutboundDisconnected, conn)
         } else {
-          this.$emit(Twilio.events.callInboundDisconnected, conn)
+          this.emit(Twilio.events.callInboundDisconnected, conn)
         }
 
         // Disconnect all calls for this device
@@ -283,13 +302,7 @@ export default class Twilio extends EventEmitter {
 
       // Take note of the current call for future refs
       this.currentCall = connection
-      this.$emit(Twilio.events.callInboundPending, connection, isInbound(connection))
-
-      // mark workers as pending for a call
-      this.syncWorkerActivities(this.activities.pending)
-        .catch(err => {
-          this.stdErr(err)
-        })
+      this.emit(Twilio.events.callInboundPending, connection)
     })
 
     // This fires when the caller cancels the call before the agent manages
@@ -297,13 +310,13 @@ export default class Twilio extends EventEmitter {
     this.device.on('cancel', connection => {
       console.debug('device.cancel', connection)
       this.stdDisconnect()
-      this.$emit(Twilio.events.callInboundCanceled, connection)
+      this.emit(Twilio.events.callInboundCanceled, connection)
     })
 
     // This fires when the device is initialized and ready for interactions
     this.device.on('ready', device => {
       console.debug('device.ready', device)
-      this.$emit(Twilio.events.deviceReady, device)
+      this.emit(Twilio.events.deviceReady, device)
     })
 
     // This fires when an error occurs
@@ -318,7 +331,7 @@ export default class Twilio extends EventEmitter {
    */
   async bindWorkerListeners () {
     this.workers.forEach(w => {
-      w.on('ready', evt => {
+      w.client.on('ready', evt => {
         console.debug('worker.ready', evt)
         this.emit(Twilio.events.workerReady, evt)
       })
@@ -327,12 +340,11 @@ export default class Twilio extends EventEmitter {
        * This fires when a worker's activity was updated.
        * It syncs the activity across all workers
        */
-      w.on('activity.update', worker => {
+      w.client.on('activity.update', worker => {
         console.debug('activity.update', worker)
         this.workers.forEach(w => {
-          if (w.worker.workerSid !== worker.workerSid) {
-            // @todo err handling
-            this.syncWorkerActivities(worker.activityName, w.worker)
+          if (w.worker.workerSid !== worker.workerSid && w.client.activityName !== worker.activityName) {
+            this.syncWorkerActivities(worker.activityName, w)
           }
         })
         this.emit(Twilio.events.workerActivityUpdate, worker)
@@ -342,11 +354,16 @@ export default class Twilio extends EventEmitter {
        * Handles token expiration.
        * Generates a new worker token and replaces the expired one
        */
-      w.on('token.expired', async () => {
+      w.client.on('token.expired', async () => {
         console.debug('token.expired', w)
         // Generate a new token for this worker
-        const { token } = await this.getWorkerTokens(this.user, w)
-        w.updateToken(token)
+        const { workers: rawWorkers } = await this.apiClient.authWorker({ userID: this.user.userID, ns: this.ns, workerID: w.worker.workerID })
+        if (!rawWorkers || !rawWorkers.length) {
+          return
+        }
+        const [{ token } = {}] = rawWorkers
+
+        w.client.updateToken(token)
         // Event for the component
         this.emit(Twilio.events.workerTokenUpdated, w)
       })
@@ -355,15 +372,16 @@ export default class Twilio extends EventEmitter {
        * Use this event to handle reservation management.
        * This an be omitted and handled server-side
        */
-      w.on('reservation.created', reservation => {
+      w.client.on('reservation.created', reservation => {
         console.debug('reservation.created', reservation)
+        this.currentReservation = reservation
         this.emit(Twilio.events.workerReservationCreated, reservation)
       })
 
       /**
        * This fires when the entire task is completed
        */
-      w.on('reservation.completed', reservation => {
+      w.client.on('reservation.completed', reservation => {
         console.debug('reservation.completed', reservation)
         this.emit(Twilio.events.workerReservationCompleted, reservation)
       })
@@ -377,24 +395,28 @@ export default class Twilio extends EventEmitter {
    * @param {Object|undefined} worker Optional worker to use
    */
   async syncWorkerActivities (activity, worker) {
+    // no workers, no syncing
+    if (!this.workers.length) {
+      return true
+    }
+
     return new Promise((resolve, reject) => {
     /**
      * std handler for the worker update operation response
      * @param {Error|undefined} err If an error occurs the argument is provided, else it's null
      * @param {Object} worker Updated worker if the update was successful
      */
-      const handler = (err, worker) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(worker)
-        }
+      const handler = (_, worker) => {
+        resolve(worker)
       }
       if (!worker) {
         worker = this.workers[0]
       }
-      worker.update(
-        { ActivitySid: worker.activities[activity] },
+      if (!worker) {
+        return true
+      }
+      worker.client.update(
+        { ActivitySid: worker.worker.activities[activity] },
         handler,
       )
     })
@@ -414,36 +436,10 @@ export default class Twilio extends EventEmitter {
    * stdDisconnect defines a standard flow for disconnecting calls
    */
   stdDisconnect () {
-    this.device.disconnectAll()
-    this.currentCall = undefined
-  }
-
-  /**
-   * Mocks
-   * ----------------------------------------------------------------------
-   */
-
-  async getCapabilityToken (tmp = {}) {
-    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6InNjb3BlOmNsaWVudDppbmNvbWluZz9jbGllbnROYW1lPXR0IiwiaXNzIjoiQUNiNWNhMzNjYzE3YTBlMjNmNTBkNTc1NGM2ODI1NzY5NyIsImV4cCI6MTU3OTA5NjQ4OSwiaWF0IjoxNTc5MDEwMDg5fQ.kiiSVdVut5u8Jedg2DHQgZG_hALjGZIg01hro7zj9iA'
-  }
-
-  async getWorkerTokens (tmp = {}, { workerSid } = {}) {
-    const ts = [{
-      workspaceSid: 'WS.000',
-      workerSid: 'WK.000',
-      // token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwb2xpY2llcyI6W3siYWxsb3ciOnRydWUsInBvc3RfZmlsdGVyIjp7fSwicXVlcnlfZmlsdGVyIjp7fSwibWV0aG9kIjoiR0VUIiwidXJsIjoiaHR0cHM6Ly9ldmVudC1icmlkZ2UudHdpbGlvLmNvbS92MS93c2NoYW5uZWxzL0FDYjVjYTMzY2MxN2EwZTIzZjUwZDU3NTRjNjgyNTc2OTcvV0thZTdjMzJiMGI1MGZiYmU5OWM1ODQxNWQyMjFiOWVjOCJ9LHsiYWxsb3ciOnRydWUsInBvc3RfZmlsdGVyIjp7fSwicXVlcnlfZmlsdGVyIjp7fSwibWV0aG9kIjoiUE9TVCIsInVybCI6Imh0dHBzOi8vZXZlbnQtYnJpZGdlLnR3aWxpby5jb20vdjEvd3NjaGFubmVscy9BQ2I1Y2EzM2NjMTdhMGUyM2Y1MGQ1NzU0YzY4MjU3Njk3L1dLYWU3YzMyYjBiNTBmYmJlOTljNTg0MTVkMjIxYjllYzgifSx7ImFsbG93Ijp0cnVlLCJwb3N0X2ZpbHRlciI6e30sInF1ZXJ5X2ZpbHRlciI6e30sIm1ldGhvZCI6IkdFVCIsInVybCI6Imh0dHBzOi8vdGFza3JvdXRlci50d2lsaW8uY29tL3YxL1dvcmtzcGFjZXMvV1M3MGMxZTk1MThjMDg3MzQyMGJjMjY3ZmNlNGYyZDFkOS9BY3Rpdml0aWVzIn0seyJhbGxvdyI6dHJ1ZSwicG9zdF9maWx0ZXIiOnsiUmVzZXJ2YXRpb25TdGF0dXMiOnsicmVxdWlyZWQiOnRydWV9fSwicXVlcnlfZmlsdGVyIjp7fSwibWV0aG9kIjoiUE9TVCIsInVybCI6Imh0dHBzOi8vdGFza3JvdXRlci50d2lsaW8uY29tL3YxL1dvcmtzcGFjZXMvV1M3MGMxZTk1MThjMDg3MzQyMGJjMjY3ZmNlNGYyZDFkOS9UYXNrcy8qKiJ9LHsiYWxsb3ciOnRydWUsInBvc3RfZmlsdGVyIjp7IkFjdGl2aXR5U2lkIjp7InJlcXVpcmVkIjp0cnVlfX0sInF1ZXJ5X2ZpbHRlciI6e30sIm1ldGhvZCI6IlBPU1QiLCJ1cmwiOiJodHRwczovL3Rhc2tyb3V0ZXIudHdpbGlvLmNvbS92MS9Xb3Jrc3BhY2VzL1dTNzBjMWU5NTE4YzA4NzM0MjBiYzI2N2ZjZTRmMmQxZDkvV29ya2Vycy9XS2FlN2MzMmIwYjUwZmJiZTk5YzU4NDE1ZDIyMWI5ZWM4In0seyJhbGxvdyI6dHJ1ZSwicG9zdF9maWx0ZXIiOnt9LCJxdWVyeV9maWx0ZXIiOnt9LCJtZXRob2QiOiJHRVQiLCJ1cmwiOiJodHRwczovL3Rhc2tyb3V0ZXIudHdpbGlvLmNvbS92MS9Xb3Jrc3BhY2VzL1dTNzBjMWU5NTE4YzA4NzM0MjBiYzI2N2ZjZTRmMmQxZDkvV29ya2Vycy9XS2FlN2MzMmIwYjUwZmJiZTk5YzU4NDE1ZDIyMWI5ZWM4In1dLCJjaGFubmVsIjoiV0thZTdjMzJiMGI1MGZiYmU5OWM1ODQxNWQyMjFiOWVjOCIsIndvcmtzcGFjZV9zaWQiOiJXUzcwYzFlOTUxOGMwODczNDIwYmMyNjdmY2U0ZjJkMWQ5IiwiYWNjb3VudF9zaWQiOiJBQ2I1Y2EzM2NjMTdhMGUyM2Y1MGQ1NzU0YzY4MjU3Njk3Iiwid29ya2VyX3NpZCI6IldLYWU3YzMyYjBiNTBmYmJlOTljNTg0MTVkMjIxYjllYzgiLCJ2ZXJzaW9uIjoidjEiLCJleHAiOjE1Nzk1MTkyOTcsImlzcyI6IkFDYjVjYTMzY2MxN2EwZTIzZjUwZDU3NTRjNjgyNTc2OTcifQ.c9iQJiu3p5vmnx5X5U_e_pd_sBzmsg2A5XRJDRG3LmA',
-      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6InNjb3BlOmNsaWVudDppbmNvbWluZz9jbGllbnROYW1lPXR0IiwiaXNzIjoiQUNiNWNhMzNjYzE3YTBlMjNmNTBkNTc1NGM2ODI1NzY5NyIsImV4cCI6MTU3OTA5NjQ4OSwiaWF0IjoxNTc5MDEwMDg5fQ.kiiSVdVut5u8Jedg2DHQgZG_hALjGZIg01hro7zj9iA',
-      activities: {
-        Reserved: 'WA5f008317b9e0c4e30980e5dcb0b516db',
-        Busy: 'WAfe058dbb31cda4f903f38b30bd04661b',
-        Idle: 'WAa875abaadbaf71946b24b23f06116242',
-        Offline: 'WAc3399bb137cbff8529803e9c077c8682',
-      },
-    }]
-
-    if (workerSid) {
-      return ts[0]
+    if (this.currentCall) {
+      this.currentCall.reject()
+      this.currentCall = undefined
     }
-    return ts
+    this.device.disconnectAll()
   }
 }
