@@ -1,4 +1,5 @@
 import { parseBody } from '../shared/lib'
+import twClient from '../shared/twClient'
 
 export default {
   label: 'Call Logging',
@@ -19,48 +20,67 @@ It logs basic call metadata such as duration, phone numbers, references and agen
     ]
   },
 
-  async exec ({ request, response }, { Compose }) {
-    response.status = 200
-    parseBody(request)
+  async exec ({ $request, $response }, { Compose }) {
+    const body = parseBody($request)
+    $response.status = 200
+    $response.header = { 'Content-Type': ['application/json'] }
 
-    const ns = await Compose.resolveNamespace(request.query.ns[0])
+    const ns = await Compose.resolveNamespace(body.ns)
     const modCall = await Compose.findModuleByHandle('ext_twilio_call', ns)
     const modInt = await Compose.findModuleByHandle('ext_twilio_interaction', ns)
 
-    // create a call instance and log call metadata
-    const log = await Compose.makeRecord({
-      Recording: request.body.recording,
-      Duration: sToHMS(request.body.durationRaw || 0),
-      DurationRaw: request.body.durationRaw || 0,
-      CallType: request.body.callType,
-      Contact: request.body.Contact,
-      Lead: request.body.Lead,
-      CallCenter: request.body.CallCenter,
-      PhoneNumberFrom: request.body.phoneNumberFrom,
-      PhoneNumberTo: request.body.phoneNumberTo,
-      CallSid: request.body.callSid,
-    }, modCall)
-    .then(r => {
-      r.namespaceID = r.module.namespaceID
-      r.moduleID = r.module.moduleID
-      return Compose.saveRecord(r)
-    })
+    // get call from Twilio
+    const modConfig = await Compose.findModuleByHandle('ext_twilio_configuration', ns)
+    const twilio = await twClient(Compose, false, modConfig)
 
-    // create interactions for the given script
-    for (const i of request.body.interaction || []) {
-      await Compose.makeRecord({
-        Scene: i.sceneID,
-        Answer: i.answer,
-        Call: log.recordID,
-      }, modInt)
+    const call = await twilio.calls(body.callSid)
+      .fetch()
+
+    const [recording] = await twilio.recordings
+      .list({ callSid: call.sid, limit: 1 })
+
+    // create a call instance and log call metadata
+    const rr = {
+      Duration: sToHMS(parseInt(call.duration) || 0),
+      DurationRaw: call.duration || '0',
+      CallType: body.callType,
+      Contact: body.Contact,
+      Caller: body.Caller,
+      Lead: body.Lead,
+      CallCenter: body.callCenterID,
+      PhoneNumberFrom: body.from,
+      PhoneNumberTo: body.to,
+      CallSid: call.sid,
+    }
+
+    if (recording) {
+      rr.Recording = recording.sid
+    }
+    const log = await Compose.makeRecord(rr, modCall)
       .then(r => {
         r.namespaceID = r.module.namespaceID
         r.moduleID = r.module.moduleID
         return Compose.saveRecord(r)
       })
+
+    // create interactions for the given script
+    if (body.script) {
+      for (const i of body.script.interaction) {
+        await Compose.makeRecord({
+          Scene: i.sceneID,
+          Answer: i.answer,
+          Call: log.recordID,
+          Script: body.script.meta.scriptID,
+        }, modInt)
+          .then(r => {
+            r.namespaceID = r.module.namespaceID
+            r.moduleID = r.module.moduleID
+            return Compose.saveRecord(r)
+          })
+      }
     }
 
-    return response
+    return $response
   },
 }
 
@@ -71,18 +91,16 @@ It logs basic call metadata such as duration, phone numbers, references and agen
  * @param {Number} sec Duration in seconds
  */
 function sToHMS (sec) {
-  let h, m, s
-
   // calculate (and subtract) whole hours
-  h = Math.floor(sec / 3600) % 24
+  const h = Math.floor(sec / 3600) % 24
   sec -= h * 3600
 
   // calculate (and subtract) whole minutes
-  m = Math.floor(sec / 60) % 60
+  const m = Math.floor(sec / 60) % 60
   sec -= m * 60
 
   // what's left is seconds
-  s = sec % 60
+  const s = sec % 60
 
   let rtr = ''
   if (h) {

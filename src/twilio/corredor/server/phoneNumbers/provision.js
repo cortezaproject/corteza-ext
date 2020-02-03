@@ -19,22 +19,18 @@ This automation script can be used to implement on-the-fly phone number provisio
     ]
   },
 
+  async exec ({ $request, $response }, { Compose }) {
+    $response.status = 200
+    $response.header = { 'Content-Type': ['application/json'] }
 
-  async exec ({ request, response }, { Compose }) {
-    response.status = 200
-    const ns = await Compose.resolveNamespace(request.query.ns[0])
+    const ns = await Compose.resolveNamespace($request.query.ns[0])
     const modConfig = await Compose.findModuleByHandle('ext_twilio_configuration', ns)
     const twilio = await twClient(Compose, false, modConfig)
 
-    // @todo get from request
-    const params = {
-      phoneNumber: '@todo'
-    }
-
     // Provision the phone number
-    response.body = await twilio.incomingPhoneNumbers
-      .create(request.query.phoneNumber[0])
+    $response.body = await twilio.incomingPhoneNumbers
+      .create($request.query.phoneNumber[0])
 
-    return response
+    return $response
   },
 }

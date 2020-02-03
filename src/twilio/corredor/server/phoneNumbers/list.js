@@ -19,20 +19,20 @@ This automation script can be used to implement on-the-fly phone number provisio
     ]
   },
 
-  async exec ({ request, response }, { Compose }) {
-    response.status = 200
-    const ns = await Compose.resolveNamespace(request.query.ns[0])
+  async exec ({ $request, $response }, { Compose }) {
+    $response.status = 200
+    $response.header = { 'Content-Type': ['application/json'] }
+    const ns = await Compose.resolveNamespace($request.query.ns[0])
     const modConfig = await Compose.findModuleByHandle('ext_twilio_configuration', ns)
     const twilio = await twClient(Compose, false, modConfig)
 
-    // @todo get from request
     const params = {
-      areaCode: request.query.area_code[0],
-      excludeAllAddressRequired: request.query.no_address[0],
+      areaCode: $request.query.area_code[0],
+      excludeAllAddressRequired: $request.query.no_address[0],
     }
 
     // find available phone numbers and create a nice structure
-    response.body = await twilio.availablePhoneNumbers(request.query.country_code[0])
+    const nms = await twilio.availablePhoneNumbers($request.query.country_code[0])
       .local
       .list({
         ...params,
@@ -40,7 +40,9 @@ This automation script can be used to implement on-the-fly phone number provisio
         limit: 20,
       })
       .then(numbers => numbers.map(({ friendlyName, phoneNumber, isoCountry, locality }) => ({ friendlyName, phoneNumber, isoCountry, locality })))
-
-    return response
+    $response.body = JSON.stringify({
+      numbers: nms,
+    })
+    return $response
   },
 }

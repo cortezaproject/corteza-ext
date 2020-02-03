@@ -1,11 +1,12 @@
 import Twilio from 'twilio'
 import { inSet, parseBody } from '../shared/lib'
+import twClient from '../shared/twClient'
 
 const ClientCapability = Twilio.jwt.ClientCapability
 const taskrouter = Twilio.jwt.taskrouter
 const util = taskrouter.util
-const taskrouterBaseURL = 'https://taskrouter.twilio.com';
-const version = 'v1';
+const taskrouterBaseURL = 'https://taskrouter.twilio.com'
+const version = 'v1'
 
 export const capability = {
   label: 'Twilio Capability Tokens',
@@ -24,12 +25,12 @@ export const capability = {
     ]
   },
 
-  async exec ({ request, response }, { Compose }) {
-    parseBody(request)
-    response.status = 200
-    response.header = { 'Content-Type': ['application/json'] }
+  async exec ({ $request, $response }, { Compose }) {
+    const body = parseBody($request)
+    $response.status = 200
+    $response.header = { 'Content-Type': ['application/json'] }
 
-    const ns = await Compose.resolveNamespace(request.body.ns)
+    const ns = await Compose.resolveNamespace(body.ns)
     const mod = await Compose.findModuleByHandle('ext_twilio_configuration', ns)
     const config = await Compose.findFirstRecord(mod)
 
@@ -37,15 +38,15 @@ export const capability = {
       accountSid: config.values.ProductionSID,
       authToken: config.values.ProductionToken,
     })
-    cpb.addScope(new ClientCapability.IncomingClientScope(request.body.userID))
+    cpb.addScope(new ClientCapability.IncomingClientScope(body.userID))
     cpb.addScope(new ClientCapability.OutgoingClientScope({
       applicationSid: config.values.OutboundApplicationSid,
     }))
 
-    const jwt = cpb.toJwt()
-    console.log({ jwt })
-    response.body = { jwt }
-    return response
+    $response.body = JSON.stringify({
+      jwt: cpb.toJwt(),
+    })
+    return $response
   },
 }
 
@@ -66,55 +67,72 @@ export const worker = {
     ]
   },
 
-  async exec ({ request, response }, { Compose }) {
-    parseBody(request)
-    response.status = 200
-    response.header = { 'Content-Type': ['application/json'] }
+  async exec ({ $request, $response }, { Compose }) {
+    try {
+      const body = parseBody($request)
+      $response.status = 200
+      $response.header = { 'Content-Type': ['application/json'] }
 
-    // get config and meta objects
-    const ns = await Compose.resolveNamespace(request.body.ns)
-    const configMod = await Compose.findModuleByHandle('ext_twilio_configuration', ns)
-    const workerMod = await Compose.findModuleByHandle('ext_twilio_worker', ns)
-    const workspaceMod = await Compose.findModuleByHandle('ext_twilio_workspace', ns)
-    const config = await Compose.findFirstRecord(configMod)
+      // get config and meta objects
+      const ns = await Compose.resolveNamespace(body.ns)
+      const configMod = await Compose.findModuleByHandle('ext_twilio_configuration', ns)
+      const workerMod = await Compose.findModuleByHandle('ext_twilio_worker', ns)
+      const workspaceMod = await Compose.findModuleByHandle('ext_twilio_workspace', ns)
+      const config = await Compose.findFirstRecord(configMod)
 
-    // get user's workers and workspace refs
-    let q = `User = '${request.body.userID}'`
-    // support for specific worker
-    if (request.body.workerID) {
-      q += ` AND recordID = '${request.body.workerID}'`
-    }
-    const { set: workersRaw } = await Compose.findRecords(q, workerMod)
-    const workerWorkspaces = Array.from(new Set(workersRaw.map(({ values }) => values.Workspace)))
-    const { set: workspaces } = await Compose.findRecords(inSet('recordID', workerWorkspaces), workspaceMod)
-    const workers = workersRaw.map(w => {
-      const ws = workspaces.find(ws => ws.recordID === w.values.Workspace)
-      if (!ws) {
-        return
+      const twilio = await twClient(Compose, false, configMod)
+
+      // get user's workers and workspace refs
+      let q = `User = '${body.userID}'`
+      // support for specific worker
+      if (body.workerID) {
+        q += ` AND recordID = '${body.workerID}'`
+      }
+      const { set: workersRaw } = await Compose.findRecords(q, workerMod)
+      const workerWorkspaces = Array.from(new Set(workersRaw.map(({ values }) => values.Workspace)))
+      const { set: workspaces } = await Compose.findRecords(inSet('recordID', workerWorkspaces), workspaceMod)
+      const workers = workersRaw.map(w => {
+        const ws = workspaces.find(ws => ws.recordID === w.values.Workspace)
+        if (!ws) {
+          return
+        }
+
+        return {
+          workerID: w.recordID,
+          workerSid: w.values.WorkerSid,
+          name: w.values.Name,
+          workspaceSid: ws.values.WorkspaceSid,
+        }
+      }).filter(w => w)
+
+      // get activities for the given workspace
+      for (const w of workers) {
+        const acts = await twilio.taskrouter.workspaces(w.workspaceSid)
+          .activities
+          .list({ limit: 20 })
+
+        w.activities = acts.reduce((acc, { sid, friendlyName }) => {
+          acc[friendlyName] = sid
+          return acc
+        }, {})
       }
 
-      return {
-        workerID: w.recordID,
-        workerSid: w.values.WorkerSid,
-        name: w.values.Name,
-        workspaceSid: ws.values.WorkspaceSid
-      }
-    }).filter(w => w)
-
-    // create a token for each worker
-    response.body = {
-      workers: workers.map(worker => {
-        const token = genWFToken(
-          config.values.ProductionSID,
-          config.values.ProductionToken,
-          worker.workspaceSid,
-          worker.workerSid,
-        )
-        return { token, worker }
+      // create a token for each worker
+      $response.body = JSON.stringify({
+        workers: workers.map(worker => {
+          const token = genWFToken(
+            config.values.ProductionSID,
+            config.values.ProductionToken,
+            worker.workspaceSid,
+            worker.workerSid,
+          )
+          return { token, worker }
+        }),
       })
+      return $response
+    } catch (e) {
+      console.error(e)
     }
-    console.log({ workers: response.body.workers })
-    return response
   },
 }
 
@@ -135,10 +153,10 @@ function genWFToken (accountSid, authToken, workspaceSid, workerSid) {
   })
 
   // Event Bridge Policies
-  const eventBridgePolicies = util.defaultEventBridgePolicies(accountSid, workerSid);
+  const eventBridgePolicies = util.defaultEventBridgePolicies(accountSid, workerSid)
 
   // Worker Policies
-  const workerPolicies = util.defaultWorkerPolicies(version, workspaceSid, workerSid);
+  const workerPolicies = util.defaultWorkerPolicies(version, workspaceSid, workerSid)
 
   const workspacePolicies = [
     // Workspace fetch Policy
@@ -169,7 +187,7 @@ function genWFToken (accountSid, authToken, workspaceSid, workerSid) {
  * @param {String} workspaceSid Worker's workspace SID
  * @returns {taskrouter.TaskRouterCapability.Policy}
  */
-function buildWorkspacePolicy(options, workspaceSid) {
+function buildWorkspacePolicy (options, workspaceSid) {
   options = options || {}
   var resources = options.resources || []
   var urlComponents = [taskrouterBaseURL, version, 'Workspaces', workspaceSid]
@@ -177,6 +195,6 @@ function buildWorkspacePolicy(options, workspaceSid) {
   return new taskrouter.TaskRouterCapability.Policy({
     url: urlComponents.concat(resources).join('/'),
     method: options.method || 'GET',
-    allow: true
+    allow: true,
   })
 }

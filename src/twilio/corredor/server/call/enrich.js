@@ -1,3 +1,5 @@
+import { parseBody } from '../shared/lib'
+
 export const pn = {
   label: 'Phone Number Information',
   description:
@@ -17,48 +19,43 @@ It attempts to find a record within compose based on the Twilio Configuration se
     ]
   },
 
-  async exec ({ request, response }, { Compose }) {
-    response.status = 200
-    response.header = { 'Content-Type': ['application/json'] }
+  async exec ({ $request, $response }, { Compose }) {
+    const body = parseBody($request)
+    $response.status = 200
+    $response.header = { 'Content-Type': ['application/json'] }
 
     let enriched
-    const ns = await Compose.resolveNamespace(request.query.ns[0])
-    const modConfig = await Compose.findModuleByHandle('ext_twilio_configuration', ns)
-    const config = await Compose.findFirstRecord(modConfig)
+    const ns = await Compose.resolveNamespace(body.ns)
+
+    const modules = [
+      { handle: 'contact', mapTo: 'contact' },
+      { handle: 'lead', mapTo: 'lead' },
+      { handle: 'ext_twilio_caller', mapTo: 'caller' },
+    ]
 
     // find details about the phone number
-    for (const s of config.values.CallEnrichmentSource) {
-      if (!s) {
-        continue
-      }
-
-      const [, source, name, field] = /(\w+): (\w+)(?:\[)?(\w+)?(?:\])?/.exec(s)
-      switch (source) {
-        case 'module':
-          const mod = await Compose.findModuleByHandle(name, ns)
-          enriched = await enrichFromModule(Compose, mod, request.query.phoneNumber[0], field)
-            .catch(() => undefined)
-      }
-
+    const rtr = {
+      phoneNumber: body.phoneNumber,
+    }
+    for (const { handle, mapTo } of modules) {
+      const mod = await Compose.findModuleByHandle(handle, ns)
+      enriched = await Compose.findRecords(`PhoneNumber = '${body.phoneNumber}'`, mod)
+        .then(({ set }) => {
+          return (set || [])[0]
+        })
+        .catch(() => {})
       if (enriched) {
-        break
+        const { toJSON, ...values } = enriched.values
+        rtr[mapTo] = {
+          id: enriched.recordID,
+          values,
+        }
       }
     }
 
     // payload
-    if (!enriched) {
-      response.body = undefined
-      response.status = 400
-    } else {
-      response.body = {
-        name: enriched.Name,
-        email: enriched.Email,
-        organisation: enriched.Organisation,
-      }
-    }
-
-    console.log({ response })
-    return response
+    $response.body = JSON.stringify(rtr)
+    return $response
   },
 }
 
@@ -79,49 +76,40 @@ export const scr = {
     ]
   },
 
-  async exec ({ request, response }, { Compose }) {
-    response.status = 200
+  async exec ({ $request, $response }, { Compose }) {
+    const body = parseBody($request)
+    $response.status = 200
+    $response.header = { 'Content-Type': ['application/json'] }
 
-    const ns = await Compose.resolveNamespace(request.query.ns[0])
+    const ns = await Compose.resolveNamespace(body.ns)
     const modScript = await Compose.findModuleByHandle('ext_twilio_script', ns)
     const modScriptScene = await Compose.findModuleByHandle('ext_twilio_script_scene', ns)
+    const modCallCenter = await Compose.findModuleByHandle('ext_twilio_call_center', ns)
+
+    const { set: [cc] } = await Compose.findRecords(`PhoneNumber = '${body.phoneNumber}'`, modCallCenter)
+    if (!cc) {
+      $response.body = '{"scripts":[]}'
+      return $response
+    }
 
     // Find scripts for the given call center
-    let scripts = []
-    const { set: scriptsRaw } = await Compose.findRecords(`CallCenter = '${request.query.callCenterID[0]}'`, modScript)
+    const scripts = []
+    const { set: scriptsRaw } = await Compose.findRecords(`CallCenter = '${cc.recordID}'`, modScript)
     for (const s of scriptsRaw) {
       const { set: scenesRaw } = await Compose.findRecords({ filter: `Script = '${s.recordID}'`, sort: 'Order ASC,createdAt ASC', perPage: 0 }, modScriptScene)
       scripts.push({
         script: {
           scriptID: s.recordID,
+          callCenterID: cc.recordID,
           name: s.values.Name,
         },
-        scenes: scenesRaw.map(({ recordID: sceneID, values: { Type: type, Text: text, Order: order } }) => ({ sceneID, type, text, order }))
+        scenes: scenesRaw.map(({ recordID: sceneID, values: { Type: type, Text: text, Order: order } }) => ({ sceneID, type, text, order })),
       })
     }
 
-    response.body = {
+    $response.body = JSON.stringify({
       scripts,
-    }
-    return response
-  },
-}
-
-/**
- * enrichFromModule function attempts to find a record for the given module.
- * If a record is found it's value is returned, else the promise rejects.
- * @param {ComposeAPI} client ComposeAPI client
- * @param {String} module Module handle that should be used
- * @param {String} query Queried value
- * @param {String} field Field name; defaults to 'PhoneNumber'
- * @returns {Promise<Object>}
- */
-async function enrichFromModule (client, module, query, field = 'PhoneNumber') {
-  return await client.findRecords(`${field} = '${query}'`, module)
-    .then(({ set }) => {
-      if (set && set.length) {
-        return set[0].values
-      }
-      throw new Error('resolve.failed')
     })
+    return $response
+  },
 }
