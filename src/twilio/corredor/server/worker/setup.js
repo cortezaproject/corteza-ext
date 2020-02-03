@@ -45,7 +45,6 @@ It creates and configures a corresponding Twilio Worker that is able to accept c
     const twilio = await twClient(Compose)
     const ws = await Compose.findRecordByID($record.values.Workspace, 'ext_twilio_workspace')
 
-
     const workerCallback = w => {
       $record.values.WorkerSid = w.sid
       return $record

@@ -18,9 +18,9 @@ It creates and configures a corresponding Twilio Workspace.`,
     ]
   },
 
-  async exec ({ $record }, ctx) {
+  async exec ({ $record, $module }, { Compose }) {
     $record = new compose.Record($record, $module)
-    const twilio = await twClient(ctx.Compose)
+    const twilio = await twClient(Compose)
     return setupWorkspace({ twilio, $record })
       .then(setupTaskQueue)
       .then(setupWorkflow)

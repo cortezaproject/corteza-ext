@@ -1,6 +1,3 @@
-import twClient from '../shared/twClient'
-import { compose } from '@cortezaproject/corteza-js'
-
 export const bc = {
   label: 'Twilio Call Center Validation',
   description:
