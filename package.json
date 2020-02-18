@@ -7,9 +7,13 @@
   "author": "Jože Fortun <joze.fortun@gmail.com>",
   "license": "Apache-2.0",
   "scripts": {
+    "lint": "eslint src",
     "test:unit": "mocha",
     "test:unit:cc": "nyc mocha",
     "cdeps": "yarn upgrade @cortezaproject/corteza-js"
+  },
+  "gitHooks": {
+    "pre-commit": "yarn lint"
   },
   "dependencies": {
     "@cortezaproject/corteza-js": "file:../corteza-js",
@@ -19,7 +23,9 @@
     "unsplash-js": "^6.0.0"
   },
   "devDependencies": {
+    "babel-eslint": "^10.0.3",
     "chai": "^4.2.0",
+    "eslint": "^6.8.0",
     "esm": "^3.2.25",
     "mocha": "^7.0.1"
   }
