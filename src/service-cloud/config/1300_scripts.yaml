@@ -1,97 +1,59 @@
-namespace: crm
+namespace: service-cloud
 scripts:
-  AccountCreateNewOpportunity:
+  AccountSetValues:
     source: |-
+      $record.values.AccountSelect = $record.values.AccountName
+    async: false
+    runInUA: false
+    critical: true
+    enabled: true
+    timeout: 0
+    triggers:
+    - event: beforeCreate
+      module: Account
+      resource: compose:record
+    - event: beforeUpdate
+      module: Account
+      resource: compose:record
+  CaseAddUpdate:
+    source: |-
+      const { toJSON, ...values } = $record.values
+      $record = new Record($record.module, { ...$record, values })
+
       //Get the default settings
       return Compose.findLastRecord('Settings').then(settings => {
 
-        let opportunityCloseDays = settings.values.OpportunityCloseDateDays
-        let opportunityProbability = settings.values.OpportunityProbability
-        let opportunityForecaseCategory = settings.values.OpportunityForecaseCategory
-        let opportunityStagename = settings.values.OpportunityStagename
+        let department = settings.values.DefaultDepartment
+        let timeSpend = settings.values.DefaultTimeUpdate
+        let defaultCostPerHour = settings.values.DefaultCostPerHour
+        let updateCost = 0
+        if (timeSpend) {
+          updateCost = parseFloat(defaultCostPerHour) * parseFloat(timeSpend)
+        }
 
-        //Calculate the expiration date
-        let m = new Date()
-        m.setDate(m.getDate() + parseInt(opportunityCloseDays, 10))
-        let closeDate = m.getUTCFullYear() + "/" + (m.getUTCMonth() + 1) + "/" + m.getUTCDate() + " " + m.getUTCHours() + ":" + m.getUTCMinutes() + ":" + m.getUTCSeconds()
+        // Create the related update
+        return Compose.makeRecord({
+          'CaseId': $record.recordID,
+          'AccountId': $record.values.AccountId,
+          'ContactId': $record.values.ContactId,
+          'Department': settings.values.DefaultDepartment,
+          'Cost': updateCost,
+          'TimeSpend': timeSpend
+        }, 'Update')
 
-        // Find the contact we want to link the new case to (by default, the primary contact)
-        return Compose.findRecords(`AccountId = ${$record.recordID}`, 'Contact')
+          .then(myUpdate => {
 
-          .then(({ set, filter }) => {
+            return Compose.saveRecord(myUpdate)
 
-            let ContactId, SuppliedName, SuppliedEmail, SuppliedPhone
+          }).then(mySavedUpdate => {
 
-            // Loop through the contacts of the account, to save the primary contact
-            set.forEach(r => {
+            ComposeUI.gotoRecordEditor(mySavedUpdate)
 
-              //Check if it's the primary contact
-              let contactIsPrimary = r.values.IsPrimary
-              if (contactIsPrimary === '1') {
-
-                //Add the contact
-                ContactId = r.recordID
-              }
-            })
-
-            // Create the related opportunity
-            return Compose.makeRecord({
-              'OwnerId': $record.values.OwnerId,
-              'LeadSource': $record.values.LeadSource,
-              'Name': '(unnamed)',
-              'AccountId': $record.recordID,
-              'IsClosed': 'No',
-              'IsWon': 'No',
-              'CloseDate': closeDate,
-              'Probability': opportunityProbability,
-              'ForecastCategory': opportunityForecaseCategory,
-              'StageName': opportunityStagename
-            }, 'Opportunity')
-
-              .then(myOpportunity => {
-
-                return Compose.saveRecord(myOpportunity)
-
-              }).then(mySavedOpportunity => {
-
-                //Create a new contact linked to the opportunity
-                return Compose.makeRecord({
-                  'ContactId': ContactId,
-                  'OpportunityId': mySavedOpportunity.recordID,
-                  'IsPrimary': '1'
-                }, 'OpportunityContactRole')
-
-                  .then(myOpportunityContactRole => {
-
-                    return Compose.saveRecord(myOpportunityContactRole)
-
-                      .then(() => {
-
-                        // Notify current user
-                        ComposeUI.success(`The new opportunity has been created.`)
-
-
-                      }).then(() => {
-
-                        // Go to the record
-                        ComposeUI.gotoRecordEditor(mySavedOpportunity)
-
-                      }).catch(err => {
-                        // solve the problem
-                        console.error(err)
-                      })
-                  }).catch(err => {
-                    // solve the problem
-                    console.error(err)
-                  })
-              }).catch(err => {
-                // solve the problem
-                console.error(err)
-              })
           }).catch(err => {
             // solve the problem
             console.error(err)
           })
+
       }).catch(err => {
         // solve the problem
         console.error(err)
@@ -103,36 +65,44 @@ scripts:
     timeout: 0
     triggers:
     - event: manual
-      module: Account
+      module: Case
       resource: compose:record
   CaseInsertCaseNumber:
     source: |-
-      //Get the default settings
-      return Compose.findLastRecord('Settings').then(settings => {
+      let d = new Date()
+      let y = d.getFullYear()
+      let m = d.getMonth() + 1
+      if (m < 10) {
+        m = '0' + m
+      }
+      let day = d.getDate()
+      if (day < 10) {
+        day = '0' + day
+      }
+      let h = d.getHours()
+      if (h < 10) {
+        h = '0' + h
+      }
+      let min = d.getMinutes()
+      if (min < 10) {
+        min = '0' + min
+      }
+      let sec = d.getSeconds()
+      if (sec < 10) {
+        sec = '0' + sec
+      }
+      let mil = d.getMilliseconds()
+      if (mil < 10) {
+        mil = '00' + mil
+      } else if (mil < 100) {
+        mil = '0' + mil
+      }
 
-        // Map the case number
-        let nextCaseNumber = settings.values.CaseNextNumber
-        if (typeof nextCaseNumber == "undefined" || nextCaseNumber === '' || isNaN(nextCaseNumber)) {
-          nextCaseNumber = 0
-        }
+      let caseNumber = 'Ticket#' + y + m + day + h + min + sec + mil
 
-        $record.values.CaseNumber = nextCaseNumber
-        let nextCaseNumberUpdated = parseInt(nextCaseNumber,10) + 1
-
-        // Update the config
-        settings.values.CaseNextNumber = nextCaseNumberUpdated
-        return Compose.saveRecord(settings).then(mySavedSettings => {
-
-          console.log('Record saved, new ID', mySavedSettings.recordID)
-
-        }).catch(err => {
-        // solve the problem
-        console.error(err)
-        })
-      }).catch(err => {
-      // solve the problem
-      console.error(err)
-      })
+      $record.values.Number = caseNumber
+      $record.values.Status = 'New'
+      $record.values.PreviousStatus = 'New'
     async: false
     runInUA: false
     critical: true
@@ -142,35 +112,94 @@ scripts:
     - event: beforeCreate
       module: Case
       resource: compose:record
-  CaseInformContactOfSolution:
+    - enabled: false
+      event: beforeUpdate
+      module: Case
+      resource: compose:record
+  CaseSendEmail:
     source: |-
-      // Check if the case is solved
-      if (!$record.values.Status === 'Closed') {
+      const { toJSON, ...values } = $record.values
+      $record = new Record($record.module, { ...$record, values })
 
-        // Get the to address
-        let to = $record.values.SuppliedEmail
-        if (!to) {
-          ComposeUI.warning(`There is no supplied email. Please fill in an email address in the supplied email field.`)
-          return
-        }
+      function procTemplate(tpl, pairs = {}) {
+        return tpl.replace(/{{\s*(.+?)\s*}}/g, (match) => {
+          // remove {{, }} and extra spaces
+          const token = match.substr(2, match.length - 4).trim().split('.', 2)
 
-        // Get email body
-        let html = "<h1>Solution of case: " + $record.values.CaseNumber + " - " + $record.values.Subject + "</h1>"
-        html = html + "<br>"
-        html = html + "<strong>Solution Title:</strong> " + $record.values.SolutionName + "<br>"
-        html = html + "<strong>Solution Details:</strong> " + $record.values.SolutionNote
+          // return the placeholder if we do not find the value
+          const miss = '{{' + token.join('.') + '}}'
 
-        // Send the email
-        return Compose.sendMail(to, `Corteza - Quote: ${$record.values.QuoteNumber} - ${$record.values.Name}`, { html: html }).then(() => {
-          ComposeUI.success(`The case solutoin has been sent via email.`)
-        }).catch(err => {
-          // solve the problem
-          console.error(err)
+          if (token.length === 1) {
+            // handle simpe key-value pairs
+            return pairs[token] || miss
+          } else {
+            // handle complex key-key-value (ie: modulename: recordvalues)
+            const [key, field] = token
+            return pairs[key] && pairs[key][field] ? pairs[key][field] : miss
+          }
         })
-      } else {
-        ComposeUI.warning(`You can only inform the client of a solution when the case status is "Closed".`)
-        return
       }
+
+      // Get the default template from the settings.
+      return Compose.findLastRecord('Settings').then(settings => {
+        let templateId = settings.values.DefaultCaseEmailTemplate
+
+        if (templateId) {
+
+          // Get the template
+          Compose.findRecordByID(templateId, 'EmailTemplate').then(templateRecord => {
+
+            let subject = templateRecord.values.Subject
+            let body = templateRecord.values.Body
+
+            subject = procTemplate(subject, { "Case": $record.values })
+            body = procTemplate(body, { "Case": $record.values })
+
+            // Find the contact (there will always be a contact)
+            Compose.findRecordByID($record.values.ContactId, 'Contact').then(contactRecord => {
+
+              subject = procTemplate(subject, { "Contact": contactRecord.values })
+              body = procTemplate(body, { "Contact": contactRecord.values })
+              return
+
+            }).then(() => {
+
+              // Create the email
+              return Compose.makeRecord({
+                'HtmlBody': body,
+                'Subject': subject,
+                'Status': 'Draft',
+                'EmailTemplateId': templateId,
+                'CaseId': $record.recordID,
+                'ContactId': $record.values.ContactId
+              }, 'EmailMessage')
+                .then(myEmailMessage => {
+
+                  return Compose.saveRecord(myEmailMessage)
+
+                }).then(mySavedEmailMessage => {
+
+                  // Redirect to the email record
+                  ComposeUI.gotoRecordEditor(mySavedEmailMessage)
+
+                }).catch(err => {
+                  // solve the problem
+                  console.error(err)
+                })
+
+            }).catch(err => {
+              // solve the problem
+              console.error(err)
+            })
+          }).catch(err => {
+            // solve the problem
+            console.error(err)
+          })
+        }
+      }).catch(err => {
+        // solve the problem
+        console.error(err)
+      })
     async: false
     runInUA: true
     critical: true
@@ -178,6 +207,108 @@ scripts:
     timeout: 0
     triggers:
     - event: manual
+      module: Case
+      resource: compose:record
+  CaseStatusChange:
+    source: |-
+      // Get the current status of the case
+      let currentStatus = $record.values.Status
+      let previousStatus = $record.values.PreviousStatus
+
+      // Check if there is no status. If so, the case is new and set it as new.
+      if (!currentStatus) {
+        currentStatus = 'New'
+      }
+      if (!previousStatus) {
+        previousStatus = 'None'
+      }
+
+      // Check if we need to insert a status change update
+      if (currentStatus != previousStatus) {
+        
+        // Insert the status update
+        // First, get the default settings
+        return Compose.findLastRecord('Settings').then(settings => {
+          
+          let defaultTimeSpend = settings.values.DefaultTimeUpdate
+          let defaultCost = settings.values.DefaultCostPerHour
+          let defaultDepartment = settings.values.DefaultDepartment
+
+          // Get the record from the department
+          return Compose.findRecordByID(defaultDepartment, 'Department').then(departmentRecord => {
+
+            // Get the cost associated to the department
+            if (departmentRecord.values.HourCost) {
+              defaultCost = departmentRecord.values.HourCost
+            }
+            return departmentRecord
+            
+          }).then(departmentRecord => {
+            
+            // calculat the total cost
+            let totalCost = parseFloat(defaultCost) * parseFloat(defaultTimeSpend)
+            
+            // Make the update record
+            return Compose.makeRecord({
+              'CaseId': $record.recordID,
+              'Type': 'Status change',
+              'Subject': 'Status changed from ' + previousStatus + ' to ' + currentStatus,
+              'AccountId': $record.values.AccountId,
+              'From': 'Automatic message',
+              'Department': defaultDepartment,
+              'TimeSpend': defaultTimeSpend,
+              'Cost': totalCost
+            }, 'Update')
+        
+              .then(myUpdate => {
+        
+                return Compose.saveRecord(myUpdate)
+        
+              }).catch(err => {
+                // solve the problem
+                console.error(err)
+              })
+            
+          }).then(departmentRecord => {
+
+            // Calculate and store the total price of the ticket
+            let totalCost = $record.values.TotalCost
+            if (!totalCost || totalCost === '' || isNaN(totalCost)) {
+              totalCost = 0
+            }
+            
+            let totalTime = $record.values.TotalTime
+            if (!totalTime || totalTime === '' || isNaN(totalTime)) {
+              totalTime = 0
+            }
+            
+            // Update the total time and cost in the ticket
+            $record.values.TotalCost = parseFloat(totalCost) + (parseFloat(defaultCost) * parseFloat(defaultTimeSpend))
+            $record.values.TotalTime = parseFloat(totalTime) + parseFloat(defaultTimeSpend)
+            
+            // Store the new state in the previous state field
+            $record.values.PreviousStatus = currentStatus
+            
+            return
+          
+          }).catch(err => {
+            // solve the problem
+            console.error(err)
+          })
+          
+        }).catch(err => {
+          // solve the problem
+          console.error(err)
+        })
+
+      }
+    async: false
+    runInUA: false
+    critical: true
+    enabled: true
+    timeout: 0
+    triggers:
+    - event: beforeUpdate
       module: Case
       resource: compose:record
   ContactSetRecordLabel:
@@ -216,8 +347,8 @@ scripts:
       let accountId = $record.values.AccountId
       if (accountId) {
           return Compose.findRecordByID(accountId, 'Account').then(accountRecord => {
-
-            // Add to the record label
+          
+            // Add to the record label 
             recordLabel = recordLabel + ' (' + accountRecord.values.AccountName + ')'
             $record.values.RecordLabel = recordLabel
 
@@ -227,7 +358,7 @@ scripts:
 
             console.error(err)
           })
-
+        
       }
     async: false
     runInUA: false
@@ -235,102 +366,119 @@ scripts:
     enabled: true
     timeout: 0
     triggers:
-    - event: beforeUpdate
-      module: Contact
-      resource: compose:record
     - event: beforeCreate
       module: Contact
       resource: compose:record
-  LeadSetRecordLabel:
+    - event: beforeUpdate
+      module: Contact
+      resource: compose:record
+  DepartmentSetValues:
     source: |-
-      // Set the record label string
-      let recordLabel = ''
-
-      // Get the first name
-      let firstName = $record.values.FirstName
-      if (!firstName) {
-        fistName = ''
-      }
-
-      // Get the last name
-      let lastName = $record.values.LastName
-      if (!lastName) {
-        lastName = ''
-      }
-
-      // Create the full name
-      let fullName = ''
-      if ((firstName !== '') && (lastName === '')) {
-        recordLabel = firstName
-      }
-
-      if ((firstName === '') && (lastName !== '')) {
-        recordLabel = lastName
-      }
-
-      if ((firstName !== '') && (lastName !== '')) {
-        recordLabel = firstName + ' ' + lastName
-      }
-
-      // Get the company name
-      let company = $record.values.Company
-      if (!company) {
-        company = ''
-      }
-
-      // Add the company name (if there is one)
-      if (company !== '') {
-        recordLabel = recordLabel + ' (' + company + ')'
-      }
-
-      // Set the label
-      $record.values.RecordLabel = recordLabel
+      $record.values.DepartmentSelect = $record.values.Name
     async: false
     runInUA: false
     critical: true
     enabled: true
     timeout: 0
     triggers:
-    - event: beforeUpdate
-      module: Lead
-      resource: compose:record
     - event: beforeCreate
-      module: Lead
+      module: Department
       resource: compose:record
-  QuoteApproveQuote:
+    - event: beforeUpdate
+      module: Department
+      resource: compose:record      
+  EmailSend:
     source: |-
-      //Check if the quote has the correct status
-      if ($record.values.Status !== 'In Review') {
-        // Inform
-        ComposeUI.warning(`A quote needs to have the status In Review in order to be approved.`)
-        return true
-      }
+      const { toJSON, ...values } = $record.values
+      $record = new Record($record.module, { ...$record, values })
 
-      //Change value
-      $record.values.Status = 'Approved'
+      Compose.findRecordByID($record.values.ContactId, 'Contact').then(contactRecord => {
 
-      return Compose.saveRecord($record)
-        .then(mySavedRecord => {
+        return Compose.sendMail(contactRecord.values.Email, $record.values.Subject, { html: $record.values.HtmlBody }).then(() => {
 
-          // Get the email of the owner
-          return System.findUserByID($record.createdBy).then(user => {
+          ComposeUI.success(`The email "${$record.values.Subject}" has been sent to "${contactRecord.values.RecordLabel}: ${contactRecord.values.Email}".`)
 
-            // Send the mail
-            return Compose.sendMail(
-              user.email,
-              `Quote "${$record.values.Name}" has been approved`,
-              { html: `The following quote has been approved: <br><br><a href="https://latest.cortezaproject.org/compose/ns/crm/pages/69625756459728913/record/${$record.recordID}/edit">${$record.values.Name}<a>` }
-            )
-          }).then(() => {
+          $record.values.Status = "Sent"
+          $record.values.ToAddress = contactRecord.values.Email
 
-            // Notify current user
-            ComposeUI.success(`The quote has been approved and the quote owner has been notified via email.`)
+          var m = new Date()
+          var dateString = m.getUTCFullYear() + "/" + (m.getUTCMonth() + 1) + "/" + m.getUTCDate() + " " + m.getUTCHours() + ":" + m.getUTCMinutes() + ":" + m.getUTCSeconds()
+          $record.values.MessageDate = dateString
+          Compose.saveRecord($record).then(mySavedRecord => {
+            ComposeUI.gotoRecordViewer(mySavedRecord)
+            return
+          }).then(mySavedRecord => {
 
+            // Add the email as an update
+            if ($record.values.CaseId) {
+
+
+              // First, get the default settings
+              return Compose.findLastRecord('Settings').then(settings => {
+
+                let defaultTimeSpend = settings.values.DefaultTimeUpdate
+                let defaultCost = settings.values.DefaultCostPerHour
+                let defaultDepartment = settings.values.DefaultDepartment
+
+                // Get the record from the department
+                return Compose.findRecordByID(defaultDepartment, 'Department').then(departmentRecord => {
+
+                  // Get the cost associated to the department
+                  if (departmentRecord.values.HourCost) {
+                    defaultCost = departmentRecord.values.HourCost
+                  }
+                  return departmentRecord
+
+                }).then(departmentRecord => {
+
+                  // calculat the total cost
+                  let totalCost = parseFloat(defaultCost) * parseFloat(defaultTimeSpend)
+
+                  // Make the update record
+                  return Compose.makeRecord({
+                    'CaseId': $record.values.CaseId,
+                    'Type': 'Outgoing email',
+                    'Subject': 'Email: ' + $record.values.Subject,
+                    'ContactId': $record.values.ContactId,
+                    'From': 'Service Cloud',
+                    'To': contactRecord.values.Email,
+                    'Content': $record.values.HtmlBody,
+                    'Department': defaultDepartment,
+                    'TimeSpend': defaultTimeSpend,
+                    'Cost': totalCost
+                  }, 'Update')
+
+                    .then(myUpdate => {
+
+                      return Compose.saveRecord(myUpdate)
+
+                    }).catch(err => {
+                      // solve the problem
+                      console.error(err)
+                    })
+                }).catch(err => {
+                  // solve the problem
+                  console.error(err)
+                })
+
+              }).catch(err => {
+                // solve the problem
+                console.error(err)
+              })
+            }
+          }).catch(err => {
+            // solve the problem
+            console.error(err)
           })
+
         }).catch(err => {
           // solve the problem
           console.error(err)
         })
+      }).catch(err => {
+        // solve the problem
+        console.error(err)
+      })
     async: false
     runInUA: true
     critical: true
@@ -338,102 +486,127 @@ scripts:
     timeout: 0
     triggers:
     - event: manual
-      module: Quote
+      module: EmailMessage
       resource: compose:record
-  SolutionInsertSolutionNumber:
+  EmailTemplateLoad:
     source: |-
-      //Get the default settings
-      return Compose.findLastRecord('Settings').then(settings => {
+      const { toJSON, ...values } = $record.values
+      $record = new Record($record.module, { ...$record, values })
 
-        // Map the case number
-        let nextSolutionNumber = settings.values.SolutionNextNumber
-        if (typeof nextSolutionNumber == "undefined" || nextSolutionNumber === '' || isNaN(nextSolutionNumber)) {
-          nextSolutionNumber = 0
+      function procTemplate(tpl, pairs = {}) {
+      return tpl.replace(/{{\s*(.+?)\s*}}/g, (match) => {
+        // remove {{, }} and extra spaces
+        const token = match.substr(2,match.length-4).trim().split('.', 2)
+
+        // return the placeholder if we do not find the value
+        const miss = '{{' + token.join('.') + '}}'
+
+        if (token.length === 1) {
+        // handle simpe key-value pairs
+        return pairs[token] || miss 
+        } else {
+        // handle complex key-key-value (ie: modulename: recordvalues)
+        const [key, field] = token
+        return pairs[key] && pairs[key][field] ? pairs[key][field] : miss
         }
-        $record.values.SolutionNumber = nextSolutionNumber
-        let nextSolutionNumberUpdated = parseInt(nextSolutionNumber,10) + 1
+      })
+      }
 
-        // Update the config
-        settings.values.SolutionNextNumber = nextSolutionNumberUpdated
+      if (!$record.recordID) {
+        ComposeUI.success(`Please save the record before loading the template`)
+        return
+      }
 
-        return Compose.saveRecord(settings).then(mySavedSettings => {
-          console.log('Record saved, new ID', mySavedSettings.recordID)
+      // Check if there is a template
+      let templateId = $record.values.EmailTemplateId
+
+      if (templateId) {
+
+        // Get the template
+        Compose.findRecordByID(templateId, 'EmailTemplate').then(templateRecord => {
+
+          let subject = templateRecord.values.Subject
+          let body = templateRecord.values.Body
+
+          // Find the contact (there will always be a contact)
+          Compose.findRecordByID($record.values.ContactId, 'Contact').then(contactRecord => {
+
+            subject = procTemplate(subject, {"Contact": contactRecord.values})
+            body = procTemplate(body, {"Contact": contactRecord.values})
+            return
+
+          }).then(() => {
+            // Get all the possible placeholders for the case, if there is a case selected
+            if ($record.values.CaseId) {
+              return Compose.findRecordByID($record.values.CaseId, 'Case').then(caseRecord => {
+                
+                subject = procTemplate(subject, {"Case": caseRecord.values})
+                body = procTemplate(body, {"Case": caseRecord.values})
+                
+              }).catch(err => {
+                // solve the problem
+                console.error(err)
+              })
+            }
+            
+          }).then(() => {
+            
+            $record.values.Subject = subject
+            $record.values.HtmlBody = body
+        
+            //Save the record
+            return Compose.saveRecord($record)
+            .then(mySavedRecord => {
+
+              ComposeUI.success(`The template has been loaded in to the email.`)
+              ComposeUI.gotoRecordEditor(mySavedRecord)
+
+            }).catch(err => {
+              // solve the problem
+              ComposeUI.warning(`The template could not be loaded.`)
+              console.error(err)
+            })
+
+          }).catch(err => {
+            // solve the problem
+            console.error(err)
+          })
+
         }).catch(err => {
-        // solve the problem
-        console.error(err)
+          // solve the problem
+          console.error(err)
         })
 
-      }).catch(err => {
-        // solve the problem
-        console.error(err)
-      })
+      }
     async: false
-    runInUA: false
+    runInUA: true
     critical: true
     enabled: true
     timeout: 0
     triggers:
-    - event: beforeCreate
-      module: Solution
+    - event: manual
+      module: EmailMessage
       resource: compose:record
-  AccountCreateNewContract:
+  KnowledgeBaseInsertKBNumber:
     source: |-
       //Get the default settings
       return Compose.findLastRecord('Settings').then(settings => {
-
+        
         // Map the case number
-        let ContractDefaultTime = settings.values.ContractDefaultTime
-
-        // Get the contract number
-        let nextContractNumber = settings.values.ContractNextNumber
-        if (typeof nextContractNumber == "undefined" || nextContractNumber === '' || isNaN(nextContractNumber)) {
-          nextContractNumber = 0
+        let KBNextNumber = settings.values.KBNextNumber
+        if (typeof KBNextNumber == "undefined" || KBNextNumber === '' || isNaN(KBNextNumber)) {
+          KBNextNumber = 0
         }
+        console.log(KBNextNumber)
+        $record.values.Number = KBNextNumber
+        let KBNextNumberUpdated = parseInt(KBNextNumber,10) + 1
+          
+        // Update the config
+        settings.values.KBNextNumber = KBNextNumberUpdated
+        return Compose.saveRecord(settings).then(mySavedSettings => {
+          
+          console.log('Record saved, new ID', mySavedSettings.recordID)
 
-        return Compose.makeRecord({
-          'OwnerId' : $record.values.OwnerId,
-          'AccountId' : $record.recordID,
-          'Status' : 'Draft',
-          'BillingStreet' : $record.values.BillingStreet,
-          'BillingCity' : $record.values.BillingCity,
-          'BillingState' : $record.values.BillingState,
-          'BillingPostalCode' : $record.values.BillingPostalCode,
-          'BillingCountry' : $record.values.BillingCountry,
-          'ShippingStreet' : $record.values.BillingStreet,
-          'ShippingCity' : $record.values.BillingCity,
-          'ShippingState' : $record.values.BillingState,
-          'ShippingPostalCode' : $record.values.BillingPostalCode,
-          'ShippingCountry' : $record.values.BillingCountry,
-          'ContractTerm' : ContractDefaultTime,
-          'ContractNumber' : nextContractNumber
-        }, 'Contract').then(myContract => {
-
-          // return was missing here. Set tjhe mySavedCase below
-          return Compose.saveRecord(myContract)
-
-        }).then(mySavedContract => {
-          let nextContractNumberUpdated = parseInt(nextContractNumber,10) + 1
-
-          // Update the config
-          settings.values.ContractNextNumber = nextContractNumberUpdated
-          return Compose.saveRecord(settings).then(mySavedSettings => {
-
-            console.log('Record saved, new ID', mySavedSettings.recordID)
-
-          }).then(() => {
-
-            // Notify current user
-            ComposeUI.success(`The new contract record has been created.`)
-
-          }).then(() => {
-
-            // Go to the record
-            ComposeUI.gotoRecordEditor(mySavedContract)
-
-          }).catch(err => {
-          // solve the problem
-          console.error(err)
-          })
         }).catch(err => {
         // solve the problem
         console.error(err)
@@ -443,1169 +616,335 @@ scripts:
       console.error(err)
       })
     async: false
-    runInUA: true
+    runInUA: false
     critical: true
     enabled: true
     timeout: 0
     triggers:
-    - event: manual
-      module: Account
+    - enabled: false
+      event: beforeUpdate
+      module: KnowledgeBase
       resource: compose:record
-  CaseSetStatusToWorking:
-    source: |-
-      // Update the status
-      $record.values.Status = 'Working'
-      let caseRecord = $record
-
-      // Save the case
-      return Compose.makeRecord({
-        'CaseId' : caseRecord.recordID,
-        'Description' : 'State set to "Working"',
-        'Type' : 'State change'
-      }, 'CaseUpdate').then(myCaseUpdate => {
-
-        return Compose.saveRecord(myCaseUpdate)
-
-      }).then(myCaseUpdate => {
-
-        return Compose.saveRecord(caseRecord)
-
-      }).catch(err => {
-        // solve the problem
-        console.error(err)
-      })
-    async: false
-    runInUA: true
-    critical: true
-    enabled: true
-    timeout: 0
-    triggers:
-    - event: manual
-      module: Case
+    - event: beforeCreate
+      module: KnowledgeBase
       resource: compose:record
-  CaseSetStatusToClosed:
+  UpdateSendNotificationsAndCalculateTimeAndCost:
     source: |-
-      // Check if the case is already closed
-      if ($record.values.Status === 'Closed') {
-        // Case is closed already. Exit
-        ComposeUI.success(`This case is already closed.`)
-        return true
-      }
+      // Check if the type is NOT an incoming email. If it's not, handle it as an internal update and send notifications
+      if ($record.values.Type !== 'Incoming email') {
 
-      // Check if there is a solution
-      let SolutionName = $record.values.SolutionName
-      let solutionRecord = $record.values.SolutionId
+        //Get the cost related to the department that updated the case
+        return Compose.findRecordByID($record.values.Department, 'Department').then(departmentRecord => {
+          let hourCost = 0
+          if (departmentRecord.values.HourCost) {
+            hourCost = parseFloat(departmentRecord.values.HourCost)
+          }
+          return hourCost
+        }).catch(err => {
+          // solve the problem
+          let hourCost = 0
+          return hourCost
+        })
 
-      // If there is no solution, show that it's not possible to close the case
-      if ((!SolutionName) && (!solutionRecord)) {
-        ComposeUI.warning(`Unable to close the case. Please add a solution name or select an existing solution before closing the case.`)
-        return true
-      }
+          .then((hourCost) => {
+            // Calculate the cost of the update
+            let updateTime = $record.values.TimeSpend
+            let UpdateCost = 0
+            if (updateTime) {
+              UpdateCost = parseFloat(hourCost) * parseFloat(updateTime)
+            }
 
-      // Update the status
-      $record.values.IsClosed = true
-      var m = new Date()
-      var dateString = m.getUTCFullYear() + "/" + (m.getUTCMonth() + 1) + "/" + m.getUTCDate() + " " + m.getUTCHours() + ":" + m.getUTCMinutes() + ":" + m.getUTCSeconds()
-      $record.values.ClosedDate = dateString
-      $record.values.Status = 'Closed'
+            // Add the cost to the update
+            $record.values.Cost = UpdateCost
 
-      return Compose.saveRecord($record)
-        .then(mySavedRecord => {
+            // Set the notifications values to "1" (sent)
+            if ($record.values.SendToMailingList) {
+              $record.values.NotificationCaseMailingList = 1
+            }
+            $record.values.NotificationCaseCreator = 1
 
-          // Create the CaseUpdate record
-          return Compose.makeRecord({
-            'Description': 'State set to "Closed',
-            'Type': 'State change',
-            'CaseId': $record.recordID
-          }, 'CaseUpdate')
+            // Find the related case
+            Compose.findRecordByID($record.values.CaseId, 'Case').then(caseRecord => {
 
-            .then(myCaseUpdate => {
+              // Create the update text to send out via email.
+              // Only when the Update record has a subject or type.
+              if (($record.values.Subject) || ($record.values.Type)) {
+                let html = 'Hi,'
+                html += '<br>'
+                html += '<br>'
+                html += 'The following case has been updated:'
+                html += '<br>'
+                html += '<ul>'
+                html += '<li><strong>Case ID:</strong> ' + caseRecord.values.Number + '</li>'
+                html += '<li><strong>Subject:</strong> ' + caseRecord.values.Subject + '</li>'
+                html += '<li><strong>Type:</strong> ' + caseRecord.values.Category + '</li>'
+                html += '<li><strong>Status:</strong> ' + caseRecord.values.Status + '</li>'
+                html += '<li><strong>Priority:</strong> ' + caseRecord.values.Priority + '</li>'
+                html += '</ul>'
+                html += '<br>'
+                html += 'Update:'
+                html += '<br>'
+                html += '<ul>'
+                html += '<li><strong>Type:</strong> ' + $record.values.Type + '</li>'
+                html += '<li><strong>Subject:</strong> ' + $record.values.Subject + '</li>'
+                html += '<li><strong>Content:</strong> ' + $record.values.Content + '</li>'
+                html += '</ul>'
+                html += '<br>'
+                html += 'Kind regards,'
+                html += '<br>'
+                html += '<br>'
+                html += 'Service Cloud'
+                html += '<br>'
+                html += '<br>'
+                html += '--'
+                html += '<br>'
+                html += 'Ticket Summary:'
+                html += '<hr>'
+                html += caseRecord.values.Description
 
-              return Compose.saveRecord(myCaseUpdate)
+                return Compose.findLastRecord('Settings').then(settings => {
+                  let defaultChannel = settings.values.DefaultSupportChannel
+                  let defaultCaseRecordLink = settings.values.DefaultCaseRecordLink
 
-            }).then(mySavedCaseUpdate => {
+                  // Get default settings to find if there is a channel to inform        
+                  if (defaultChannel && defaultCaseRecordLink) {
+                    return Messaging.sendMessage('Automatic update. "' + caseRecord.values.Number + '" has been updated: ' + $record.values.Subject + ' (type: ' + $record.values.Type + '). Direct link: ' + defaultCaseRecordLink + $record.recordID, defaultChannel)
+                  }
+                }).then(() => {
+                  // Get the contact of the case record to infor via email
+                  if (caseRecord.values.ContactId) {
+                    Compose.findRecordByID(caseRecord.values.ContactId, 'Contact').then(contactRecord => {
 
-              // Check if a solution record has been selected
-              if (solutionRecord) {
+                      // Check if the contact has an email address
+                      if (contactRecord.values.Email) {
 
-                // If there is a solution record, map the values in the case
-                return Compose.findRecordByID(solutionRecord, 'Solution').then(solution => {
-                  $record.values.SolutionName = solution.values.SolutionName
-                  $record.values.SolutionNote = solution.values.SolutionNote
-                  $record.values.SolutionFile = solution.values.File
+                        // Send the update text
+                        return Compose.sendMail(contactRecord.values.Email, '[' + caseRecord.values.Number + '] Update: ' + caseRecord.values.Subject, { html: html })
+                      }
+                    }).catch(err => {
+                      // solve the problem
+                      console.error(err)
+                    })
+                  }
 
-                  return Compose.saveRecord($record)
                 }).catch(err => {
-
                   // solve the problem
                   console.error(err)
                 })
-              } else {
+              }
+            }).catch(err => {
+              // solve the problem
+              console.error(err)
+            })
+          }).catch(err => {
+            // solve the problem
+            console.error(err)
+          })
+      }
+    async: false
+    runInUA: false
+    critical: true
+    enabled: true
+    timeout: 0
+    triggers:
+    - event: beforeUpdate
+      module: Update
+      resource: compose:record
+  UpdateSetCaseTimeAndCost:
+    source: |-
+      // Find the related case
+      Compose.findRecordByID($record.values.CaseId, 'Case').then(caseRecord => {
 
-                // If there is no solution record, check if the value "SubmitAsSolution" is checked. If so, save the solution as a Solution record
-                if ($record.values.SubmitAsSolution) {
+        // Find all updates in the case
+        return Compose.findRecords(`CaseId = ${$record.values.CaseId}`, 'Update')
+          .then(({ set, filter }) => {
 
-                  //Get the default settings
-                  return Compose.findLastRecord('Settings').then(settings => {
+            // Start the time and cost with the values of the current update, because the update 
+            // is not saved until after the complete script has run
+            let caseTime = 0
+            let caseCost = 0
 
-                    // Map the solution number
-                    let nextSolutionNumber = settings.values.SolutionNextNumber
-                    if (typeof nextSolutionNumber == "undefined" || nextSolutionNumber === '' || isNaN(nextSolutionNumber)) {
-                      nextSolutionNumber = 0
-                    }
+            // Loop through the updates of the case, to sum the totals
+            set.forEach(r => {
 
-                    // Create the Solution record
-                    return Compose.makeRecord({
-                      'SolutionName': $record.values.SolutionName,
-                      'SolutionNote': $record.values.SolutionNote,
-                      'File': $record.values.SolutionFile,
-                      'Status': 'New',
-                      'IsPublished': '1',
-                      'CaseId': $record.recordID,
-                      'SolutionNumber': nextSolutionNumber,
-                      'ProductId': $record.values.ProductId
-                    }, 'Solution')
+              // Get the time
+              let caseUpdateTime = r.values.TimeSpend
+              if (typeof caseUpdateTime == "undefined" || caseUpdateTime === '' || isNaN(caseUpdateTime)) {
+                caseUpdateTime = 0
+              }
+              caseTime = parseFloat(caseTime) + parseFloat(caseUpdateTime)
 
-                      .then(mySolution => {
+              // Get the cost
+              let caseUpdateCost = r.values.Cost
+              if (typeof caseUpdateCost == "undefined" || caseUpdateCost === '' || isNaN(caseUpdateCost)) {
+                caseUpdateCost = 0
+              }
+              caseCost = parseFloat(caseCost) + parseFloat(caseUpdateCost)
+            })
 
-                        return Compose.saveRecord(mySolution)
+            // Set the values in the case
+            caseRecord.values.TotalTime = caseTime
+            caseRecord.values.TotalCost = caseCost
 
-                      }).then(mySavedSolution => {
+            // Save the case
+            return Compose.saveRecord(caseRecord).then(mySavedCase => {
+              console.log('Record saved, ID', mySavedCase.recordID)
+            }).then(mySavedCase => {
+              
+              // After saving the case, update the total for the account
+              // Find the related case
+              if (caseRecord.values.AccountId) {
+                Compose.findRecordByID(caseRecord.values.AccountId, 'Account').then(accountRecord => {
 
-                        // Save the solution record in the case record
-                        $record.values.SolutionId = mySavedSolution.recordID
-                        return Compose.saveRecord($record)
-
-                      }).then(mySavedSolution => {
-
-                        let nextSolutionNumberUpdated = parseInt(nextSolutionNumber, 10) + 1
-
-                        // Update the config
-                        settings.values.SolutionNextNumber = nextSolutionNumberUpdated
-                        return Compose.saveRecord(settings).then(mySavedSettings => {
-
-                          console.log('Record saved, ID', mySavedSettings.recordID)
-
-
-                        }).catch(err => {
-                          // solve the problem
-                          console.error(err)
-                        })
+                  // Find all updates in the case
+                  return Compose.findRecords(`AccountId = ${accountRecord.recordID}`, 'Case')
+                    .then(({ set, filter }) => {
+        
+                      // Start the time and cost with the values of the current update, because the update 
+                      // is not saved until after the complete script has run
+                      caseTime = 0
+                      caseCost = 0
+        
+                      // Loop through the updates of the case, to sum the totals
+                      set.forEach(r => {
+        
+                        // Get the time
+                        let caseUpdateTime = r.values.TotalTime
+                        if (typeof caseUpdateTime == "undefined" || caseUpdateTime === '' || isNaN(caseUpdateTime)) {
+                          caseUpdateTime = 0
+                        }
+                        caseTime = parseFloat(caseTime) + parseFloat(caseUpdateTime)
+        
+                        // Get the cost
+                        let caseUpdateCost = r.values.TotalCost
+                        if (typeof caseUpdateCost == "undefined" || caseUpdateCost === '' || isNaN(caseUpdateCost)) {
+                          caseUpdateCost = 0
+                        }
+                        caseCost = parseFloat(caseCost) + parseFloat(caseUpdateCost)
+                      })
+        
+                      // Set the values in the case
+                      accountRecord.values.TotalTime = caseTime
+                      accountRecord.values.TotalCost = caseCost
+        
+                      // Save the case
+                      return Compose.saveRecord(accountRecord).then(mySavedAccount => {
+                        console.log('Record saved, ID', mySavedAccount.recordID)
                       }).catch(err => {
                         // solve the problem
                         console.error(err)
                       })
-                  }).catch(err => {
-                    // solve the problem
-                    console.error(err)
-                  })
-                }
-              }
-            }).catch(err => {
-              // solve the problem
-              console.error(err)
-            })
-        }).catch(err => {
-          // solve the problem
-          console.error(err)
-        })
-    async: false
-    runInUA: true
-    critical: true
-    enabled: true
-    timeout: 0
-    triggers:
-    - event: manual
-      module: Case
-      resource: compose:record
-  AccountCreateNewCase:
-    source: |-
-      //Get the default settings
-      return Compose.findLastRecord('Settings').then(settings => {
-
-        // Map the case number
-        let nextCaseNumber = settings.values.CaseNextNumber
-        if (typeof nextCaseNumber == "undefined" || nextCaseNumber === '' || isNaN(nextCaseNumber)) {
-          nextCaseNumber = 0
-        }
-
-        // Find the contact we want to link the new case to (by default, the primary contact)
-        return Compose.findRecords(`AccountId = ${$record.recordID}`, 'Contact').then(({ set, filter }) => {
-
-          let ContactId, SuppliedName, SuppliedEmail, SuppliedPhone
-
-          // Loop through the contacts of the account, to save the primary contact
-          set.forEach(r => {
-
-            //Check if it's the primary contact
-            let contactIsPrimary = r.values.IsPrimary
-            console.log(contactIsPrimary)
-            if (contactIsPrimary === '1') {
-
-              //Add the contact
-              ContactId = r.recordID
-              SuppliedName = r.values.FirstName + ' ' + r.values.LastName
-              SuppliedEmail = r.values.Email
-              SuppliedPhone = r.values.Phone
-            }
-          })
-
-          return Compose.makeRecord({
-            'OwnerId' : $record.values.OwnerId,
-            'Subject' : '(no subject)',
-            'ContactId' : ContactId,
-            'AccountId' : $record.recordID,
-            'Status' : 'New',
-            'Priority' : 'Low',
-            'SuppliedName' : SuppliedName,
-            'SuppliedEmail' : SuppliedEmail,
-            'SuppliedPhone' : SuppliedPhone,
-            'CaseNumber' : nextCaseNumber
-          }, 'Case')
-            .then(myCase => Compose.saveRecord(myCase))
-            .then(mySavedCase => {
-
-              let nextCaseNumberUpdated = parseInt(nextCaseNumber,10) + 1
-
-              // Update the config
-              settings.values.CaseNextNumber = nextCaseNumberUpdated
-              return Compose.saveRecord(settings).then(mySavedSettings => {
-
-                console.log('Record saved, new ID', mySavedSettings.recordID)
-
-              }).then(() => {
-
-                // Notify current user
-                ComposeUI.success(`The new case has been created.`)
-
-
-              }).then(() => {
-
-                // Go to the record
-                ComposeUI.gotoRecordEditor(mySavedCase)
-
-              }).catch(err => {
-              // solve the problem
-              console.error(err)
-              })
-          }).catch(err => {
-          // solve the problem
-          console.error(err)
-          })
-        }).catch(err => {
-        // solve the problem
-        console.error(err)
-        })
-      }).catch(err => {
-      // solve the problem
-      console.error(err)
-      })
-    async: false
-    runInUA: true
-    critical: true
-    enabled: true
-    timeout: 0
-    triggers:
-    - event: manual
-      module: Account
-      resource: compose:record
-  ContactCreateNewCase:
-    source: |-
-      //Get the default settings
-      return Compose.findLastRecord('Settings').then(settings => {
-
-        // Map the case number
-        let nextCaseNumber = settings.values.CaseNextNumber
-        if (typeof nextCaseNumber == "undefined" || nextCaseNumber === '' || isNaN(nextCaseNumber)) {
-          nextCaseNumber = 0
-        }
-
-        return Compose.makeRecord({
-          'OwnerId' : $record.values.OwnerId,
-          'Subject' : '(no subject)',
-          'ContactId' : $record.recordID,
-          'AccountId' : $record.values.AccountId,
-          'Status' : 'New',
-          'Priority' : 'Low',
-          'SuppliedName' : $record.values.FirstName + ' ' + $record.values.LastName,
-          'SuppliedEmail' : $record.values.Email,
-          'SuppliedPhone' : $record.values.Phone,
-          'CaseNumber' : nextCaseNumber
-        }, 'Case').then(myCase => {
-
-          // return was missing here. Set tjhe mySavedCase below
-          return Compose.saveRecord(myCase)
-
-        }).then(mySavedCase => {
-          let nextCaseNumberUpdated = parseInt(nextCaseNumber, 10) + 1
-
-          // Update the config
-          settings.values.CaseNextNumber = nextCaseNumberUpdated
-          return Compose.saveRecord(settings).then(mySavedSettings => {
-
-            console.log('Record saved, new ID', mySavedSettings.recordID)
-            // then(({ mySavedCase }) wasn't needed, since it is already defined
-            // for the entire block, starting at line 27
-          }).then(() => {
-
-            // Notify current user
-            ComposeUI.success(`The new case has been created.`)
-
-          }).then(() => {
-
-            // Go to the record
-            ComposeUI.gotoRecordEditor(mySavedCase)
-
-          }).catch(err => {
-          // solve the problem
-          console.error(err)
-          })
-        }).catch(err => {
-        // solve the problem
-        console.error(err)
-        })
-      }).catch(err => {
-      // solve the problem
-      console.error(err)
-      })
-    async: false
-    runInUA: true
-    critical: true
-    enabled: true
-    timeout: 0
-    triggers:
-    - event: manual
-      module: Contact
-      resource: compose:record
-  LeadConvertLeadIntoAccount:
-    source: |-
-      if ($record.values.Status === 'Converted') {
-        // Lead already converted. Inform user and exit
-        ComposeUI.warning('This lead is already converted.')
-        return true
-      }
-
-      // create new record of type/module Account and copy all values
-      return Compose.makeRecord({
-        'BillingStreet' : $record.values.Street,
-        'BillingCity' : $record.values.City,
-        'BillingState' : $record.values.State,
-        'BillingPostalCode' : $record.values.PostalCode,
-        'BillingCountry' : $record.values.Country,
-        'AnnualRevenue' : $record.values.AnnualRevenue,
-        'AccountName' : $record.values.Company,
-        'Description' : $record.values.Description,
-        'Fax' : $record.values.Fax,
-        'Industry' : $record.values.Industry,
-        'OwnerId' : $record.values.OwnerId,
-        'AccountSource' : $record.values.LeadSource,
-        'Phone' : $record.values.Phone,
-        'NumberOfEmployees' : $record.values.NumberOfEmployees,
-        'Rating' : $record.values.Rating,
-        'Website' : $record.values.Website,
-        'Twitter' : $record.values.Twitter,
-        'Facebook' : $record.values.Facebook,
-        'LinkedIn' : $record.values.LinkedIn
-      }, 'Account').then(myAccount => {
-
-        return Compose.saveRecord(myAccount)
-
-      }).then(mySavedAccount => {
-
-        // Create the related contact
-        return Compose.makeRecord({
-          'MailingStreet' : $record.values.Street,
-          'MailingCity' : $record.values.City,
-          'MailingState' : $record.values.State,
-          'MailingPostalCode' : $record.values.PostalCode,
-          'MailingCountry' : $record.values.Country,
-          'Description' : $record.values.Description,
-          'DoNotCall' : $record.values.DoNotCall,
-          'Email' : $record.values.Email,
-          'HasOptedOutOfEmail' : $record.values.HasOptedOutOfEmail,
-          'Fax' : $record.values.Fax,
-          'HasOptedOutOfFax' : $record.values.HasOptedOutOfFax,
-          'OwnerId' : $record.values.OwnerId,
-          'LeadSource' : $record.values.LeadSource,
-          'Website' : $record.values.Website,
-          'Twitter' : $record.values.Twitter,
-          'Facebook' : $record.values.Facebook,
-          'LinkedIn' : $record.values.LinkedIn,
-          'Salutation' : $record.values.Salutation,
-          'FirstName' : $record.values.FirstName,
-          'LastName' : $record.values.LastName,
-          'MobilePhone' : $record.values.MobilePhone,
-          'Phone' : $record.values.Phone,
-          'Title' : $record.values.Title,
-          'IsPrimary' : '1',
-          'AccountId' : mySavedAccount.recordID
-        }, 'Contact').then(myContact => {
-
-          return Compose.saveRecord(myContact)
-
-        }).then(updatedAccount => {
-
-          //Update the lead record
-          $record.values.Status = 'Converted'
-          $record.values.IsConverted = 'Yes'
-          $record.values.ConvertedAccountId = mySavedAccount.recordID
-          $record.values.ConvertedContactId = mySavedAccount.recordID
-          $record.values.ConvertedDate = mySavedAccount.createdAt
-
-          return Compose.saveRecord($record)
-
-        }).then(leadUser => {
-
-          return System.findUserByID($record.values.OwnerId).then(user => {
-
-            // Notifies the owner that a new account was created and assigned to him
-            Compose.sendRecordToMail(
-              user.email,
-              'Lead ' + $record.values.FirstName + ' ' + $record.values.LastName + ' from ' + $record.values.Company + ' has been converted',
-              {
-                header: '<h1>The following lead has been converted:</h1>'
-              },
-              mySavedAccount
-            )
-          }).catch(err => {
-          // solve the problem
-          console.error(err)
-          })
-
-        }).then(({ mySavedAccount }) => {
-
-          // Notify current user
-          ComposeUI.success(`The lead has been converted.`)
-
-
-        }).then(({ mySavedAccount }) => {
-
-          // Go to the record
-          ComposeUI.gotoRecordEditor(mySavedAccount)
-
-        }).catch(err => {
-        // solve the problem
-        console.error(err)
-        })
-      }).catch(err => {
-      // solve the problem
-      console.error(err)
-      })
-    async: false
-    runInUA: true
-    critical: true
-    enabled: true
-    timeout: 0
-    triggers:
-    - event: manual
-      module: Lead
-      resource: compose:record
-  LeadConvertLeadToAccountAndOpportunity:
-    source: |-
-      if ($record.values.Status === 'Converted') {
-        // Lead already converted. Inform user and exit
-        ComposeUI.warning('This lead is already converted.')
-        return true
-      }
-
-      // create new record of type/module Account and copy all values
-      return Compose.makeRecord({
-        'BillingStreet' : $record.values.Street,
-        'BillingCity' : $record.values.City,
-        'BillingState' : $record.values.State,
-        'BillingPostalCode' : $record.values.PostalCode,
-        'BillingCountry' : $record.values.Country,
-        'AnnualRevenue' : $record.values.AnnualRevenue,
-        'AccountName' : $record.values.Company,
-        'Description' : $record.values.Description,
-        'Fax' : $record.values.Fax,
-        'Industry' : $record.values.Industry,
-        'OwnerId' : $record.values.OwnerId,
-        'AccountSource' : $record.values.LeadSource,
-        'Phone' : $record.values.Phone,
-        'NumberOfEmployees' : $record.values.NumberOfEmployees,
-        'Rating' : $record.values.Rating,
-        'Website' : $record.values.Website,
-        'Twitter' : $record.values.Twitter,
-        'Facebook' : $record.values.Facebook,
-        'LinkedIn' : $record.values.LinkedIn
-      }, 'Account').then(myAccount => {
-
-        return Compose.saveRecord(myAccount)
-
-      }).then(mySavedAccount => {
-
-        // Create the related contact
-        return Compose.makeRecord({
-          'MailingStreet' : $record.values.Street,
-          'MailingCity' : $record.values.City,
-          'MailingState' : $record.values.State,
-          'MailingPostalCode' : $record.values.PostalCode,
-          'MailingCountry' : $record.values.Country,
-          'Description' : $record.values.Description,
-          'DoNotCall' : $record.values.DoNotCall,
-          'Email' : $record.values.Email,
-          'HasOptedOutOfEmail' : $record.values.HasOptedOutOfEmail,
-          'Fax' : $record.values.Fax,
-          'HasOptedOutOfFax' : $record.values.HasOptedOutOfFax,
-          'OwnerId' : $record.values.OwnerId,
-          'LeadSource' : $record.values.LeadSource,
-          'Website' : $record.values.Website,
-          'Twitter' : $record.values.Twitter,
-          'Facebook' : $record.values.Facebook,
-          'LinkedIn' : $record.values.LinkedIn,
-          'Salutation' : $record.values.Salutation,
-          'FirstName' : $record.values.FirstName,
-          'LastName' : $record.values.LastName,
-          'MobilePhone' : $record.values.MobilePhone,
-          'Phone' : $record.values.Phone,
-          'Title' : $record.values.Title,
-          'IsPrimary' : '1',
-          'AccountId' : mySavedAccount.recordID
-        }, 'Contact').then(mySavedContact => {
-
-          return Compose.saveRecord(mySavedContact).then(mySavedContact => {
-
-            // First get the default values
-            //Get the default settings
-            return Compose.findLastRecord('Settings').then(settings => {
-
-              let opportunityCloseDays = settings.values.OpportunityCloseDateDays
-              let opportunityProbability = settings.values.OpportunityProbability
-              let opportunityForecaseCategory = settings.values.OpportunityForecaseCategory
-              let opportunityStagename = settings.values.OpportunityStagename
-
-              //Calculate the expiration date
-              let m = new Date()
-              m.setDate(m.getDate() + parseInt(opportunityCloseDays,10))
-              let closeDate = m.getUTCFullYear() +"/"+ (m.getUTCMonth()+1) +"/"+ m.getUTCDate() + " " + m.getUTCHours() + ":" + m.getUTCMinutes() + ":" + m.getUTCSeconds()
-
-              // Create the related opportunity
-              return Compose.makeRecord({
-                'Description' : $record.values.Description,
-                'OwnerId' : $record.values.OwnerId,
-                'LeadSource' : $record.values.LeadSource,
-                'Name' : '(unnamed)',
-                'AccountId' : mySavedAccount.recordID,
-                'IsClosed' : 'No',
-                'IsWon' : 'No',
-                'CloseDate' : closeDate,
-                'Probability' : opportunityProbability,
-                'ForecastCategory' : opportunityForecaseCategory,
-                'StageName' : opportunityStagename
-              }, 'Opportunity').then(myOpportunity => {
-                return Compose.saveRecord(myOpportunity)
-
-              }).then(mySavedOpportunity => {
-
-                //Create a new contact linked to the opportunity
-                return Compose.makeRecord({
-                  'ContactId' : mySavedContact.recordID,
-                  'OpportunityId' : mySavedOpportunity.recordID,
-                  'IsPrimary' : '1'
-                }, 'OpportunityContactRole').then(myOpportunityContactRole => {
-                  return Compose.saveRecord(myOpportunityContactRole)
-
+        
+                    }).catch(err => {
+                      // solve the problem
+                      console.error(err)
+                    })
                 }).catch(err => {
-                // solve the problem
-                console.error(err)
+                  // solve the problem
+                  console.error(err)
                 })
-
-              }).catch(err => {
-              // solve the problem
-              console.error(err)
-              })
-
-            }).catch(err => {
-            // solve the problem
-            console.error(err)
-            })
-
-          }).catch(err => {
-          // solve the problem
-          console.error(err)
-          })
-
-
-        }).then(updatedAccount => {
-
-          //Update the lead record
-          $record.values.Status = 'Converted'
-          $record.values.IsConverted = 'Yes'
-          $record.values.ConvertedAccountId = mySavedAccount.recordID
-          $record.values.ConvertedContactId = mySavedAccount.recordID
-          $record.values.ConvertedDate = mySavedAccount.createdAt
-
-          return Compose.saveRecord($record)
-
-        }).then(leadUser => {
-
-          return System.findUserByID($record.values.OwnerId).then(user => {
-
-            // Notifies the owner that a new account was created and assigned to him
-            Compose.sendRecordToMail(
-              user.email,
-              'Lead ' + $record.values.FirstName + ' ' + $record.values.LastName + ' from ' + $record.values.Company + ' has been converted',
-              {
-                header: '<h1>The following lead has been converted:</h1>'
-              },
-              mySavedAccount
-            )
-          }).catch(err => {
-          // solve the problem
-          console.error(err)
-          })
-
-        }).then(({ mySavedAccount }) => {
-
-          // Notify current user
-          ComposeUI.success(`The lead has been converted.`)
-
-
-        }).then(({ mySavedAccount }) => {
-
-          // Go to the record
-          ComposeUI.gotoRecordEditor(mySavedAccount)
-
-        }).catch(err => {
-        // solve the problem
-        console.error(err)
-        })
-
-      }).catch(err => {
-      // solve the problem
-      console.error(err)
-      })
-
-    async: false
-    runInUA: true
-    critical: true
-    enabled: true
-    timeout: 0
-    triggers:
-    - event: manual
-      module: Lead
-      resource: compose:record
-  QuoteSendQuoteToCustomEmail:
-    source: |-
-      // Get the to address
-      let to = prompt("Please enter an email to send this quote to:")
-      if (to === null || to === "") {
-        ComposeUI.warning(`Please enter an email to send this quote to .`)
-        return
-      }
-
-      let lineitems = ''
-      Compose.findRecords(`QuoteId = ${$record.recordID}`, 'QuoteLineItem')
-
-        .then(({ set, filter }) => {
-
-          set.forEach(lineitem => {
-
-            lineitems = lineitems + "Price:</strong> " + lineitem.values.UnitPrice + "<br>"
-            lineitems = lineitems + "Quantity:</strong> " + lineitem.values.Quantity + "<br>"
-            lineitems = lineitems + "Subtotal:</strong> " + lineitem.values.Subtotal + "<br>"
-            lineitems = lineitems + "Discount:</strong> " + lineitem.values.Discount + "<br>"
-            lineitems = lineitems + "Total Price:</strong> " + lineitem.values.TotalPrice + "<br>"
-            lineitems = lineitems + "-------------------------<br>"
-          })
-          return lineitems
-        }).then(lineitems => {
-
-
-          // Get email body
-          let html = "<h1>Details of Quote: " + $record.values.QuoteNumber + " - " + $record.values.Name + "</h1>"
-          html = html + "<br>"
-          html = html + "<table border='1' cellpadding='1' cellspacing='1' style='min-width:100%;'>"
-          html = html + "<tr>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Quote Information</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Quote Number:</strong> " + $record.values.QuoteNumber + "<br>"
-          html = html + "<strong>Quote Name:</strong> " + $record.values.Name + "<br>"
-          html = html + "<strong>Expiration Date:</strong> " + $record.values.ExpirationDate + "<strong><br>"
-          html = html + "<strong>Description:</strong> " + $record.values.Description
-          html = html + "</td>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Primary contact data</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Contact Name:</strong> " + $record.values.ContactId + "<br>"
-          html = html + "<strong>Email:</strong> " + $record.values.Email + "<br>"
-          html = html + "<strong>Phone:</strong> " + $record.values.Phone
-          html = html + "</td>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Totals</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Subtotal:</strong> " + $record.values.Subtotal + "<br>"
-          html = html + "<strong>Additional Discount:</strong> " + $record.values.Discount + "<br>"
-          html = html + "<strong>Shipping and Handling:</strong> " + $record.values.ShippingHandling + "<br>"
-          html = html + "<strong>Total Price:</strong> " + $record.values.TotalPrice + "<br>"
-          html = html + "<strong>Tax:</strong> " + $record.values.Tax + "<br>"
-          html = html + "<strong>Grand Total:</strong> " + $record.values.GrandTotal
-          html = html + "</td>"
-          html = html + "</tr>"
-          html = html + "<tr>"
-          html = html + "<td colspan='3'>"
-          html = html + "<strong>Products</strong><br>"
-          html = html + "<br>"
-          html = html + lineitems
-          html = html + "</td>"
-          html = html + "</tr>"
-          html = html + "<tr>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Bill To</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Bill to Name:</strong> " + $record.values.BillingName + "<br>"
-          html = html + "<strong>Bill to Street:</strong> " + $record.values.BillingStreet + "<br>"
-          html = html + "<strong>Bill to City:</strong> " + $record.values.BillingCity + "<br>"
-          html = html + "<strong>Bill to State:</strong> " + $record.values.BillingState + "<strong><br>"
-          html = html + "<strong>Bill to Postal Code:</strong> " + $record.values.BillingPostalCode + "<br>"
-          html = html + "<strong>Bill to Country:</strong> " + $record.values.BillingCountry
-          html = html + "</td>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Quote To</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Quote to Name:</strong> " + $record.values.QuoteToName + "<br>"
-          html = html + "<strong>Quote to Street:</strong> " + $record.values.QuoteToStreet + "<br>"
-          html = html + "<strong>Quote to City:</strong> " + $record.values.QuoteToCity + "<br>"
-          html = html + "<strong>Quote to State:</strong> " + $record.values.QuoteToState + "<strong><br>"
-          html = html + "<strong>Quote to Postal Code:</strong> " + $record.values.QuoteToPostalCode + "<br>"
-          html = html + "<strong>Quote to Country:</strong> " + $record.values.QuoteToCountry
-          html = html + "</td>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Ship To</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Ship to Name:</strong> " + $record.values.ShippingName + "<br>"
-          html = html + "<strong>Ship to Street:</strong> " + $record.values.ShippingStreet + "<br>"
-          html = html + "<strong>Ship to City:</strong> " + $record.values.ShippingCity + "<br>"
-          html = html + "<strong>Ship to State:</strong> " + $record.values.ShippingState + "<strong><br>"
-          html = html + "<strong>Ship to Postal Code:</strong> " + $record.values.ShippingPostalCode + "<br>"
-          html = html + "<strong>Ship to Country:</strong> " + $record.values.ShippingCountry
-          html = html + "</td>"
-          html = html + "</tr>"
-          html = html + "</table>"
-
-          // Send the email
-          return Compose.sendMail(to, `Corteza - Quote: ${$record.values.QuoteNumber} - ${$record.values.Name}`, { html: html }).then(() => {
-            ComposeUI.success(`The quote has been sent via email.`)
-          }).catch(err => {
-            // solve the problem
-            console.error(err)
-          })
-        }).catch(err => {
-          // solve the problem
-          console.error(err)
-        })
-    async: false
-    runInUA: true
-    critical: true
-    enabled: true
-    timeout: 0
-    triggers:
-    - event: manual
-      module: Quote
-      resource: compose:record
-  QuoteSendQuoteToPrimaryContact:
-    source: |-
-      // Get the to address
-      let to = $record.values.Email
-      if (!to) {
-        ComposeUI.warning(`There is no email linked to the quote. Please fill in an email address in the "Primary contact data" block.`)
-        return
-      }
-
-      let lineitems = ''
-      Compose.findRecords(`QuoteId = ${$record.recordID}`, 'QuoteLineItem')
-
-        .then(({ set, filter }) => {
-
-          set.forEach(lineitem => {
-
-            lineitems = lineitems + "Price:</strong> " + lineitem.values.UnitPrice + "<br>"
-            lineitems = lineitems + "Quantity:</strong> " + lineitem.values.Quantity + "<br>"
-            lineitems = lineitems + "Subtotal:</strong> " + lineitem.values.Subtotal + "<br>"
-            lineitems = lineitems + "Discount:</strong> " + lineitem.values.Discount + "<br>"
-            lineitems = lineitems + "Total Price:</strong> " + lineitem.values.TotalPrice + "<br>"
-            lineitems = lineitems + "-------------------------<br>"
-          })
-          return lineitems
-        }).then(lineitems => {
-
-
-          // Get email body
-          let html = "<h1>Details of Quote: " + $record.values.QuoteNumber + " - " + $record.values.Name + "</h1>"
-          html = html + "<br>"
-          html = html + "<table border='1' cellpadding='1' cellspacing='1' style='min-width:100%;'>"
-          html = html + "<tr>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Quote Information</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Quote Number:</strong> " + $record.values.QuoteNumber + "<br>"
-          html = html + "<strong>Quote Name:</strong> " + $record.values.Name + "<br>"
-          html = html + "<strong>Expiration Date:</strong> " + $record.values.ExpirationDate + "<strong><br>"
-          html = html + "<strong>Description:</strong> " + $record.values.Description
-          html = html + "</td>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Primary contact data</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Contact Name:</strong> " + $record.values.ContactId + "<br>"
-          html = html + "<strong>Email:</strong> " + $record.values.Email + "<br>"
-          html = html + "<strong>Phone:</strong> " + $record.values.Phone
-          html = html + "</td>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Totals</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Subtotal:</strong> " + $record.values.Subtotal + "<br>"
-          html = html + "<strong>Additional Discount:</strong> " + $record.values.Discount + "<br>"
-          html = html + "<strong>Shipping and Handling:</strong> " + $record.values.ShippingHandling + "<br>"
-          html = html + "<strong>Total Price:</strong> " + $record.values.TotalPrice + "<br>"
-          html = html + "<strong>Tax:</strong> " + $record.values.Tax + "<br>"
-          html = html + "<strong>Grand Total:</strong> " + $record.values.GrandTotal
-          html = html + "</td>"
-          html = html + "</tr>"
-          html = html + "<tr>"
-          html = html + "<td colspan='3'>"
-          html = html + "<strong>Products</strong><br>"
-          html = html + "<br>"
-          html = html + lineitems
-          html = html + "</td>"
-          html = html + "</tr>"
-          html = html + "<tr>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Bill To</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Bill to Name:</strong> " + $record.values.BillingName + "<br>"
-          html = html + "<strong>Bill to Street:</strong> " + $record.values.BillingStreet + "<br>"
-          html = html + "<strong>Bill to City:</strong> " + $record.values.BillingCity + "<br>"
-          html = html + "<strong>Bill to State:</strong> " + $record.values.BillingState + "<strong><br>"
-          html = html + "<strong>Bill to Postal Code:</strong> " + $record.values.BillingPostalCode + "<br>"
-          html = html + "<strong>Bill to Country:</strong> " + $record.values.BillingCountry
-          html = html + "</td>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Quote To</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Quote to Name:</strong> " + $record.values.QuoteToName + "<br>"
-          html = html + "<strong>Quote to Street:</strong> " + $record.values.QuoteToStreet + "<br>"
-          html = html + "<strong>Quote to City:</strong> " + $record.values.QuoteToCity + "<br>"
-          html = html + "<strong>Quote to State:</strong> " + $record.values.QuoteToState + "<strong><br>"
-          html = html + "<strong>Quote to Postal Code:</strong> " + $record.values.QuoteToPostalCode + "<br>"
-          html = html + "<strong>Quote to Country:</strong> " + $record.values.QuoteToCountry
-          html = html + "</td>"
-          html = html + "<td valign=top>"
-          html = html + "<strong>Ship To</strong><br>"
-          html = html + "<br>"
-          html = html + "<strong>Ship to Name:</strong> " + $record.values.ShippingName + "<br>"
-          html = html + "<strong>Ship to Street:</strong> " + $record.values.ShippingStreet + "<br>"
-          html = html + "<strong>Ship to City:</strong> " + $record.values.ShippingCity + "<br>"
-          html = html + "<strong>Ship to State:</strong> " + $record.values.ShippingState + "<strong><br>"
-          html = html + "<strong>Ship to Postal Code:</strong> " + $record.values.ShippingPostalCode + "<br>"
-          html = html + "<strong>Ship to Country:</strong> " + $record.values.ShippingCountry
-          html = html + "</td>"
-          html = html + "</tr>"
-          html = html + "</table>"
-
-          // Send the email
-          return Compose.sendMail(to, `Corteza - Quote: ${$record.values.QuoteNumber} - ${$record.values.Name}`, { html: html }).then(() => {
-            ComposeUI.success(`The quote has been sent via email.`)
-          }).catch(err => {
-            // solve the problem
-            console.error(err)
-          })
-        }).catch(err => {
-          // solve the problem
-          console.error(err)
-        })
-    async: false
-    runInUA: true
-    critical: true
-    enabled: true
-    timeout: 0
-    triggers:
-    - event: manual
-      module: Quote
-      resource: compose:record
-  QuoteSubmitQuoteForApproval:
-    source: |-
-      // Check if it can be reviewed
-      if ($record.values.Status !== 'Draft' && $record.values.Status !== 'Needs Review') {
-        crust.notify.ui.alert.warning('A quote needs to have the status Draft or Needs Review in order to be sent for approval')
-        return true
-      }
-
-      // Set the status
-      $record.values.Status = 'In Review'
-
-      // Saves the quote and inform
-      return Compose.saveRecord($record)
-        .then(mySavedRecord => {
-
-          // Get the email of the owner
-          return System.findUserByID($record.createdBy).then(user => {
-
-            // Send the mail
-            return Compose.sendMail(
-              user.email, //Change this to the email address of the person that needs to approve the quotes
-              `Quote "${$record.values.Name}" needs approval`,
-              { html: `The following quote needs approval: <br><br><a href="https://latest.cortezaproject.org/compose/ns/crm/pages/69625756459728913/record/${$record.recordID}/edit">${$record.values.Name}<a>` }
-            )
-          }).then(() => {
-
-            // Notify current user
-            ComposeUI.success(`The quote has been sent for approval.`)
-
-          })
-        }).catch(err => {
-          // solve the problem
-          console.error(err)
-        })
-    async: false
-    runInUA: true
-    critical: true
-    enabled: true
-    timeout: 0
-    triggers:
-    - event: manual
-      module: Quote
-      resource: compose:record
-  OpportunityGenerateNewQuote:
-    source: |-
-      // Check if there is a related account, to map the fields of the account
-      if (!$record.values.AccountId) {
-
-        // Exit when there is no account related to the opportunity.
-        ComposeUI.warning('Please link the opportunity to an account before generating a quote')
-        return
-      }
-
-      let quoteContactId
-      let quoteEmail
-      let quotePhone
-      let quoteFax
-      let quoteAccountId
-      let quoteBillingStreet
-      let quoteBillingCity
-      let quoteBillingState
-      let quoteBillingPostalCode
-      let quoteBillingCountry
-      let quoteBillingName
-      let quoteToStreet
-      let quoteToCity
-      let quoteToState
-      let quoteToPostalCode
-      let quoteToCountry
-      let quoteToName
-      let quoteShippingStreet
-      let quoteShippingCity
-      let quoteShippingState
-      let quoteShippingPostalCode
-      let quoteShippingCountry
-      let quoteShippingName
-      let quoteExpirationDate
-      let quoteNumber
-
-      // Get the primary contact for the quote
-      return Compose.findRecords(`OpportunityId = ${$record.recordID}`, 'OpportunityContactRole')
-
-        .then(({ set, filter }) => {
-
-          let primary_contact
-
-          if (set.length === 1) {
-
-            // Get the contact
-            primary_contact = set[0]
-
-          } else {
-
-            // Loop through the contacts of the account, to save the primary contact
-            set.forEach(r => {
-
-              // Check if it's the primary contact
-              let contactIsPrimary = r.values.IsPrimary
-              if (contactIsPrimary === '1') {
-
-                // Add the contact
-                primary_contact = r
               }
-            })
-          }
-          return primary_contact
 
-        }).then(primary_contact => {
+            // Add the totals for the related product
+            }).then(mySavedCase => {
+              
+              // After saving the case, update the total for the account
+              // Find the related case
+              if (caseRecord.values.ProductId) {
+                Compose.findRecordByID(caseRecord.values.ProductId, 'Product').then(productRecord => {
 
-          // If we have the primary contact, continue to add it to the quote. Else, skip this block
-          if (primary_contact) {
-
-            // Get the contact data
-            return Compose.findRecordByID(primary_contact.values.ContactId, 'Contact').then(contact => {
-
-              quoteContactId = contact.recordID
-              quoteEmail = contact.values.Email
-              quotePhone = contact.values.Phone
-              quoteFax = contact.values.Fax
-
-            }).catch(err => {
-              // solve the problem
-              console.error(err)
-            })
-          }
-
-        }).then(mySavedQuote => {
-
-          // Get the related account
-          return Compose.findRecordByID($record.values.AccountId, 'Account').then(account => {
-
-            quoteAccountId = account.recordID,
-              quoteBillingStreet = account.values.BillingStreet,
-              quoteBillingCity = account.values.BillingCity,
-              quoteBillingState = account.values.BillingState,
-              quoteBillingPostalCode = account.values.BillingPostalCode,
-              quoteBillingCountry = account.values.BillingCountry,
-              quoteBillingName = account.values.AccountName,
-              quoteToStreet = account.values.BillingStreet,
-              quoteToCity = account.values.BillingCity,
-              quoteToState = account.values.BillingState,
-              quoteToPostalCode = account.values.BillingPostalCode,
-              quoteToCountry = account.values.BillingCountry,
-              quoteToName = account.values.AccountName,
-              quoteShippingStreet = account.values.BillingStreet,
-              quoteShippingCity = account.values.BillingCity,
-              quoteShippingState = account.values.BillingState,
-              quoteShippingPostalCode = account.values.BillingPostalCode,
-              quoteShippingCountry = account.values.BillingCountry,
-              quoteShippingName = account.values.AccountName
-
-          }).catch(err => {
-            // solve the problem
-            console.error(err)
-          })
-
-        }).then(mySavedQuote => {
-
-          // Get the default settings
-          return Compose.findLastRecord('Settings').then(settings => {
-
-            // Get the expiration date
-            let quoteExpirationDays = settings.values.QuoteExpirationDays
-
-            // Calculate the expiration date
-            let m = new Date()
-            m.setDate(m.getDate() + parseInt(quoteExpirationDays, 10))
-            let expirationDate = m.getUTCFullYear() + "/" + (m.getUTCMonth() + 1) + "/" + m.getUTCDate() + " " + m.getUTCHours() + ":" + m.getUTCMinutes() + ":" + m.getUTCSeconds()
-
-            // Save the date
-            quoteExpirationDate = expirationDate
-
-            // Map the quote number
-            let nextQuoteNumber = settings.values.QuoteNextNumber
-            if (typeof nextQuoteNumber == "undefined" || nextQuoteNumber === '' || isNaN(nextQuoteNumber)) {
-              nextQuoteNumber = 0
-            }
-            quoteNumber = nextQuoteNumber
-            let nextQuoteNumberUpdated = parseInt(nextQuoteNumber, 10) + 1
-
-            // Update the config
-            settings.values.QuoteNextNumber = nextQuoteNumberUpdated
-            return Compose.saveRecord(settings).then(mySavedSettings => {
-
-              console.log('Record saved, ID', mySavedSettings.recordID)
-
-            }).catch(err => {
-              // solve the problem
-              console.error(err)
-            })
-
-          }).then(mySavedQuote => {
-
-            // Create a new quote record for the opportunity
-            return Compose.makeRecord({
-              'ShippingHandling': 0,
-              'Status': 'Draft',
-              'Discount': 0,
-              'Tax': 0,
-              'OpportunityId': $record.recordID,
-              'GrandTotal': $record.values.Amount,
-              'PricebookId': $record.values.PricebookId,
-              'Name': $record.values.Name,
-              'Subtotal': $record.values.Amount,
-              'TotalPrice': $record.values.Amount,
-              'ContactId': quoteContactId,
-              'Email': quoteEmail,
-              'Phone': quotePhone,
-              'Fax': quoteFax,
-              'AccountId': quoteAccountId,
-              'BillingStreet': quoteBillingStreet,
-              'BillingCity': quoteBillingCity,
-              'BillingState': quoteBillingState,
-              'BillingPostalCode': quoteBillingPostalCode,
-              'BillingCountry': quoteBillingCountry,
-              'BillingName': quoteBillingName,
-              'QuoteToStreet': quoteToStreet,
-              'QuoteToCity': quoteToCity,
-              'QuoteToState': quoteToState,
-              'QuoteToPostalCode': quoteToPostalCode,
-              'QuoteToCountry': quoteToCountry,
-              'QuoteToName': quoteToName,
-              'ShippingStreet': quoteShippingStreet,
-              'ShippingCity': quoteShippingCity,
-              'ShippingState': quoteShippingState,
-              'ShippingPostalCode': quoteShippingPostalCode,
-              'ShippingCountry': quoteShippingCountry,
-              'ShippingName': quoteShippingName,
-              'ExpirationDate': quoteExpirationDate,
-              'QuoteNumber': quoteNumber
-            }, 'Quote')
-
-              .then(myQuote => {
-
-                return Compose.saveRecord(myQuote)
-
-                  .then(mySavedQuote => {
-
-                    // Get the list of products from the opportunity to the quote
-                    return Compose.findRecords(`OpportunityId = ${$record.recordID}`, 'OpportunityLineItem')
-
-                      .then(({ set, filter }) => {
-
-                        // Loop through the lineitems related to the opportunity
-                        set.forEach(r => {
-
-                          // Create a new contact linked to the opportunity
-                          return Compose.makeRecord({
-                            'Discount': r.values.Discount,
-                            'Description': r.values.Description,
-                            'ListPrice': r.values.ListPrice,
-                            'PricebookEntryId': r.values.PricebookEntryId,
-                            'ProductId': r.values.ProductId,
-                            'ProductCode': r.values.ProductCode,
-                            'Quantity': r.values.Quantity,
-                            'UnitPrice': r.values.UnitPrice,
-                            'Subtotal': r.values.Subtotal,
-                            'TotalPrice': r.values.TotalPrice,
-                            'QuoteId': mySavedQuote.recordID
-                          }, 'QuoteLineItem')
-
-                            .then(myQuoteLineItem => {
-
-                              return Compose.saveRecord(myQuoteLineItem)
-
-                            }).catch(err => {
-                              // solve the problem
-                              console.error(err)
-                            })
-                        })
+                  // Find all updates in the case
+                  return Compose.findRecords(`ProductId = ${productRecord.recordID}`, 'Case')
+                    .then(({ set, filter }) => {
+        
+                      // Start the time and cost with the values of the current update, because the update 
+                      // is not saved until after the complete script has run
+                      caseTime = 0
+                      caseCost = 0
+        
+                      // Loop through the updates of the case, to sum the totals
+                      set.forEach(r => {
+        
+                        // Get the time
+                        let caseUpdateTime = r.values.TotalTime
+                        if (typeof caseUpdateTime == "undefined" || caseUpdateTime === '' || isNaN(caseUpdateTime)) {
+                          caseUpdateTime = 0
+                        }
+                        caseTime = parseFloat(caseTime) + parseFloat(caseUpdateTime)
+        
+                        // Get the cost
+                        let caseUpdateCost = r.values.TotalCost
+                        if (typeof caseUpdateCost == "undefined" || caseUpdateCost === '' || isNaN(caseUpdateCost)) {
+                          caseUpdateCost = 0
+                        }
+                        caseCost = parseFloat(caseCost) + parseFloat(caseUpdateCost)
                       })
+        
+                      // Set the values in the case
+                      productRecord.values.TotalTime = caseTime
+                      productRecord.values.TotalCost = caseCost
+        
+                      // Save the case
+                      return Compose.saveRecord(productRecord).then(mySavedProduct => {
+                        console.log('Record saved, ID', mySavedProduct.recordID)
+                      }).catch(err => {
+                        // solve the problem
+                        console.error(err)
+                      })
+        
+                    }).catch(err => {
+                      // solve the problem
+                      console.error(err)
+                    })
+                }).catch(err => {
+                  // solve the problem
+                  console.error(err)
+                })
+              }
 
-                  }).then(() => {
+          // Add the totals for the department
+          }).then(mySavedCase => {
+              
+            // If there is an department, update the total for that department
+            if ($record.values.Department) {
+              Compose.findRecordByID($record.values.Department, 'Department').then(departmentRecord => {
 
-                    // Notify current user
-                    ComposeUI.success(`The new quote has been created.`)
+                // Find all updates of the department (to run through them and update the totals)
+                return Compose.findRecords(`Department = ${$record.values.Department}`, 'Update')
+                  .then(({ set, filter }) => {
 
+                    let departmentTime = 0
+                    let departmentCost = 0
 
-                  }).then(() => {
+                    // Loop through the updates of the department, to sum the totals
+                    set.forEach(r => {
+                      
+                      // Get the time
+                      let departmentUpdateTime = r.values.TimeSpend
+                      if (typeof departmentUpdateTime == "undefined" || departmentUpdateTime === '' || isNaN(departmentUpdateTime)) {
+                        departmentUpdateTime = 0
+                      }
+                      departmentTime = parseFloat(departmentTime) + parseFloat(departmentUpdateTime)
 
-                    // Go to the record
-                    ComposeUI.gotoRecordEditor(mySavedQuote)
+                      // Get the cost
+                      let departmentUpdateCost = r.values.Cost
+                      if (typeof departmentUpdateCost == "undefined" || departmentUpdateCost === '' || isNaN(departmentUpdateCost)) {
+                        departmentUpdateCost = 0
+                      }
+                      departmentCost = parseFloat(departmentCost) + parseFloat(departmentUpdateCost)
+                    })
+
+                    // Set the values in the department
+                    departmentRecord.values.TotalTime = departmentTime
+                    departmentRecord.values.TotalCost = departmentCost
+
+                    // Save the department
+                    return Compose.saveRecord(departmentRecord).then(mySavedDepartment => {
+                      console.log('Record saved, ID', mySavedDepartment.recordID)
+                    }).catch(err => {
+                      // solve the problem
+                      console.error(err)
+                    })
 
                   }).catch(err => {
                     // solve the problem
@@ -1615,223 +954,30 @@ scripts:
                 // solve the problem
                 console.error(err)
               })
+            }
+              
+            }).catch(err => {
+              // solve the problem
+              console.error(err)
+            })
+
           }).catch(err => {
             // solve the problem
             console.error(err)
           })
-        }).catch(err => {
-          // solve the problem
-          console.error(err)
-        })
-    async: false
-    runInUA: true
-    critical: true
-    enabled: true
-    timeout: 0
-    triggers:
-    - event: manual
-      module: Opportunity
-      resource: compose:record
-  QuoteUpdateTotalPrice:
-    source: |-
-      // Get the subtotal
-      let subtotal = parseFloat($record.values.Subtotal)
-
-      // Apply additional quote discount
-      let discount = $record.values.Discount
-      if (!discount || discount === '' || isNaN(discount)) {
-        discount = 0
-      }
-      let totalPrice = subtotal - parseFloat(discount)
-
-      // Calculate if it's not below 0
-      if (totalPrice < 0) {
-        totalPrice = 0
-      }
-
-      // Apply shipping
-      let shippingHandling = $record.values.ShippingHandling
-      if (!shippingHandling || shippingHandling === '' || isNaN(shippingHandling)) {
-        shippingHandling = 0
-      }
-      totalPrice = totalPrice + parseFloat(shippingHandling)
-
-      // Add totalPrice to the record
-      $record.values.TotalPrice = totalPrice
-
-      // Apply taxes
-      let tax = $record.values.Tax
-      if (!shippingHandling || shippingHandling === '' || isNaN(shippingHandling)) {
-        // No tax, so don't do anything
-        $record.values.GrandTotal = totalPrice
-      } else {
-        if (tax > 0) {
-          // Apply tax
-          let taxpercent = parseFloat(tax / 100);
-          $record.values.GrandTotal = totalPrice * (1 + taxpercent)
-        }
-      }
+      }).catch(err => {
+        // solve the problem
+        console.error(err)
+      })
     async: false
     runInUA: false
     critical: true
     enabled: true
     timeout: 0
     triggers:
-    - event: beforeUpdate
-      module: Quote
+    - event: afterCreate
+      module: Update
       resource: compose:record
-  OpportunityApplyPriceBook:
-    source: |-
-      // Get the current price book
-      let pricebookId = $record.values.PricebookId
-
-      // Check if there is a price book. If there isn't one, find the standard one
-      if (!pricebookId) {
-
-        //If there is no price book selected, get the default price book.
-        return Compose.findRecords('IsActive = 1', 'Pricebook')
-
-          .then(({ set, filter }) => {
-
-            if (set.length === 0) {
-
-              // return that there are no Price books in the CRM
-              ComposeUI.warning(`There are no active price books configured in the CRM. Please insert an active price book in the Price book module.`)
-
-            } else {
-
-              // Loop through the price books, to find the standard one
-              set.forEach(r => {
-
-                //Check if the price book is the standard one
-                if (r.values.IsStandard === '1') {
-
-                  //Get the price book id
-                  pricebookId = r.recordID
-                }
-              })
-
-              if (pricebookId) {
-
-                //Save the price book in the opportunity
-                $record.values.PricebookId = pricebookId
-
-                // Save the price book in the opportunity
-                return Compose.saveRecord($record)
-              }
-            }
-
-
-          }).catch(err => {
-            // solve the problem
-            console.error(err)
-          })
-      }
-
-      // Check if a price book is selected or if a standard price book has been found. If not, exit.
-      if (!pricebookId) {
-        ComposeUI.warning(`Please select a Price book for this opportunity first.`)
-        return
-      }
-
-      //Set the total amount of the opportunity
-      let amount = 0
-
-      // Find all opportunity lineitems
-      return Compose.findRecords(`OpportunityId = ${$record.recordID}`, 'OpportunityLineItem')
-
-        .then(({ set, filter }) => {
-
-          set.forEach(lineitem => {
-
-            //Set the default values
-            let quantity = lineitem.values.Quantity
-            let discount = lineitem.values.Discount
-            let listprice = 0
-            let unitprice = 0
-            let subtotal = 0
-            let totalprice = 0
-
-            // Get the product
-            return Compose.findRecordByID(lineitem.values.ProductId, 'Product').then(product => {
-
-              // Set the product name and code
-              lineitem.values.Name = product.values.Name
-              lineitem.values.ProductCode = product.values.ProductCode
-
-            }).then(product => {
-
-              // Get the right price from the selected price book
-              return Compose.findRecords(`PricebookId = ${pricebookId} AND ProductId = ${lineitem.values.ProductId}`, 'PricebookEntry')
-
-                .then(({ set, filter }) => {
-
-                  if (set.length > 0) {
-
-                    let pricebookEntry = set[0]
-
-                    // Get the list price
-                    listprice = pricebookEntry.values.UnitPrice
-
-                    // Update unitprice only when the value is empty
-                    unitprice = lineitem.values.UnitPrice
-                    if (!unitprice || unitprice === '' || isNaN(unitprice)) {
-                      unitprice = listprice
-                    }
-
-                    // Calculate the totals
-                    if (!quantity || quantity === '' || isNaN(quantity)) {
-                      quantity = 0
-                    }
-                    subtotal = unitprice * quantity
-
-                    // Calculate the total
-                    if (!discount || discount === '' || isNaN(discount)) {
-                      totalprice = subtotal
-                    } else {
-                      totalprice = subtotal - discount
-                    }
-
-                    // Update it in the listitem record
-                    lineitem.values.ListPrice = listprice
-                    lineitem.values.UnitPrice = unitprice
-                    lineitem.values.Subtotal = subtotal
-                    lineitem.values.TotalPrice = totalprice
-
-                    //Add the total price to the amount of the opportunity
-                    amount = amount + totalprice
-
-                    // Save the lineitem
-                    return Compose.saveRecord(lineitem)
-                  }
-                }).then(mySolution => {
-
-                  //Save the opportunity record
-                  $record.values.Amount = amount
-                  return Compose.saveRecord($record)
-                }).catch(err => {
-                  // solve the problem
-                  console.error(err)
-                })
-
-            }).catch(err => {
-              // solve the problem
-              console.error(err)
-            })
-          }).catch(err => {
-            // solve the problem
-            console.error(err)
-          })
-        }).catch(err => {
-          // solve the problem
-          console.error(err)
-        })
-    async: false
-    runInUA: true
-    critical: true
-    enabled: true
-    timeout: 0
-    triggers:
-    - event: manual
-      module: Opportunity
+    - event: afterUpdate
+      module: Update
       resource: compose:record

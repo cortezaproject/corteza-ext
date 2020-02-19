@@ -472,13 +472,13 @@ pages:
           options:
             buttons:
             - label: Generate a new Opportunity for this Account
-              script: CreateNewOpportunity
+              script: AccountCreateNewOpportunity
               variant: primary
             - label: Generate a new Contract for this Account
-              script: CreateNewContract
+              script: AccountCreateNewContract
               variant: primary
             - label: Generate a new Case for this Account
-              script: CreateNewCase
+              script: AccountCreateNewCase
               variant: primary
           style:
             variants: {bodyBg: white, border: primary, headerBg: white, headerText: primary}
