@@ -6,6 +6,5 @@ module.exports = {
   bail: true,
   recursive: true,
   extension: ['.test.js'],
-  spec: 'src/**/*.test.js',
-  'watch-files': [ 'src/**' ],
+  'watch-files': [ '**' ],
 }
