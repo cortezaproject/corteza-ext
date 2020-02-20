@@ -1,0 +1,10 @@
+{
+  "name": "corteza-unsplash",
+  "version": "1.0.0",
+  "description": "Corteza unsplash image search extension",
+  "main": "lib/index.js",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "unsplash-js": "^6.0.0"
+  }
+}
