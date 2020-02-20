@@ -15,7 +15,7 @@
     "pre-commit": "yarn lint"
   },
   "dependencies": {
-    "@cortezaproject/corteza-js": "file:../corteza-js",
+    "@cortezaproject/corteza-js": ">2020.3.0-alpha",
     "axios": "^0.18.0",
     "pexels-api-wrapper": "^1.1.1",
     "sinon": "^8.1.1",
