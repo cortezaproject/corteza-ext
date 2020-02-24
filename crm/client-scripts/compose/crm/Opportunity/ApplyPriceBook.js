@@ -8,12 +8,13 @@ export default {
       .for('compose:record')
       .where('module', 'Opportunity')
       .where('namespace', 'crm')
+      .uiProp('app', 'compose')
   },
 
   async exec ({ $record }, { Compose, ComposeUI }) {
     // Get the current price book
     let pricebookId = $record.values.PricebookId
-    
+
     // Check if there is a price book. If there isn't one, find the standard one
     if (!pricebookId) {
       // If there is no price book selected, get the default price book.

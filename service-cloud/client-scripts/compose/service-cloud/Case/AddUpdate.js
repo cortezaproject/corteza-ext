@@ -8,6 +8,7 @@ export default {
       .for('compose:record')
       .where('module', 'Case')
       .where('namespace', 'service-cloud')
+      .uiProp('app', 'compose')
   },
 
   async exec ({ $record }, { Compose, ComposeUI }) {

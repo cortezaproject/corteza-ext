@@ -8,6 +8,7 @@ export default {
       .for('compose:record')
       .where('module', 'EmailMessage')
       .where('namespace', 'service-cloud')
+      .uiProp('app', 'compose')
   },
 
   getTimestamp () {

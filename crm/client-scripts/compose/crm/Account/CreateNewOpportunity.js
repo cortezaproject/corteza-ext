@@ -8,6 +8,7 @@ export default {
       .for('compose:record')
       .where('module', 'Account')
       .where('namespace', 'crm')
+      .uiProp('app', 'compose')
   },
 
   getTimestamp (opportunityCloseDays) {
@@ -40,7 +41,7 @@ export default {
               ContactId = r.recordID
             }
           })
-          
+
           // Create the related opportunity
           return Compose.makeRecord({
             OwnerId: $record.values.OwnerId,

@@ -7,6 +7,8 @@ export default {
     yield on('manual')
       .for('compose:record')
       .where('module', 'Lead')
+      .where('namespace', 'crm')
+      .uiProp('app', 'compose')
   },
 
   getTimestamp (opportunityCloseDays) {

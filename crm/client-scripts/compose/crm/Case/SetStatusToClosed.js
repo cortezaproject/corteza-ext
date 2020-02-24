@@ -8,6 +8,7 @@ export default {
       .for('compose:record')
       .where('module', 'Case')
       .where('namespace', 'crm')
+      .uiProp('app', 'compose')
   },
 
   getTimestamp () {

@@ -8,6 +8,7 @@ export default {
       .for('compose:record')
       .where('module', 'Account')
       .where('namespace', 'crm')
+      .uiProp('app', 'compose')
   },
 
   async exec ({ $record }, { Compose, ComposeUI }) {
@@ -52,7 +53,7 @@ export default {
 
         // Notify current user
         ComposeUI.success('The new contract record has been created.')
-        
+
         // Go to the record
         ComposeUI.gotoRecordEditor(mySavedContract)
 

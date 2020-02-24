@@ -8,8 +8,9 @@ export default {
       .for('compose:record')
       .where('module', 'EmailMessage')
       .where('namespace', 'service-cloud')
+      .uiProp('app', 'compose')
   },
-  
+
   procTemplate (tpl, pairs = {}) {
     return tpl.replace(/{{\s*(.+?)\s*}}/g, (match) => {
       // remove {{, }} and extra spaces
@@ -37,7 +38,7 @@ export default {
 
     // Check if there is a template
     const templateId = $record.values.EmailTemplateId
-    
+
     if (templateId) {
       // Get the template
       return Compose.findRecordByID(templateId, 'EmailTemplate').then(templateRecord => {

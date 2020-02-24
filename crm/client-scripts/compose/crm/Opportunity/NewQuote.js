@@ -8,6 +8,7 @@ export default {
       .for('compose:record')
       .where('module', 'Opportunity')
       .where('namespace', 'crm')
+      .uiProp('app', 'compose')
   },
 
   getTimestamp (quoteExpirationDays) {
