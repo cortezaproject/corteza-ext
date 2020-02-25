@@ -93,7 +93,7 @@ describe(__filename, () => {
       s.findUserByID.throws()
 
 
-      expect(async () => await Approve.exec({ $record: quoteRecord, $namespace: namespace, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
+      expect(async () => await Approve.exec({ $record: quoteRecord, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
     })
 
     it('should throw error if findUserByID throws', async () => {
@@ -101,7 +101,7 @@ describe(__filename, () => {
       s.findUserByID.resolves(user)
       h.sendMail.throws()
 
-      expect(async () => await Approve.exec({ $record: quoteRecord, $namespace: namespace, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
+      expect(async () => await Approve.exec({ $record: quoteRecord, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
     })
   })
 })

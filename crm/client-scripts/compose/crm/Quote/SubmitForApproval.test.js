@@ -34,10 +34,6 @@ describe(__filename, () => {
   const user = {
     email: 'mail'
   }
-  
-  const namespace = {
-    slug: 'crm'
-  }
 
   const page = {
     pageID: '1'
@@ -62,14 +58,14 @@ describe(__filename, () => {
       h.saveRecord.resolves(newQuoteRecord)
       s.findUserByID.resolves(user)
 
-      await SubmitForApproval.exec({ $record: quoteRecord, $page: page, $namespace: namespace, }, { Compose: h, ComposeUI: ui, System: s })
+      await SubmitForApproval.exec({ $record: quoteRecord, $page: page }, { Compose: h, ComposeUI: ui, System: s })
 
       expect(h.saveRecord.calledOnceWith(newQuoteRecord)).true
       expect(s.findUserByID.calledOnceWith(newQuoteRecord.createdBy)).true
 
       const to = user.email
       const subject = `Quote "${quoteRecord.values.Name}" needs approval`
-      const html = { html: `The following quote needs approval: <br><br><a href="https://latest.cortezaproject.org/compose/ns/${namespace.slug}/pages/${page.pageID}/record/${quoteRecord.recordID}/edit">${quoteRecord.values.Name}<a>` }
+      const html = { html: `The following quote needs approval: <br><br><a href="https://latest.cortezaproject.org/compose/ns/crm/pages/${page.pageID}/record/${quoteRecord.recordID}/edit">${quoteRecord.values.Name}<a>` }
       expect(h.sendMail.calledOnceWith(to, subject, html )).true
       expect(ui.success.calledOnceWith('The quote has been sent for approval.')).true
     })
@@ -88,7 +84,7 @@ describe(__filename, () => {
     it('should throw error if saveRecord throws', async () => {
       h.saveRecord.throws()
 
-      expect(async () => await SubmitForApproval.exec({ $record: quoteRecord, $namespace: namespace, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
+      expect(async () => await SubmitForApproval.exec({ $record: quoteRecord, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
     })
 
     it('should throw error if findUserByID throws', async () => {
@@ -96,7 +92,7 @@ describe(__filename, () => {
       s.findUserByID.throws()
 
 
-      expect(async () => await SubmitForApproval.exec({ $record: quoteRecord, $namespace: namespace, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
+      expect(async () => await SubmitForApproval.exec({ $record: quoteRecord, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
     })
 
     it('should throw error if findUserByID throws', async () => {
@@ -104,7 +100,7 @@ describe(__filename, () => {
       s.findUserByID.resolves(user)
       h.sendMail.throws()
 
-      expect(async () => await SubmitForApproval.exec({ $record: quoteRecord, $namespace: namespace, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
+      expect(async () => await SubmitForApproval.exec({ $record: quoteRecord, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
     })
   })
 })
