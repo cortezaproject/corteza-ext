@@ -1,5 +1,4 @@
 export default {
-  name: 'SendNotifications',
   label: 'Insert update number',
   description: 'Sends notification about case update',
 

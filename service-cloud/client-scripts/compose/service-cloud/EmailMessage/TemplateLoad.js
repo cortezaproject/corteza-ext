@@ -1,7 +1,7 @@
 export default {
-  name: 'TemplateLoad',
-  label: 'Load Email template',
-  description: 'Loads email template for email message',
+  name: 'TeplateLoad',
+  label: 'Load selected template into email message',
+  description: 'Loads selected email template into email message',
 
   * triggers ({ on }) {
     yield on('manual')

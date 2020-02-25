@@ -1,6 +1,5 @@
 export default {
-  name: 'AddUpdate',
-  label: 'Add case update',
+  label: 'Add Update to this Case',
   description: 'Create update record in CaseUpdate module',
 
   * triggers ({ on }) {

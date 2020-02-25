@@ -1,6 +1,5 @@
 export default {
-  name: 'SendEmail',
-  label: 'Send Email',
+  label: 'Send email to the contact',
   description: 'Sends provided email message',
 
   * triggers ({ on }) {

@@ -1,5 +1,4 @@
 export default {
-  name: 'SetValues',
   label: 'Set values for department',
   description: 'On Department record, sets the value of DepartmentSelect to the value of Department Name',
 

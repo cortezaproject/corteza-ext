@@ -1,5 +1,4 @@
 export default {
-  name: 'SetLabel',
   label: 'Set label for Contact',
   description: 'Set label for contact record',
 

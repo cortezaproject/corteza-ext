@@ -1,7 +1,6 @@
 export default {
-  name: 'CreateNewContract',
-  label: 'Creates new contract from an account',
-  description: 'Creates new record in Contract module for the specified account',
+  label: 'Create new Contract from this Account',
+  description: 'Creates new Contract record from an existing Account',
 
   * triggers ({ on }) {
     yield on('manual')

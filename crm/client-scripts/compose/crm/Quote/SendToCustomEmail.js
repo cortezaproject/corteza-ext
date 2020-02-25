@@ -1,6 +1,5 @@
 export default {
-  name: 'SendToCustomEmail',
-  label: 'Send to custom email',
+  label: 'Send this Quote to a custom email',
   description: 'Sends quote email to custom address',
 
   * triggers ({ on }) {

@@ -1,5 +1,4 @@
 export default {
-  name: 'InsertNumber',
   label: 'Insert case number',
   description: 'Sets case number based on timestamp',
 

@@ -1,7 +1,6 @@
 export default {
-  name: 'ApplyPriceBook',
-  label: 'Apply price book to opportunity',
-  description: 'Calculates and applies pricebook to opportunity record',
+  label: 'Apply Price Book',
+  description: 'Update prices of Products by applying the selected Price Book and inserted discounts',
 
   * triggers ({ on }) {
     yield on('manual')

@@ -1,5 +1,4 @@
 export default {
-  name: 'SetLabel',
   label: 'Set label for Lead',
   description: 'Set record label for lead',
 

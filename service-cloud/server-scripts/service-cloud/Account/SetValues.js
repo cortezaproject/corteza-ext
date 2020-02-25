@@ -1,5 +1,4 @@
 export default {
-  name: 'SetValues',
   label: 'Set values for account',
   description: 'On Account record, sets the value of AccountSelect to the value of AccountName',
 

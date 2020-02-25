@@ -1,6 +1,5 @@
 export default {
-  name: 'SetStatusToWorking',
-  label: 'Set case status to working',
+  label: 'Set Case status to Working',
   description: 'Sets status of case to "Working"',
 
   * triggers ({ on }) {

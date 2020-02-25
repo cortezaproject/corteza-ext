@@ -1,7 +1,6 @@
 export default {
-  name: 'ToAccountAndOpportunity',
-  label: 'Converts lead to account and opportunity',
-  description: 'Creates an account ad opportunity fron an existing lead',
+  label: 'Convert this Lead into an Account and Opportunity',
+  description: 'Creates an Account and Opportunity from an existing Lead',
 
   * triggers ({ on }) {
     yield on('manual')

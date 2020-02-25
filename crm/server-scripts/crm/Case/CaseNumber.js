@@ -1,5 +1,4 @@
 export default {
-  name: 'CaseNumber',
   label: 'Insert case number',
   description: 'Sets case number to next case number in settings',
 

@@ -1,6 +1,5 @@
 export default {
-  name: 'CreateEmail',
-  label: 'Create Case Email',
+  label: 'Create email for this Case',
   description: 'Creates Email message record in module EmailMessage',
 
   * triggers ({ on }) {

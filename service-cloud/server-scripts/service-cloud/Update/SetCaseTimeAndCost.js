@@ -1,5 +1,4 @@
 export default {
-  name: 'SetCaseTimeAndCost',
   label: 'Set case time and cost to update',
   description: 'Sets time and cost of a case by summing up the cost of all case updates',
 

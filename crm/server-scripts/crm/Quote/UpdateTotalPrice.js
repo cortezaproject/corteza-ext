@@ -1,5 +1,4 @@
 export default {
-  name: 'UpdateTotalPrice',
   label: 'Update total price',
   description: 'Updatese total price of quote',
 

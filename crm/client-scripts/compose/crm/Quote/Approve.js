@@ -1,6 +1,5 @@
 export default {
-  name: 'Approve',
-  label: 'Approve quote',
+  label: 'Approve this Quote',
   description: 'Approves quote record and informs the user who created it',
 
   * triggers ({ on }) {

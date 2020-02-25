@@ -1,6 +1,5 @@
 export default {
-  name: 'SubmitForApproval',
-  label: 'Submit quote for approval',
+  label: 'Submit this quote for approval',
   description: 'Changes status of quote to In Review and informs the user who created the record',
 
   * triggers ({ on }) {

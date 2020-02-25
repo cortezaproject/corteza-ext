@@ -1,6 +1,5 @@
 export default {
-  name: 'SendToPriContact',
-  label: 'Send quote to primary contact',
+  label: 'Send this Quote via email to the primary contact',
   description: 'Sends quote to primary contact',
 
   * triggers ({ on }) {

@@ -1,7 +1,6 @@
 export default {
-  name: 'CreateNewCase',
-  label: 'Creates new case from contact',
-  description: 'Creates new case from and existing contact',
+  label: 'Create new Case from this Contact',
+  description: 'Creates a new Case record from and existing Contact',
 
   * triggers ({ on }) {
     yield on('manual')

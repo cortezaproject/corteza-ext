@@ -1,5 +1,4 @@
 export default {
-  name: 'InformContact',
   label: 'Inform the contact via email of the Case solution',
   description: 'Inform the contact via email of the Case solution',
 

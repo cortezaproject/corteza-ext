@@ -1,6 +1,5 @@
 export default {
-  name: 'NewQuote',
-  label: 'Creates new quote from opportunity',
+  label: 'Create a new Quote for this Opportunity',
   description: 'Creates a new Quote record from an existing Opportunity',
 
   * triggers ({ on }) {

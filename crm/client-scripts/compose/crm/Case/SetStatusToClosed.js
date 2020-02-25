@@ -1,6 +1,5 @@
 export default {
-  name: 'SetStatusToClosed',
-  label: 'Set case status to closed',
+  label: 'Set Case status to Closed',
   description: 'Sets status of Case record to "Closed"',
 
   * triggers ({ on }) {

@@ -1,7 +1,6 @@
 export default {
-  name: 'ToAccount',
-  label: 'Converts lead to account',
-  description: 'Creates an account from an existing lead',
+  label: 'Convert this Lead into an Account',
+  description: 'Creates an Account recrod from an existing Lead',
 
   * triggers ({ on }) {
     yield on('manual')

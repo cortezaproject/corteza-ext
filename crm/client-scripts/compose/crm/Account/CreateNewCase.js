@@ -1,7 +1,6 @@
 export default {
-  name: 'CreateNewCase',
-  label: 'Creates new case from an account',
-  description: 'Creates new record in Case module for the specified account',
+  label: 'Create new Case from this Account',
+  description: 'Creates new Case record from an existing Account',
 
   * triggers ({ on }) {
     yield on('manual')

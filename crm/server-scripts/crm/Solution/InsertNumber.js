@@ -1,5 +1,4 @@
 export default {
-  name: 'InsertNumber',
   label: 'Insert solution number',
   description: 'Sets the solution number based on the settings',
 

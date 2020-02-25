@@ -1,5 +1,4 @@
 export default {
-  name: 'StatusChange',
   label: 'Change case status',
   description: 'Changes status of case record if previous status is differs from current status',
 

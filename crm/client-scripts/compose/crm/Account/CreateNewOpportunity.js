@@ -1,7 +1,6 @@
 export default {
-  name: 'CreateNewOpportunity',
-  label: 'Creates new opportunity from an account',
-  description: 'Creates new record in Opportunity module for the specified account',
+  label: 'Create new Opportunity from this Account',
+  description: 'Creates new Opportunity record from an existing Account',
 
   * triggers ({ on }) {
     yield on('manual')

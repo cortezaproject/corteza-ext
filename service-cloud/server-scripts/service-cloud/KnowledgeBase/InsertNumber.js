@@ -1,5 +1,4 @@
 export default {
-  name: 'InsertNumber',
   label: 'Insert knowledgebase number',
   description: 'Inserts next Knowledge base number',
 
