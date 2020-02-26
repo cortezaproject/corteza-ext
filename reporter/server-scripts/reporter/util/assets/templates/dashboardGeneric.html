@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>
+    {{ this.dashboard.title }}
+  </title>
+</head>
+<body>
+  <main>
+    <h1>
+      {{ this.dashboard.title }}
+    </h1>
+    <h3>
+      {{ this.dashboard.description }}
+    </h3>
+
+    <br />
+
+    <div data-for="(r, i) in this.dashboard.reports">
+      <h2>
+        {{ this.r.report.title }}
+      </h2>
+      <p>
+        {{ this.r.report.description }}
+      </p>
+
+      <img src="{{ this.r.chart }}" />
+    </div>
+  </main>
+</body>
+</html>

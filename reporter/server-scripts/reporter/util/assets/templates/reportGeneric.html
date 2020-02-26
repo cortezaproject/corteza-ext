@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <meta name='viewport' content='width=595.28, height=841.89'>
+  <meta name='margin' content='left=60,right=60,top=40,bottom=40'>
+  <title>
+    {{ this.report.title }}
+  </title>
+</head>
+<body>
+  <main>
+    <h1>
+      {{ this.report.title }}
+    </h1>
+    <p>
+      {{ this.report.description }}
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th data-for="(h, i) in this.report.header">
+            {{ this.h.label }}
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr data-for="(r, i) in this.report.body">
+          <td data-for="(c, j) in this.r">
+            {{ this.c }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>
