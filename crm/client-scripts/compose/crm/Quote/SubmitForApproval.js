@@ -10,7 +10,7 @@ export default {
       .uiProp('app', 'compose')
   },
 
-  async exec ({ $record, $page }, { Compose, ComposeUI, System }) {
+  async exec ({ $record }, { Compose, ComposeUI, System, frontendBaseURL }) {
     // Check if it can be reviewed
     if ($record.values.Status !== 'Draft' && $record.values.Status !== 'Needs Review') {
       ComposeUI.warning('A quote needs to have the status Draft or Needs Review in order to be sent for approval')
@@ -24,11 +24,13 @@ export default {
     await Compose.saveRecord($record)
     // Get the email of the owner
     return System.findUserByID($record.createdBy).then(async user => {
+      const recordPage = await ComposeUI.getRecordPage($record)
+
       // Send the mail
       await Compose.sendMail(
         user.email, // Change this to the email address of the person that needs to approve the quotes
         `Quote "${$record.values.Name}" needs approval`,
-        { html: `The following quote needs approval: <br><br><a href="https://latest.cortezaproject.org/compose/ns/crm/pages/${$page.pageID}/record/${$record.recordID}/edit">${$record.values.Name}<a>` }
+        { html: `The following quote needs approval: <br><br><a href="${frontendBaseURL}/compose/ns/crm/pages/${recordPage.pageID}/record/${$record.recordID}/edit">${$record.values.Name}<a>` }
       )
 
       // Notify current user

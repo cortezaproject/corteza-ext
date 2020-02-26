@@ -34,14 +34,12 @@ describe(__filename, () => {
   const user = {
     email: 'mail'
   }
-  
-  const namespace = {
-    slug: 'crm'
-  }
 
   const page = {
     pageID: '1'
   }
+
+  const frontendBaseURL = 'https://latest.cortezaproject.org'
 
   beforeEach(() => {
     h = stub(new ComposeHelper({ ComposeAPI: new ComposeAPI({}) }))
@@ -49,7 +47,8 @@ describe(__filename, () => {
     ui = stub({ 
       success: () => {},
       warning: () => {},
-      gotoRecordEditor: () => {}
+      gotoRecordEditor: () => {},
+      getRecordPage: () => {}
     })
   })
 
@@ -61,21 +60,22 @@ describe(__filename, () => {
     it('should successfully approve quote', async () => {
       h.saveRecord.resolves(newQuoteRecord)
       s.findUserByID.resolves(user)
+      ui.getRecordPage.resolves(page)
 
-      await Approve.exec({ $record: quoteRecord, $page: page}, { Compose: h, ComposeUI: ui, System: s })
+      await Approve.exec({ $record: quoteRecord }, { Compose: h, ComposeUI: ui, System: s, frontendBaseURL })
 
       expect(h.saveRecord.calledOnceWith(newQuoteRecord)).true
       expect(s.findUserByID.calledOnceWith(newQuoteRecord.createdBy)).true
 
       const to = user.email
       const subject = `Quote "${quoteRecord.values.Name}" has been approved`
-      const html = { html: `The following quote has been approved: <br><br><a href="https://latest.cortezaproject.org/compose/ns/crm/pages/${page.pageID}/record/${quoteRecord.recordID}/edit">${quoteRecord.values.Name}<a>` }
+      const html = { html: `The following quote has been approved: <br><br><a href="${frontendBaseURL}/compose/ns/crm/pages/${page.pageID}/record/${quoteRecord.recordID}/edit">${quoteRecord.values.Name}<a>` }
       expect(h.sendMail.calledOnceWith(to, subject, html )).true
       expect(ui.success.calledOnceWith('The quote has been approved and the quote owner has been notified via email.')).true
     })
 
     it('should inform if quote status is not "In Review"', async () => {
-      await Approve.exec({ $record: newQuoteRecord, $page: page }, { Compose: h, ComposeUI: ui, System: s })
+      await Approve.exec({ $record: newQuoteRecord }, { Compose: h, ComposeUI: ui, System: s, frontendBaseURL })
       
       expect(ui.warning.calledOnceWith('A quote needs to have the status In Review in order to be approved.')).true
     })
@@ -85,23 +85,31 @@ describe(__filename, () => {
     it('should throw error if saveRecord throws', async () => {
       h.saveRecord.throws()
 
-      expect(async () => await Approve.exec({ $record: quoteRecord, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
+      expect(async () => await Approve.exec({ $record: quoteRecord }, { Compose: h, ComposeUI: ui, System: s, frontendBaseURL })).throws
     })
 
     it('should throw error if findUserByID throws', async () => {
       h.saveRecord.resolves(newQuoteRecord)
       s.findUserByID.throws()
 
-
-      expect(async () => await Approve.exec({ $record: quoteRecord, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
+      expect(async () => await Approve.exec({ $record: quoteRecord }, { Compose: h, ComposeUI: ui, System: s, frontendBaseURL })).throws
     })
 
-    it('should throw error if findUserByID throws', async () => {
+    it('should throw error if getRecordPage throws', async () => {
       h.saveRecord.resolves(newQuoteRecord)
       s.findUserByID.resolves(user)
+      ui.getRecordPage.throws()
+
+      expect(async () => await Approve.exec({ $record: quoteRecord }, { Compose: h, ComposeUI: ui, System: s, frontendBaseURL })).throws
+    })
+
+    it('should throw error if sendMail throws', async () => {
+      h.saveRecord.resolves(newQuoteRecord)
+      s.findUserByID.resolves(user)
+      ui.getRecordPage.resolves(page)
       h.sendMail.throws()
 
-      expect(async () => await Approve.exec({ $record: quoteRecord, $page: page }, { Compose: h, ComposeUI: ui, System: s })).throws
+      expect(async () => await Approve.exec({ $record: quoteRecord }, { Compose: h, ComposeUI: ui, System: s, frontendBaseURL })).throws
     })
   })
 })

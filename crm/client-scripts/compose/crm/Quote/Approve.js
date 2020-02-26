@@ -10,7 +10,7 @@ export default {
       .uiProp('app', 'compose')
   },
 
-  async exec ({ $record, $page }, { Compose, ComposeUI, System }) {
+  async exec ({ $record }, { Compose, ComposeUI, System, frontendBaseURL }) {
     // Check if the quote has the correct status
     if ($record.values.Status !== 'In Review') {
       // Inform
@@ -24,11 +24,12 @@ export default {
     await Compose.saveRecord($record)
     // Get the email of the owner
     return System.findUserByID($record.createdBy).then(async user => {
+      const recordPage = await ComposeUI.getRecordPage($record)
       // Send the mail
       await Compose.sendMail(
         user.email,
         `Quote "${$record.values.Name}" has been approved`,
-        { html: `The following quote has been approved: <br><br><a href="https://latest.cortezaproject.org/compose/ns/crm/pages/${$page.pageID}/record/${$record.recordID}/edit">${$record.values.Name}<a>` }
+        { html: `The following quote has been approved: <br><br><a href="${frontendBaseURL}/compose/ns/crm/pages/${recordPage.pageID}/record/${$record.recordID}/edit">${$record.values.Name}<a>` }
       )
 
       // Notify current user
