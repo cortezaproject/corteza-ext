@@ -11,6 +11,10 @@ export default {
   },
 
   async exec ({ $record }, { Compose, ComposeUI, System, frontendBaseURL }) {
+    if (!frontendBaseURL) {
+      throw new Error('frontendBaseURL is missing')
+    }
+
     // Check if the quote has the correct status
     if ($record.values.Status !== 'In Review') {
       // Inform

@@ -86,6 +86,10 @@ describe(__filename, () => {
   })
 
   describe('error handling', () => {
+    it('should throw error if frontendBaseURL is missing', async () => {
+      expect(async () => await SubmitForApproval.exec({ $record: quoteRecord }, { Compose: h, ComposeUI: ui, System: s })).throws
+    })
+
     it('should throw error if saveRecord throws', async () => {
       h.saveRecord.throws()
 

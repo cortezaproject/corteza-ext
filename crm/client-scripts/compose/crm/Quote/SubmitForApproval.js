@@ -11,6 +11,10 @@ export default {
   },
 
   async exec ({ $record }, { Compose, ComposeUI, System, frontendBaseURL }) {
+    if (!frontendBaseURL) {
+      throw new Error('frontendBaseURL is missing')
+    }
+
     // Check if it can be reviewed
     if ($record.values.Status !== 'Draft' && $record.values.Status !== 'Needs Review') {
       ComposeUI.warning('A quote needs to have the status Draft or Needs Review in order to be sent for approval')
