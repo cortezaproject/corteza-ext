@@ -12,8 +12,10 @@
     "test:unit:cc": "nyc mocha"
   },
   "dependencies": {
+    "@cortezaproject/corteza-js": "^2020.3.0-rc",
     "axios": "^0.19.0",
-    "@cortezaproject/corteza-js": "^2020.3.0-rc"
+    "form-data": "^3.0.0",
+    "moment": "^2.24.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
