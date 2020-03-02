@@ -16,6 +16,7 @@
   "dependencies": {
     "@cortezaproject/corteza-js": "^2020.3.0-rc.5",
     "axios": "^0.19.2",
+    "base-64": "^0.1.0",
     "numeral": "^2.0.6",
     "twilio": "^3.39.2",
     "twilio-client": "^1.9.7"
