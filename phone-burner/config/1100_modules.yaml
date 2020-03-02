@@ -31,3 +31,10 @@ modules:
         isPrivate: false
         isMulti: false
         kind: String
+
+      - name: SinkSign
+        label: Sink Sign
+        isRequired: true
+        isPrivate: false
+        isMulti: false
+        kind: String

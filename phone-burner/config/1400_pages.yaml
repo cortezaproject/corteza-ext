@@ -11,6 +11,7 @@ pages:
             - AccessToken
             - CallBeginCallback
             - CallEndCallback
+            - SinkSign
           module: ext_phoneburner_configuration
           page: RecordPageForModuleext_phoneburner_configuration
           perPage: 1
@@ -30,5 +31,6 @@ pages:
             - AccessToken
             - CallBeginCallback
             - CallEndCallback
+            - SinkSign
           kind: Record
           xywh: [0, 0, 6, 12]
