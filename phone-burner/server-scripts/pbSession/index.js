@@ -8,17 +8,17 @@ const dialSessionEP = 'dialsession'
 
 export default {
   label: 'PhoneBurner Session Builder',
-  description: `This automation script creates a PhoneBurner session based on te provided resources.`,
+  description: 'This automation script creates a PhoneBurner session based on te provided resources.',
   security: {
     // @todo...
-    runAs: 'tomaz.jerman@kendu.si',
+    runAs: 'tomaz.jerman@crust.tech'
   },
   triggers (t) {
     return [
       t.on('request')
         .where('request.path', '/ext_phoneburner/session')
         .where('request.method', 'POST')
-        .for('system:sink'),
+        .for('system:sink')
     ]
   },
 
@@ -57,17 +57,17 @@ export default {
     // required data for PB's webhooks
     const customData = {
       ns: request.body.ns,
-      provider: request.body.provider,
+      provider: request.body.provider
     }
 
     const url = `${apiBase}${config.values.APIVersion || '1'}/${dialSessionEP}`
     response.data = await axios.post(
       url,
       { contacts, callbacks, customData },
-      { withCredentials: true, headers: { Authorization: `Bearer ${config.values.AccessToken}` } },
+      { withCredentials: true, headers: { Authorization: `Bearer ${config.values.AccessToken}` } }
     ).then(({ data }) => data)
     return response
-  },
+  }
 }
 
 /**

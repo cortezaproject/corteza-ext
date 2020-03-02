@@ -5,7 +5,7 @@ export const phoneTypes = {
   home: 1,
   work: 2,
   cell: 3,
-  other: 5,
+  other: 5
 }
 
 /**
@@ -24,7 +24,7 @@ export const smAccountMapping = {
   picasa: 10,
   plancast: 11,
   klout: 12,
-  flickr: 13,
+  flickr: 13
 }
 
 /**
@@ -33,5 +33,5 @@ export const smAccountMapping = {
 export const fieldKindMapping = {
   String: 1,
   Bool: 2,
-  Date: 3,
+  Date: 3
 }

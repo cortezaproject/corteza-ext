@@ -3,17 +3,17 @@ import * as mappers from './provider'
 
 export default {
   label: 'PhoneBurner Webhook',
-  description: `This automation script provides a PhoneBurner webhook.`,
+  description: 'This automation script provides a PhoneBurner webhook.',
   security: {
     // @todo...
-    runAs: 'tomaz.jerman@kendu.si',
+    runAs: 'tomaz.jerman@crust.tech'
   },
   triggers (t) {
     return [
       t.on('request')
         .where('request.path', '/ext_phoneburner/webhook/api_callend')
         .where('request.method', 'POST')
-        .for('system:sink'),
+        .for('system:sink')
     ]
   },
 
@@ -38,7 +38,7 @@ export default {
     parsePBContact(request.body.contact, mapping, original.values)
     await Compose.saveRecord(original)
     return response
-  },
+  }
 }
 
 /**

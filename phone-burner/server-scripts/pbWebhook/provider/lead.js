@@ -6,13 +6,13 @@ export default {
   last_name: 'LastName',
   primary_phone: {
     raw_phone: 'Phone',
-    label: 'PhoneLabel',
+    label: 'PhoneLabel'
   },
   primary_address: {
-    city: 'MailingCity',
-    state: 'MailingState',
-    zip: 'MailingPostalCode',
-    country: 'MailingCountry',
+    city: 'City',
+    state: 'State',
+    zip: 'PostalCode',
+    country: 'Country'
   },
-  custom_fields: genericMapper,
+  custom_fields: genericMapper
 }

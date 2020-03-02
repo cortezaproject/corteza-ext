@@ -1,4 +1,0 @@
-= PhoneBurner Extension Data Model
-
-This folder contains the required data model definitions such as modules, pages, charts, ...
-Refer to specific sub folder for details on specific data model component.

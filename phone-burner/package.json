@@ -9,12 +9,11 @@
   "private": false,
   "scripts": {
     "qa": "yarn lint; yarn test:unit",
-    "lint": "eslint ./ --ext .js,.vue",
-    "test:unit": "mocha corredor/**/",
-    "test:unit:cc": "nyc mocha corredor/**/"
+    "lint": "eslint --ext .js,.ts {server-scripts,client-scripts}/**/*",
+    "test:unit": "mocha",
+    "test:unit:cc": "nyc mocha"
   },
   "dependencies": {
-    "@cortezaproject/corteza-js": "^2020.3.0-alpha.7",
     "axios": "^0.19.2",
     "base-64": "^0.1.0"
   },
@@ -55,8 +54,8 @@
       "lcov"
     ],
     "include": [
-      "corredor/**/*.js",
-      "corredor/**/*.vue"
+      "server-scripts/**/*.js",
+      "client-scripts/**/*.js"
     ],
     "exclude": [
       "**/*.test.js"
