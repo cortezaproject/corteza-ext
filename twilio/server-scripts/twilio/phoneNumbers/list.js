@@ -7,7 +7,7 @@ export default {
 This automation script can be used to implement on-the-fly phone number provisioning.`,
   security: {
     // @todo...
-    runAs: 'tomaz.jerman@kendu.si',
+    runAs: 'tomaz.jerman@crust.tech',
   },
   triggers (t) {
     return [

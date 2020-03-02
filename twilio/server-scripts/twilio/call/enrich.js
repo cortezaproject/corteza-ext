@@ -7,7 +7,7 @@ export const pn = {
 It attempts to find a record within compose based on the Twilio Configuration settings (see ext_twilio_configuration.CallEnrichmentSource docs).`,
   security: {
     // @todo...
-    runAs: 'tomaz.jerman@kendu.si',
+    runAs: 'tomaz.jerman@crust.tech',
   },
   triggers (t) {
     return [
@@ -64,7 +64,7 @@ export const scr = {
   description: `This automation script provides agent scripts defined by the Call Center.`,
   security: {
     // @todo...
-    runAs: 'tomaz.jerman@kendu.si',
+    runAs: 'tomaz.jerman@crust.tech',
   },
   triggers (t) {
     return [

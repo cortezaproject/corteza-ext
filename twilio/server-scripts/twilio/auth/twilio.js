@@ -13,7 +13,7 @@ export const capability = {
   description: `This automation script handles Twilio capability token creation.`,
   security: {
     // @todo...
-    runAs: 'tomaz.jerman@kendu.si',
+    runAs: 'tomaz.jerman@crust.tech',
   },
   triggers (t) {
     return [
@@ -55,7 +55,7 @@ export const worker = {
   description: `This automation script handles Twilio Worker token creation.`,
   security: {
     // @todo...
-    runAs: 'tomaz.jerman@kendu.si',
+    runAs: 'tomaz.jerman@crust.tech',
   },
   triggers (t) {
     return [

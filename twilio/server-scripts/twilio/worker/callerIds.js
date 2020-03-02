@@ -5,7 +5,7 @@ export default {
   description: 'This automation script provides a complete set of caller IDs for the given user',
   security: {
     // @todo...
-    runAs: 'tomaz.jerman@kendu.si',
+    runAs: 'tomaz.jerman@crust.tech',
   },
   triggers (t) {
     return [

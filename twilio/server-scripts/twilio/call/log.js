@@ -8,7 +8,7 @@ export default {
 It logs basic call metadata such as duration, phone numbers, references and agent's interactions.`,
   security: {
     // @todo...
-    runAs: 'tomaz.jerman@kendu.si',
+    runAs: 'tomaz.jerman@crust.tech',
   },
   triggers (t) {
     return [
