@@ -22,14 +22,14 @@ export default {
     ]
   },
 
-  async exec ({ request, response }, { Compose }) {
-    console.debug('ext.phoneburner.session')
-    parseBody(request)
-    response.status = 200
-    response.header = { 'Content-Type': ['application/json'] }
+  async exec ({ $request, $response }, { Compose }) {
+    const body = parseBody($request)
+
+    $response.status = 200
+    $response.header = { 'Content-Type': ['application/json'] }
 
     // get configuration and other meta objects
-    const ns = await Compose.resolveNamespace(request.body.ns)
+    const ns = await Compose.resolveNamespace(body.ns)
     const mod = await Compose.findModuleByHandle('ext_phoneburner_configuration', ns)
     const config = await Compose.findFirstRecord(mod)
 
@@ -43,30 +43,33 @@ export default {
     }
 
     // Determine contacts
-    const mapping = mappers[request.body.provider]
+    const mapping = mappers[body.provider]
     if (!mapping) {
-      // no mapping available; invalid request
-      response.status = 400
-      return response
+    // no mapping available; invalid request
+      $response.status = 400
+      return $response
     }
 
-    const provider = await Compose.findModuleByHandle(request.body.provider, ns)
-    const { set: records } = await Compose.findRecords(inSet('recordID', request.body.records), provider)
+    const provider = await Compose.findModuleByHandle(body.provider, ns)
+    const { set: records } = await Compose.findRecords(inSet('recordID', body.records), provider)
     const contacts = records.map(c => makePBContact(c, mapping))
 
     // required data for PB's webhooks
     const customData = {
-      ns: request.body.ns,
-      provider: request.body.provider
+      ns: body.ns,
+      provider: body.provider
     }
 
     const url = `${apiBase}${config.values.APIVersion || '1'}/${dialSessionEP}`
-    response.data = await axios.post(
+
+    const data = await axios.post(
       url,
       { contacts, callbacks, customData },
       { withCredentials: true, headers: { Authorization: `Bearer ${config.values.AccessToken}` } }
     ).then(({ data }) => data)
-    return response
+
+    $response.body = JSON.stringify(data.dialsessions)
+    return $response
   }
 }
 

@@ -17,9 +17,8 @@ export function inSet (key, values) {
  */
 export function parseBody (req) {
   if (!req.rawBody) {
-    req.body = {}
+    return {}
   } else {
-    req.body = JSON.parse(b64.decode(req.rawBody))
+    return JSON.parse(b64.decode(req.rawBody))
   }
-  return req
 }

@@ -17,27 +17,27 @@ export default {
     ]
   },
 
-  async exec ({ request, response }, { Compose }) {
+  async exec ({ $request, $response }, { Compose }) {
     console.debug('ext.phoneburner.webhook.callEnd')
-    parseBody(request)
-    response.status = 200
-    response.header = { 'Content-Type': ['application/json'] }
+    const body = parseBody($request)
+    $response.status = 200
+    $response.header = { 'Content-Type': ['application/json'] }
 
     // get meta objects
-    const ns = await Compose.resolveNamespace(request.body.custom_data.ns)
-    const mod = await Compose.findModuleByHandle(request.body.custom_data.provider, ns)
-    const original = await Compose.findRecordByID(request.body.contact.lead_id, mod)
-    const mapping = mappers[request.body.custom_data.provider]
+    const ns = await Compose.resolveNamespace(body.custom_data.ns)
+    const mod = await Compose.findModuleByHandle(body.custom_data.provider, ns)
+    const original = await Compose.findRecordByID(body.contact.lead_id, mod)
+    const mapping = mappers[body.custom_data.provider]
     if (!mapping) {
       // no mapping available; invalid request
-      response.status = 400
-      return response
+      $response.status = 400
+      return $response
     }
 
     // update original record values
-    parsePBContact(request.body.contact, mapping, original.values)
+    parsePBContact(body.contact, mapping, original.values)
     await Compose.saveRecord(original)
-    return response
+    return $response
   }
 }
 
