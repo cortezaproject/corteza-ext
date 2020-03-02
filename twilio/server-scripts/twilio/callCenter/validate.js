@@ -15,11 +15,8 @@ It validates if the given call center is valid and unique.`,
     // check for existing call center for this workspace
     await Compose
       .findRecords(`Workspace = '${$record.values.Workspace}' AND Client = '${$record.values.Client}'`, 'ext_twilio_call_center')
-      .then(({ set = [] }) => {
-        if (set.length) {
-          throw new Error('callCenter.notUnique')
-        }
-      })
+        .then(() => { throw new Error('callCenter.notUnique') })
+        .catch(() => undefined)
   },
 }
 
@@ -40,10 +37,7 @@ It validates if the given call center is valid and unique.`,
     // check for existing call center for this workspace OTHER then this call center
     await Compose
       .findRecords(`recordID != '${$record.recordID}' AND Workspace = '${$record.values.Workspace}' AND Client = '${$record.values.Client}'`, 'ext_twilio_call_center')
-      .then(({ set = [] }) => {
-        if (set.length) {
-          throw new Error('callCenter.notUnique')
-        }
-      })
+        .then(() => { throw new Error('callCenter.notUnique') })
+        .catch(() => undefined)
   },
 }

@@ -25,20 +25,14 @@ It creates and configures a corresponding Twilio Worker that is able to accept c
       // check for existing worker for this workspace
       await Compose
         .findRecords(`Workspace = '${$record.values.Workspace}' AND User = '${$record.values.User}'`, 'ext_twilio_worker')
-        .then(({ set = [] }) => {
-          if (set.length) {
-            throw new Error('user.notUnique')
-          }
-        })
+        .then(() => { throw new Error('user.notUnique') })
+        .catch(() => undefined)
     } else {
       // check for existing worker for this workspace OTHER then this worker
       await Compose
         .findRecords(`recordID != '${$record.recordID}' AND Workspace = '${$record.values.Workspace}' AND User = '${$record.values.User}'`, 'ext_twilio_worker')
-        .then(({ set = [] }) => {
-          if (set.length) {
-            throw new Error('user.notUnique')
-          }
-        })
+        .then(() => { throw new Error('user.notUnique') })
+        .catch(() => undefined)
     }
 
     $record = new compose.Record($record, $module)
