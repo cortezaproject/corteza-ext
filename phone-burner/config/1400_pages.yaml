@@ -1,0 +1,36 @@
+# This file defines data model's pages required by the extension
+namespace: crm
+pages:
+  - handle: ext_phoneburner_homepage
+    title: PhoneBurner Homepage
+    blocks:
+      - title: Configuration
+        options:
+          fields:
+            - APIVersion
+            - AccessToken
+            - CallBeginCallback
+            - CallEndCallback
+            - SinkSign
+          module: ext_phoneburner_configuration
+          page: RecordPageForModuleext_phoneburner_configuration
+          perPage: 1
+          hideSearchBox: true
+          hidePaging: true
+          kind: RecordList
+          xywh: [0, 0, 12, 6]
+
+  - handle: RecordPageForModuleext_phoneburner_configuration
+    module: ext_phoneburner_configuration
+    title: Record page for module "ext_phoneburner_configuration"
+    blocks:
+      - title: PhoneBurner Configuration
+        options:
+          fields:
+            - APIVersion
+            - AccessToken
+            - CallBeginCallback
+            - CallEndCallback
+            - SinkSign
+          kind: Record
+          xywh: [0, 0, 6, 12]

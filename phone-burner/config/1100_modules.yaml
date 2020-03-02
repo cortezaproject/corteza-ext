@@ -1,0 +1,40 @@
+# This file defines data model's modules required by the extension
+namespace: crm
+modules:
+  ext_phoneburner_configuration:
+    name: PhoneBurner Configuration
+    fields:
+      - name: APIVersion
+        label: API Version
+        isRequired: true
+        isPrivate: false
+        isMulti: false
+        kind: String
+
+      - name: AccessToken
+        label: Access Token
+        isRequired: true
+        isPrivate: false
+        isMulti: false
+        kind: String
+
+      - name: CallBeginCallback
+        label: Call Begin Callback
+        isRequired: false
+        isPrivate: false
+        isMulti: false
+        kind: String
+
+      - name: CallEndCallback
+        label: Call End Callback
+        isRequired: false
+        isPrivate: false
+        isMulti: false
+        kind: String
+
+      - name: SinkSign
+        label: Sink Sign
+        isRequired: true
+        isPrivate: false
+        isMulti: false
+        kind: String

@@ -1,0 +1,51 @@
+= PhoneBurner Session Builder
+
+====
+* **triggers on**: system:sink request
+* **path**: /ext_phoneburner/session
+* **method**: POST
+====
+
+This automation script create a PhoneBurner dialing session for the provided data and returns information related to the created session.
+Request's body must be the following JSON:
+----
+{
+  "provider":<module to use>,
+  "records":<an array of records to use>,
+  "ns":<namespace to use>
+}
+----
+
+=== Example request
+----
+{
+  "provider":"contact",
+  "records":["128935343561900393"],
+  "ns":"crm"
+}
+----
+
+=== Example response
+----
+"dialsessions":
+{
+    "redirect_url": <phoneburner redirect URL>,
+    "errors": <encountered errors>,
+    "total_results": <...>,
+    "page": <...>,
+    "page_size": <...>,
+    "total_pages": <...>
+}
+----
+
+=== Example CURL
+----
+curl -v -X POST \
+  --data '{
+    "provider":"contact",
+    "records":["128935343561900393"],
+    "ns":"crm"
+  }' \
+  -H "content-type: application/json" \
+  '$SYS_API_PATH/sink/ext_phoneburner_session?__sign=$SINK_SIGN'
+----

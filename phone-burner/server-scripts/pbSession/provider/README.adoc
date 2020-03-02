@@ -1,0 +1,18 @@
+= PhoneBurner Session Providers
+
+Session providers define mapping object from various data sources, such as contact module and lead module.
+Each provider returns a JS object with `sourceField: contactField` mapping.
+
+== Example
+
+The following example maps FirstName module field into first_name contact fields and MobilePhone module field into additional_phone and custom_fields contact fields.
+
+----
+{
+  FirstName: 'first_name',
+  MobilePhone: [
+    { list: 'additional_phone', key: 'number', meta: { phone_type: phoneTypes.cell } },
+    { list: 'custom_fields', key: 'value', meta: { type: fieldKindMapping.String, name: 'mobile_phone' } },
+  ],
+}
+----

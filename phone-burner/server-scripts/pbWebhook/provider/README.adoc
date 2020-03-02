@@ -1,0 +1,17 @@
+= PhoneBurner Webhook Providers
+
+Webhook providers define objects that map from PhoneBurner's contact object to a specific provider object, such as contact module, lead module, ...
+Each provider returns a JS object with `contactField: providerField` mapping.
+
+== Example
+
+The following example maps first_name contact field into FirstName module field and primary_phone.raw_phone contact field into Phone module field (recursive resolution).
+
+----
+{
+  first_name: 'FirstName',
+  primary_phone: {
+    raw_phone: 'Phone',
+  },
+}
+----

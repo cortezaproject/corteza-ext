@@ -1,0 +1,46 @@
+= PhoneBurner Webhook
+
+====
+* **triggers on**: system:sink request
+* **path**: /ext_phoneburner/webhook/api_callend
+* **method**: POST
+====
+
+This automation script defines a webhook for PhoneBurner's dial session and updates a related record.
+The webhook provides information that should be used to update a given module's record.
+
+For exact payload structure refer to PhoneBurner's docs (https://www.phoneburner.com/developer/route_list#dialsession)
+
+=== Example CURL
+
+Note: The following curl omits most fields and ignores values.
+Refer to PhoneBurner's documentation for more details.
+
+----
+curl -v -X POST \
+  --data '{
+      "status":<...>,
+      "duration":<...>,
+      "call_id":<...>,
+      "connected":<...>,
+      "custom_data": {
+        "ns": <...>,
+        "provider": <...>
+      },
+      "contact": {
+        "notes": <...>,
+        "primary_email": <...>,
+        "primary_phone": <...>,
+        "primary_address": <...>,
+        "user_id": <...>,
+        "first_name": <...>,
+        "last_name": <...>,
+        "contact_user_id": <...>,
+        "date_modified": <...>,
+        "custom_fields": <...>,
+        "lead_id": <...>
+      }
+    }' \
+    -H "content-type: application/json" \
+    '$SYS_API_PATH/ext_phoneburner/webhook/api_callend?__sign=$SINK_SIGN'
+----

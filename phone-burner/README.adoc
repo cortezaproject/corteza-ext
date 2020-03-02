@@ -1,0 +1,12 @@
+= Corteza PhoneBurner Extension
+
+@todo
+
+== Structure
+@todo
+
+== Modules
+@todo
+
+== Automation Scripts
+@todo
