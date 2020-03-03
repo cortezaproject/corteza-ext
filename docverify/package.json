@@ -1,0 +1,13 @@
+{
+  "name": "corteza-docverify",
+  "version": "1.0.0",
+  "description": "Corteza Official DocVerify Extension",
+  "main": "index.js",
+  "license": "Apache-2.0",
+  "contributors": [
+    "Jože Fortun <joze.fortun@gmail.com>"
+  ],
+  "dependencies": {
+    "soap": "^0.31.0"
+  }
+}
