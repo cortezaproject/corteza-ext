@@ -10,7 +10,7 @@ export default {
       .uiProp('app', 'compose')
   },
 
-  async exec ({ $record }, { Compose }) {
+  async exec ({ $record }, { Compose, ComposeUI }) {
     if ($record.values.DocverifyID) {
       const client = new DocVerifyClient('7F7KCY10mMDc9DhKs9iNKVppzB7bQh1v', 'B179274AD55C6A7D43DC7258020D8103')
       const response = await client.CancelESign($record.values.DocverifyID)
@@ -24,7 +24,9 @@ export default {
         $record.values.DocverifyID = undefined
         $record.values['docverifyesign__Sent_for_signature__c'] = false
 
-        return await Compose.saveRecord($record)
+        await Compose.saveRecord($record)
+        ComposeUI.success('Quote E-Signature cancelled')
+
       } else if (response === 'Already Cancelled') {
         throw new Error('Document E-Signature already cancelled')
       } else if (response === 'Not Found') {

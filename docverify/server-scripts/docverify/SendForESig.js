@@ -10,7 +10,7 @@ export default {
       .uiProp('app', 'compose')
   },
 
-  async exec ({ $record, $namespace }, { Compose }) {
+  async exec ({ $record, $namespace }, { Compose, ComposeUI }) {
     const name = $record.Name
     let Document = $record.QuoteFile
     Document = await Compose.findAttachmentByID(Document, $namespace)
@@ -30,14 +30,17 @@ export default {
             }
         
             if (!Document) {
+              ComposeUI.warning('Document to be signed is missing')
               throw new Error('Document to be signed is missing')
             }
         
             if (!email) {
+              ComposeUI.warning('Emails to E-Sign this document are missing')
               throw new Error('Emails to E-Sign this document are missing')
             }
         
             if (!name) {
+              ComposeUI.warning('Document name is missing')
               throw new Error('Document name is missing')
             }
         
@@ -51,7 +54,9 @@ export default {
         
             $record.values.DocverifyID = docverifyID
             $record.values['docverifyesign__Sent_for_signature__c'] = true
-            return await Compose.saveRecord($record)
+            await Compose.saveRecord($record)
+
+            ComposeUI.success('Quote successfully sent for E-Signature')
           }
       }).catch(({ message }) => {
         throw new Error(message)
