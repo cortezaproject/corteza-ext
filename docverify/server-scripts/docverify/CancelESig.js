@@ -7,7 +7,6 @@ export default {
   * triggers ({ on }) {
     yield on('manual')
       .for('compose:record')
-      .where('namespace', 'crm')
       .uiProp('app', 'compose')
   },
 
