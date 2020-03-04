@@ -92,7 +92,7 @@ export default class DocVerifyClient {
     } else if (!apiSig) {
       throw new Error("Invalid API signature")
     } else {
-      this.url = 'https://api.docverify.com/V3/?wsdl'
+      this.url = 'https://api.docverify.com/V2/?wsdl'
       this.apiKey = apiKey
       this.apiSig = apiSig
     }
@@ -163,7 +163,8 @@ export default class DocVerifyClient {
     }
 
     return new Promise ((resolve, reject) => {
-      soap.createClient(this.url, (err, client) => {
+      const url = 'https://api.docverify.com/V3/?wsdl'
+      soap.createClient(url, (err, client) => {
         if (err) {
           reject(new Error(err))
         }
@@ -174,7 +175,6 @@ export default class DocVerifyClient {
           }
 
           const { AddNewDocumentESignResult } = result
-          console.log(result)
           if(returnCodes[AddNewDocumentESignResult]) {
             reject(new Error(returnCodes[AddNewDocumentESignResult] || 'AddNewDocumentESign failed'))
           } else {
