@@ -11,8 +11,8 @@ export default {
   },
 
   async exec ({ $record, $namespace }, { Compose, ComposeUI }) {
-    const name = $record.Name
-    let Document = $record.QuoteFile
+    const name = $record.values.Name
+    let Document = $record.values.QuoteFile
     Document = await Compose.findAttachmentByID(Document, $namespace)
 
     fetch(Document.url)
@@ -24,7 +24,7 @@ export default {
           reader.onloadend = async () => {
             Document = reader.result
 
-            let email = $record.Email
+            let email = $record.values.Email
             if (Array.isArray(email)) {
               email = email.join(';')
             }
