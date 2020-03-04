@@ -1,4 +1,4 @@
-import DocVerifyClient from '../../../lib'
+import DocVerifyClient from '../../lib'
 
 export default {
   label: 'Cancel Quote E-Signature',
