@@ -13,7 +13,7 @@ export default {
 
   async exec ({ $record }, { Compose }) {
     if ($record.values.DocverifyID) {
-      const client = new DocVerifyClient('DmmU1neqVCWfy2FUIlQbb1V9y8QT4oPv', '6B5DEADBD2A441900F00B720512ED63C')
+      const client = new DocVerifyClient('7F7KCY10mMDc9DhKs9iNKVppzB7bQh1v', 'B179274AD55C6A7D43DC7258020D8103')
       const response = await client.CancelESign($record.values.DocverifyID)
 
       if (response === 'Success') {
