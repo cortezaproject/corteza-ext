@@ -8,6 +8,7 @@
     "Jože Fortun <joze.fortun@gmail.com>"
   ],
   "dependencies": {
+    "pdf-to-base64": "^1.0.2",
     "soap": "^0.31.0"
   }
 }

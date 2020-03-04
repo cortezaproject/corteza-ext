@@ -11,9 +11,9 @@ export default {
   },
 
   async exec ({ $record }, { Compose, ComposeUI }) {
-    if ($record.values.DocverifyID) {
-      const client = new DocVerifyClient('7F7KCY10mMDc9DhKs9iNKVppzB7bQh1v', 'B179274AD55C6A7D43DC7258020D8103')
-      const response = await client.CancelESign($record.values.DocverifyID)
+    if ($record.values.DocverifyId) {
+      const client = new DocVerifyClient('ZfYEuoTeqwQEQ2UHJuyUsv9lOaN7eKsJ', '553F6880C71F154291DEC277A67C979F')
+      const response = await client.CancelESign($record.values.DocverifyId)
 
       if (response === 'Success') {
         const opportunityRecord = await Compose.findRecordByID($record.values.OpportunityId, 'Opportunity')
@@ -21,7 +21,7 @@ export default {
         
         await Compose.saveRecord(opportunityRecord)
 
-        $record.values.DocverifyID = undefined
+        $record.values.DocverifyId = undefined
         $record.values['docverifyesign__Sent_for_signature__c'] = false
 
         await Compose.saveRecord($record)

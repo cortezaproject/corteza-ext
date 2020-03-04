@@ -1,4 +1,5 @@
 import DocVerifyClient from '../../lib'
+import pdf2base64 from 'pdf-to-base64'
 
 export default {
   label: 'Send Quote for E-Signature',
@@ -10,56 +11,52 @@ export default {
       .uiProp('app', 'compose')
   },
 
-  async exec ({ $record, $namespace }, { Compose, ComposeUI }) {
+  async exec ({ $record, $namespace }, { Compose }) {
     const name = $record.values.Name
     let Document = $record.values.QuoteFile
     Document = await Compose.findAttachmentByID(Document, $namespace)
+    const fileUrl = Compose.ComposeAPI.baseURL + Document.url
 
-    fetch(Document.url)
-      .then(response => response.blob())
-      .then(blob => {
-          const reader = new FileReader()
 
-          reader.readAsDataURL(blob)
-          reader.onloadend = async () => {
-            Document = reader.result
+    if ($record.values['docverifyesign__Sent_for_signature__c']) {
+      throw new Error('Document is already out to be signed')
+    } else if (!Document.url) {
+      throw new Error('Document URL is missing')
+    }
 
-            let email = $record.values.Email
-            if (Array.isArray(email)) {
-              email = email.join(';')
-            }
-        
-            if (!Document) {
-              ComposeUI.warning('Document to be signed is missing')
-              throw new Error('Document to be signed is missing')
-            }
-        
-            if (!email) {
-              ComposeUI.warning('Emails to E-Sign this document are missing')
-              throw new Error('Emails to E-Sign this document are missing')
-            }
-        
-            if (!name) {
-              ComposeUI.warning('Document name is missing')
-              throw new Error('Document name is missing')
-            }
-        
-            const client = new DocVerifyClient('7F7KCY10mMDc9DhKs9iNKVppzB7bQh1v', 'B179274AD55C6A7D43DC7258020D8103')
-            const docverifyID = await client.AddNewDocumentESign({ Document, DocumentName: name, Emails: email })
-        
-            const opportunityRecord = await Compose.findRecordByID($record.values.OpportunityId, 'Opportunity')
-            opportunityRecord.values['docverifyesign__Sent_for_signature__c'] = false
-            
-            await Compose.saveRecord(opportunityRecord)
-        
-            $record.values.DocverifyID = docverifyID
-            $record.values['docverifyesign__Sent_for_signature__c'] = true
-            await Compose.saveRecord($record)
+    pdf2base64(fileUrl).then(async base64pdf => {
+      Document = base64pdf
 
-            ComposeUI.success('Quote successfully sent for E-Signature')
-          }
-      }).catch(({ message }) => {
-        throw new Error(message)
-      })
+      let email = $record.values.Email
+      if (Array.isArray(email)) {
+        email = email.join(';')
+      }
+
+      if (!Document) {
+        throw new Error('Document to be signed is missing')
+      }
+
+      if (!email) {
+        throw new Error('Emails to E-Sign this document are missing')
+      }
+
+      if (!name) {
+        throw new Error('Document name is missing')
+      }
+
+      const client = new DocVerifyClient('ZfYEuoTeqwQEQ2UHJuyUsv9lOaN7eKsJ', '553F6880C71F154291DEC277A67C979F')
+      const DocverifyId = await client.AddNewDocumentESign({ Document, DocumentName: name, Emails: email })
+
+      const opportunityRecord = await Compose.findRecordByID($record.values.OpportunityId, 'Opportunity')
+      opportunityRecord.values['docverifyesign__Sent_for_signature__c'] = false
+      
+      await Compose.saveRecord(opportunityRecord)
+
+      $record.values.DocverifyId = DocverifyId
+      $record.values['docverifyesign__Sent_for_signature__c'] = true
+      return await Compose.saveRecord($record)
+    }).catch(({ message }) => {
+      throw new Error(message)
+    })
   }
 }
