@@ -82,15 +82,15 @@ const returnCodes = {
   '-306': 'Template has exceeded the allowable size of 1024000 bytes.',
   '-307': 'Template is password protected. Please remove passwords from the PDF, and try again.',
   '-308': 'Template uploaded is either corrupt or not a PDF.',
-  '-999': 'Deprecated',
+  '-999': 'Deprecated'
 }
 
 export default class DocVerifyClient {
   constructor (apiKey, apiSig) {
     if (!apiKey) {
-      throw new Error("Invalid API key")
+      throw new Error('Invalid API key')
     } else if (!apiSig) {
-      throw new Error("Invalid API signature")
+      throw new Error('Invalid API signature')
     } else {
       this.url = 'https://api.docverify.com/V2/?wsdl'
       this.apiKey = apiKey
@@ -117,7 +117,7 @@ export default class DocVerifyClient {
    * @param {String} ElementsFromTemplateID Template ID of the DocVerify Library document.
    * @returns {String} DocVerifyID of the added document.
    */
-  AddNewDocumentESign ({ 
+  AddNewDocumentESign ({
     Document = '',
     creditType = 3,
     DocumentName = '',
@@ -132,14 +132,14 @@ export default class DocVerifyClient {
     RequestPhoneVerify = false,
     XMLData = '',
     DetectFields = false,
-    ElementsFromTemplateID = '',
+    ElementsFromTemplateID = ''
   }) {
     if (!Document) {
-      throw new Error("field Document is empty")
+      throw new Error('field Document is empty')
     } else if (!DocumentName) {
-      throw new Error("field DocumentName is empty")
+      throw new Error('field DocumentName is empty')
     } else if (!Emails) {
-      throw new Error("field Emails is empty")
+      throw new Error('field Emails is empty')
     }
 
     const args = {
@@ -159,10 +159,10 @@ export default class DocVerifyClient {
       RequestPhoneVerify,
       XMLData,
       DetectFields,
-      ElementsFromTemplateID,
+      ElementsFromTemplateID
     }
 
-    return new Promise ((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const url = 'https://api.docverify.com/V3/?wsdl'
       soap.createClient(url, (err, client) => {
         if (err) {
@@ -175,7 +175,7 @@ export default class DocVerifyClient {
           }
 
           const { AddNewDocumentESignResult } = result
-          if(returnCodes[AddNewDocumentESignResult]) {
+          if (returnCodes[AddNewDocumentESignResult]) {
             reject(new Error(returnCodes[AddNewDocumentESignResult] || 'AddNewDocumentESign failed'))
           } else {
             resolve(AddNewDocumentESignResult)
@@ -192,12 +192,12 @@ export default class DocVerifyClient {
    */
   CancelESign (DocVerifyID = '') {
     if (!DocVerifyID) {
-      throw new Error("field DocVerifyID is empty")
+      throw new Error('field DocVerifyID is empty')
     }
-    
+
     const args = { apiKey: this.apiKey, apiSig: this.apiSig, DocVerifyID }
 
-    return new Promise ((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       soap.createClient(this.url, (err, client) => {
         if (err) {
           reject(new Error(err))
@@ -209,7 +209,7 @@ export default class DocVerifyClient {
           }
 
           const { CancelESignResult } = result
-          if(returnCodes[CancelESignResult]) {
+          if (returnCodes[CancelESignResult]) {
             reject(new Error(returnCodes[CancelESignResult] || 'CancelESign failed'))
           } else {
             resolve(CancelESignResult)
@@ -226,12 +226,12 @@ export default class DocVerifyClient {
    */
   GetDocumentStatus (DocVerifyID = '') {
     if (!DocVerifyID) {
-      throw new Error("field DocVerifyID is empty")
+      throw new Error('field DocVerifyID is empty')
     }
-    
+
     const args = { apiKey: this.apiKey, apiSig: this.apiSig, DocVerifyID }
 
-    return new Promise ((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       soap.createClient(this.url, (err, client) => {
         if (err) {
           reject(new Error(err))
@@ -243,7 +243,7 @@ export default class DocVerifyClient {
           }
 
           const { GetDocumentStatusResult } = result
-          if(returnCodes[GetDocumentStatusResult]) {
+          if (returnCodes[GetDocumentStatusResult]) {
             reject(new Error(returnCodes[GetDocumentStatusResult] || 'GetDocumentStatus failed'))
           } else {
             resolve(GetDocumentStatusResult)
@@ -260,12 +260,12 @@ export default class DocVerifyClient {
    */
   GetDocument (DocVerifyID = '') {
     if (!DocVerifyID) {
-      throw new Error("field DocVerifyID is empty")
+      throw new Error('field DocVerifyID is empty')
     }
-    
+
     const args = { apiKey: this.apiKey, apiSig: this.apiSig, DocVerifyID }
 
-    return new Promise ((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       soap.createClient(this.url, (err, client) => {
         if (err) {
           reject(new Error(err))
@@ -277,7 +277,7 @@ export default class DocVerifyClient {
           }
 
           const { GetDocumentResult } = result
-          if(returnCodes[GetDocumentResult]) {
+          if (returnCodes[GetDocumentResult]) {
             reject(new Error(returnCodes[GetDocumentResult] || 'GetDocument failed'))
           } else {
             resolve(GetDocumentResult)
@@ -287,7 +287,6 @@ export default class DocVerifyClient {
     })
   }
 
-
   /**
    * Get document signature status
    * @param {String} DocVerifyID ID of the document.
@@ -295,12 +294,12 @@ export default class DocVerifyClient {
    */
   GetSignatureStatus (DocVerifyID = '') {
     if (!DocVerifyID) {
-      throw new Error("field DocVerifyID is empty")
+      throw new Error('field DocVerifyID is empty')
     }
-    
+
     const args = { apiKey: this.apiKey, apiSig: this.apiSig, DocVerifyID }
 
-    return new Promise ((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       soap.createClient(this.url, (err, client) => {
         if (err) {
           reject(new Error(err))
@@ -312,7 +311,7 @@ export default class DocVerifyClient {
           }
 
           const { GetSignatureStatusResult } = result
-          if(returnCodes[GetSignatureStatusResult]) {
+          if (returnCodes[GetSignatureStatusResult]) {
             reject(new Error(returnCodes[GetSignatureStatusResult] || 'GetSignatureStatus failed'))
           } else {
             resolve(GetSignatureStatusResult)
@@ -330,12 +329,12 @@ export default class DocVerifyClient {
    */
   GetESignListID ({ ListType = 1 }) {
     if (!ListType) {
-      throw new Error("field ListType is empty")
+      throw new Error('field ListType is empty')
     }
-    
+
     const args = { apiKey: this.apiKey, apiSig: this.apiSig, ListType: ListType }
 
-    return new Promise ((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       soap.createClient(this.url, (err, client) => {
         if (err) {
           reject(new Error(err))
@@ -347,7 +346,7 @@ export default class DocVerifyClient {
           }
 
           const { GetESignListIDResult } = result
-          if(returnCodes[GetESignListIDResult]) {
+          if (returnCodes[GetESignListIDResult]) {
             reject(new Error(returnCodes[GetESignListIDResult] || 'GetESignListID failed'))
           } else {
             resolve(JSON.parse(GetESignListIDResult))
