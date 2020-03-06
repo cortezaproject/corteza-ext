@@ -1,5 +1,7 @@
 import DocVerifyClient from '../../lib'
 
+const docverifysignField = 'docverifyesign__Sent_for_signature__c'
+
 export default {
   label: 'Cancel Quote E-Signature',
   description: 'Cancels Quote sent for signing',
@@ -10,23 +12,22 @@ export default {
       .uiProp('app', 'compose')
   },
 
-  async exec ({ $record }, { Compose, ComposeUI }) {
+  async exec ({ $record }, { Compose }) {
     if ($record.values.DocverifyId) {
       const client = new DocVerifyClient('ZfYEuoTeqwQEQ2UHJuyUsv9lOaN7eKsJ', '553F6880C71F154291DEC277A67C979F')
       const response = await client.CancelESign($record.values.DocverifyId)
 
       if (response === 'Success') {
-        const opportunityRecord = await Compose.findRecordByID($record.values.OpportunityId, 'Opportunity')
-        opportunityRecord.values['docverifyesign__Sent_for_signature__c'] = false
-        
-        await Compose.saveRecord(opportunityRecord)
+        Compose.findRecordByID($record.values.OpportunityId, 'Opportunity')
+          .then(async opportunityRecord => {
+            opportunityRecord.values[docverifysignField] = false
+            await Compose.saveRecord(opportunityRecord)
+          })
 
         $record.values.DocverifyId = undefined
-        $record.values['docverifyesign__Sent_for_signature__c'] = false
+        $record.values[docverifysignField] = false
 
         await Compose.saveRecord($record)
-        ComposeUI.success('Quote E-Signature cancelled')
-
       } else if (response === 'Already Cancelled') {
         throw new Error('Document E-Signature already cancelled')
       } else if (response === 'Not Found') {

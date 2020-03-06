@@ -1,6 +1,8 @@
 import DocVerifyClient from '../../lib'
 import pdf2base64 from 'pdf-to-base64'
 
+const docverifysignField = 'docverifyesign__Sent_for_signature__c'
+
 export default {
   label: 'Send Quote for E-Signature',
   description: 'Sends Quote to contact for signing via DocVerify',
@@ -17,14 +19,13 @@ export default {
     Document = await Compose.findAttachmentByID(Document, $namespace)
     const fileUrl = Compose.ComposeAPI.baseURL + Document.url
 
-
-    if ($record.values['docverifyesign__Sent_for_signature__c']) {
+    if ($record.values[docverifysignField]) {
       throw new Error('Document is already out to be signed')
     } else if (!Document.url) {
       throw new Error('Document URL is missing')
     }
 
-    pdf2base64(fileUrl).then(async base64pdf => {
+    return pdf2base64(fileUrl).then(async base64pdf => {
       Document = base64pdf
 
       let email = $record.values.Email
@@ -47,16 +48,15 @@ export default {
       const client = new DocVerifyClient('ZfYEuoTeqwQEQ2UHJuyUsv9lOaN7eKsJ', '553F6880C71F154291DEC277A67C979F')
       const DocverifyId = await client.AddNewDocumentESign({ Document, DocumentName: name, Emails: email })
 
-      const opportunityRecord = await Compose.findRecordByID($record.values.OpportunityId, 'Opportunity')
-      opportunityRecord.values['docverifyesign__Sent_for_signature__c'] = false
-      
-      await Compose.saveRecord(opportunityRecord)
+      Compose.findRecordByID($record.values.OpportunityId, 'Opportunity')
+        .then(async opportunityRecord => {
+          opportunityRecord.values[docverifysignField] = false
+          Compose.saveRecord(opportunityRecord)
+        })
 
       $record.values.DocverifyId = DocverifyId
-      $record.values['docverifyesign__Sent_for_signature__c'] = true
-      return await Compose.saveRecord($record)
-    }).catch(({ message }) => {
-      throw new Error(message)
+      $record.values[docverifysignField] = true
+      return Compose.saveRecord($record)
     })
   }
 }

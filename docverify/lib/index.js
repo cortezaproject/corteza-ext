@@ -253,6 +253,40 @@ export default class DocVerifyClient {
     })
   }
 
+    /**
+   * Get document details
+   * @param {String} DocVerifyID ID of the document.
+   * @returns {String} JSON object of document details
+   */
+  GetDocumentDetailsJSON (DocVerifyID = '') {
+    if (!DocVerifyID) {
+      throw new Error("field DocVerifyID is empty")
+    }
+    
+    const args = { apiKey: this.apiKey, apiSig: this.apiSig, DocVerifyID }
+
+    return new Promise ((resolve, reject) => {
+      soap.createClient(this.url, (err, client) => {
+        if (err) {
+          reject(new Error(err))
+        }
+
+        client.GetDocumentDetailsJSON(args, (err, result) => {
+          if (err) {
+            reject(new Error(err))
+          }
+
+          const { GetDocumentDetailsJSONResult } = result
+          if(returnCodes[GetDocumentDetailsJSONResult]) {
+            reject(new Error(returnCodes[GetDocumentDetailsJSONResult] || 'GetDocumentDetailsJSON failed'))
+          } else {
+            resolve(GetDocumentDetailsJSONResult)
+          }
+        })
+      })
+    })
+  }
+
   /**
    * Downloads the document as base64binary
    * @param {String} DocVerifyID ID of the document.
@@ -262,10 +296,10 @@ export default class DocVerifyClient {
     if (!DocVerifyID) {
       throw new Error('field DocVerifyID is empty')
     }
-
+    
     const args = { apiKey: this.apiKey, apiSig: this.apiSig, DocVerifyID }
 
-    return new Promise((resolve, reject) => {
+    return new Promise ((resolve, reject) => {
       soap.createClient(this.url, (err, client) => {
         if (err) {
           reject(new Error(err))
@@ -276,11 +310,15 @@ export default class DocVerifyClient {
             reject(new Error(err))
           }
 
-          const { GetDocumentResult } = result
-          if (returnCodes[GetDocumentResult]) {
-            reject(new Error(returnCodes[GetDocumentResult] || 'GetDocument failed'))
+          if (!result) {
+            reject(new Error('GetDocument failed - no result'))
           } else {
-            resolve(GetDocumentResult)
+            const { GetDocumentResult } = result
+            if(returnCodes[GetDocumentResult]) {
+              reject(new Error(returnCodes[GetDocumentResult] || 'GetDocument failed'))
+            } else {
+              resolve(GetDocumentResult)
+            }
           }
         })
       })
