@@ -52,6 +52,7 @@ export default {
 
     // Get the primary contact for the quote
     return Compose.findRecords(`OpportunityId = ${$record.recordID}`, 'OpportunityContactRole')
+      .catch(() => ({ set: [] }))
       .then(async ({ set }) => {
         let primary_contact
 
@@ -165,8 +166,11 @@ export default {
             }, 'Quote')
               .then(async myQuote => {
                 const mySavedQuote = await Compose.saveRecord(myQuote)
+
                 // Get the list of products from the opportunity to the quote
-                return Compose.findRecords(`OpportunityId = ${$record.recordID}`, 'OpportunityLineItem')
+                // @todo improve!
+                return Compose.findRecords({ filter: `OpportunityId = ${$record.recordID}`, perPage: 0 }, 'OpportunityLineItem')
+                  .catch(() => ({ set: [] }))
                   .then(({ set }) => {
                     // Loop through the lineitems related to the opportunity
                     set.forEach(r => {

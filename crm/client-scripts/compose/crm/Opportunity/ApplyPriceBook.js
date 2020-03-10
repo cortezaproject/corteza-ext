@@ -18,6 +18,7 @@ export default {
     if (!pricebookId) {
       // If there is no price book selected, get the default price book.
       const { set } = await Compose.findRecords('IsActive = 1', 'Pricebook')
+        .catch(() => ({ set: [] }))
       if (set.length === 0) {
         // return that there are no Price books in the CRM
         ComposeUI.warning('There are no active price books configured in the CRM. Please insert an active price book in the Price book module.')
@@ -52,6 +53,7 @@ export default {
 
     // Find all opportunity lineitems
     return Compose.findRecords(`OpportunityId = ${$record.recordID}`, 'OpportunityLineItem')
+      .catch(() => ({ set: [] }))
       .then(({ set }) => {
         set.forEach(async lineitem => {
           // Set the default values
@@ -69,6 +71,7 @@ export default {
           lineitem.values.ProductCode = product.values.ProductCode
           // Get the right price from the selected price book
           return Compose.findRecords(`PricebookId = ${pricebookId} AND ProductId = ${lineitem.values.ProductId}`, 'PricebookEntry')
+            .catch(() => ({ set: [] }))
             .then(async ({ set }) => {
               if (set.length > 0) {
                 const pricebookEntry = set[0]
@@ -111,12 +114,8 @@ export default {
                 $record.values.Amount = amount
                 return Compose.saveRecord($record)
               }
-            }).catch(({ message }) => {
-              throw new Error(message)
             })
         })
-      }).catch(({ message }) => {
-        throw new Error(message)
       })
   }
 }
