@@ -1,0 +1,95 @@
+{
+  "name": "@cortezaproject/corteza-ext-renderer",
+  "description": "Corteza document rendering engine",
+  "version": "2020.3.0",
+  "license": "Apache-2.0",
+  "author": "Tomaž Jerman <tomaz.jerman@crust.tech>",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "lint": "eslint src/** --ext .js,.ts",
+    "test:unit": "mocha",
+    "test:unit:cc": "nyc mocha"
+  },
+  "dependencies": {
+    "@types/pdfmake": "^0.1.9",
+    "handlebars": "4.7.2",
+    "html-minifier": "^4.0.0",
+    "html-parse-stringify": "^1.0.3",
+    "juice": "^6.0.0",
+    "pdfmake": "^0.1.64"
+  },
+  "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "1.0.1",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "@types/chai": "^4.2.6",
+    "@types/chai-as-promised": "^7.1.2",
+    "@types/js-yaml": "^3.12.2",
+    "@types/mocha": "^5.2.7",
+    "@typescript-eslint/eslint-plugin": "^2.16.0",
+    "@typescript-eslint/parser": "^2.16.0",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "esformatter": "^0.11.2",
+    "esformatter-add-trailing-commas": "^1.1.0",
+    "eslint": "^6.7.2",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-import-resolver-typescript": "^2.0.0",
+    "eslint-plugin-import": "2.20.0",
+    "eslint-plugin-json": "^2.0.1",
+    "eslint-plugin-node": "11.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "esm": "^3.2.25",
+    "mocha": "^7.0.0",
+    "node-watch": "^0.6.3",
+    "nodemon": "^2.0.2",
+    "nyc": "^15.0.0",
+    "rollup": "^1.29.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-typescript2": "^0.25.3",
+    "source-map-support": "^0.5.16",
+    "ts-node": "^8.6.2",
+    "ts-node-dev": "^1.0.0-pre.44",
+    "typescript": "^3.7.2"
+  },
+  "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "require": [
+      "ts-node/register"
+    ],
+    "all": true,
+    "check-coverage": true,
+    "per-file": true,
+    "lines": 90,
+    "functions": 90,
+    "statements": 90,
+    "reporter": [
+      "text",
+      "lcov"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ]
+  },
+  "engines": {
+    "node": ">=12.14.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cortezaproject/corteza-ext.git"
+  },
+  "keywords": [
+    "corteza",
+    "extensions"
+  ],
+  "bugs": {
+    "url": "https://github.com/cortezaproject/corteza-ext/issues"
+  },
+  "homepage": "https://github.com/cortezaproject/corteza-ext#readme"
+}
