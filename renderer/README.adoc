@@ -1,0 +1,3 @@
+# Corteza document rendering engine
+
+Extension provides an engine for document rendering.
