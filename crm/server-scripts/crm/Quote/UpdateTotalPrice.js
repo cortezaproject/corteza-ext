@@ -37,15 +37,13 @@ export default {
 
     // Apply taxes
     const tax = $record.values.Tax
-    if (!shippingHandling || shippingHandling === '' || isNaN(shippingHandling)) {
+    if (!tax || tax === '' || isNaN(tax)) {
       // No tax, so don't do anything
       $record.values.GrandTotal = totalPrice
-    } else {
-      if (tax > 0) {
-        // Apply tax
-        const taxpercent = parseFloat(tax / 100)
-        $record.values.GrandTotal = totalPrice * (1 + taxpercent)
-      }
+    } else if(tax > 0) {
+      // Apply tax
+      const taxpercent = parseFloat(tax / 100)
+      $record.values.GrandTotal = totalPrice * (1 + taxpercent)
     }
 
     return $record

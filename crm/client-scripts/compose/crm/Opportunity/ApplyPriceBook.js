@@ -112,6 +112,7 @@ export default {
 
                 // Save the opportunity record
                 $record.values.Amount = amount
+                ComposeUI.success('Pricebook applied')
                 return Compose.saveRecord($record)
               }
             })
