@@ -6,7 +6,7 @@ export default {
     yield before('create', 'update')
       .for('compose:record')
       .where('module', 'Contact')
-      .where('namespace', 'crm')
+      .where('namespace', 'service-cloud')
   },
 
   async exec ({ $record }, { Compose }) {
