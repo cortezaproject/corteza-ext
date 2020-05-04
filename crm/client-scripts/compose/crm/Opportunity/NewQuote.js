@@ -50,8 +50,11 @@ export default {
     let quoteExpirationDate
     let quoteNumber
 
+    // Get the related account
+    const account = await Compose.findRecordByID($record.values.AccountId, 'Account')
+
     // Get the primary contact for the quote
-    return Compose.findRecords(`OpportunityId = ${$record.recordID}`, 'OpportunityContactRole')
+    return Compose.findRecords(`AccountId = ${account.recordID}`, 'Contact')
       .catch(() => ({ set: [] }))
       .then(async ({ set }) => {
         let primary_contact
@@ -61,27 +64,16 @@ export default {
           primary_contact = set[0]
         } else {
           // Loop through the contacts of the account, to save the primary contact
-          set.forEach(r => {
-            // Check if it's the primary contact
-            const contactIsPrimary = r.values.IsPrimary
-            if (contactIsPrimary === '1') {
-              // Add the contact
-              primary_contact = r
-            }
-          })
+          primary_contact = set.find(r => r.values.IsPrimary === '1')
         }
-
+      
         // If we have the primary contact, continue to add it to the quote. Else, skip this block
         if (primary_contact) {
-          // Get the contact data
-          const contact = await Compose.findRecordByID(primary_contact.values.ContactId, 'Contact')
-          quoteContactId = contact.recordID
-          quoteEmail = contact.values.Email
-          quotePhone = contact.values.Phone
-          quoteFax = contact.values.Fax
+          quoteContactId = primary_contact.recordID
+          quoteEmail = primary_contact.values.Email
+          quotePhone = primary_contact.values.Phone
+          quoteFax = primary_contact.values.Fax
         }
-        // Get the related account
-        const account = await Compose.findRecordByID($record.values.AccountId, 'Account')
         quoteAccountId = account.recordID,
         quoteBillingStreet = account.values.BillingStreet,
         quoteBillingCity = account.values.BillingCity,
@@ -199,6 +191,6 @@ export default {
                   })
               })
           })
-      })
+        })
   }
 }
