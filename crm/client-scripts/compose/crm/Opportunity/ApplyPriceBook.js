@@ -112,8 +112,12 @@ export default {
 
                 // Save the opportunity record
                 $record.values.Amount = amount
+
+                const newRecord = await Compose.saveRecord($record)
+                ComposeUI.gotoRecordViewer(newRecord)
                 ComposeUI.success('Pricebook applied')
-                return Compose.saveRecord($record)
+
+                return newRecord
               }
             })
         })
