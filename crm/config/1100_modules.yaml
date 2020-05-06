@@ -305,6 +305,11 @@ modules:
       BillingStreet:
         label: Billing Street
         kind: String
+      GeneratedBillingAddress:
+        label: Billing Address (generated)
+        kind: String
+        options:
+          multiLine: true
       Description:
         label: Description
         kind: String
@@ -668,6 +673,11 @@ modules:
       ShippingStreet:
         label: Shipping Street
         kind: String
+      GeneratedShippingAddress:
+        label: Shipping Address (generated)
+        kind: String
+        options:
+          multiLine: true
       Sic:
         label: SIC Code
         kind: String

@@ -17,13 +17,23 @@ export default {
       return true
     }
 
+    const { Street, City, State, PostalCode, Country } = $record.values
+    const generatedAddress = [Street, City, State, PostalCode, Country ].filter(a => a).join('\n')
+
     // create new record of type/module Account and copy all values
     return Compose.makeRecord({
-      BillingStreet: $record.values.Street,
-      BillingCity: $record.values.City,
-      BillingState: $record.values.State,
-      BillingPostalCode: $record.values.PostalCode,
-      BillingCountry: $record.values.Country,
+      BillingStreet: Street,
+      BillingCity: City,
+      BillingState: State,
+      BillingPostalCode: PostalCode,
+      BillingCountry: Country,
+      GeneratedBillingAddress: generatedAddress,
+      ShippingStreet: Street,
+      ShippingCity: City,
+      ShippingState: State,
+      ShippingPostalCode: PostalCode,
+      ShippingCountry: Country,
+      GeneratedShippingAddress: generatedAddress,
       AnnualRevenue: $record.values.AnnualRevenue,
       Description: $record.values.Description,
       AccountName: $record.values.Company,

@@ -48,15 +48,25 @@ describe(__filename, () => {
     Title: 'Title',
   }
 
+  const { Street, City, State, PostalCode, Country } = leadRecord.values
+  const generatedAddress = [Street, City, State, PostalCode, Country ].filter(a => a).join('\n')
+
   const accountModule = getModuleFromYaml('Account', modulesYaml)
   const accountRecord = new Record(accountModule)
   accountRecord.recordID = recordID
   accountRecord.values = {
-    BillingStreet: leadRecord.values.Street,
-    BillingCity: leadRecord.values.City,
-    BillingState: leadRecord.values.State,
-    BillingPostalCode: leadRecord.values.PostalCode,
-    BillingCountry: leadRecord.values.Country,
+    BillingStreet: Street,
+    BillingCity: City,
+    BillingState: State,
+    BillingPostalCode: PostalCode,
+    BillingCountry: Country,
+    GeneratedBillingAddress: generatedAddress,
+    ShippingStreet: Street,
+    ShippingCity: City,
+    ShippingState: State,
+    ShippingPostalCode: PostalCode,
+    ShippingCountry: Country,
+    GeneratedShippingAddress: generatedAddress,
     AnnualRevenue: leadRecord.values.AnnualRevenue,
     AccountName: leadRecord.values.Company,
     Description: leadRecord.values.Description,
