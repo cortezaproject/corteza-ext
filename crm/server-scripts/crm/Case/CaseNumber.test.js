@@ -32,7 +32,7 @@ describe(__filename, () => {
 
   const newCaseRecord = new Record(caseModule)
   newCaseRecord.values = {
-    CaseNumber: settingsRecord.values.CaseNextNumber
+    CaseNumber: '00000001'
   }
 
   beforeEach(() => {
@@ -48,10 +48,11 @@ describe(__filename, () => {
       h.findLastRecord.resolves(settingsRecord)
       h.saveRecord.resolves(newSettingsRecord)
 
-      await CaseNumber.exec({ $record: caseRecord }, { Compose: h })
+      const record = await CaseNumber.exec({ $record: caseRecord }, { Compose: h })
       
       expect(h.findLastRecord.calledOnceWith('Settings')).true
       expect(h.saveRecord.calledOnceWith(newSettingsRecord)).true
+      expect(record.values.CaseNumber).equal(newCaseRecord.values.CaseNumber)
     })
   })
 

@@ -17,7 +17,7 @@ export default {
         nextCaseNumber = 0
       }
 
-      $record.values.CaseNumber = nextCaseNumber
+      $record.values.CaseNumber = ('' + nextCaseNumber).padStart(8, '0')
       const nextCaseNumberUpdated = parseInt(nextCaseNumber, 10) + 1
 
       // Update the config

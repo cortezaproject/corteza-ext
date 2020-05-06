@@ -44,7 +44,7 @@ describe(__filename, () => {
     SuppliedName: accountRecord.values.FirstName + ' ' + accountRecord.values.LastName,
     SuppliedEmail: accountRecord.values.Email,
     SuppliedPhone: accountRecord.values.Phone,
-    CaseNumber: settingsRecord.values.CaseNextNumber
+    CaseNumber: '00000001'
   }
 
   beforeEach(() => {

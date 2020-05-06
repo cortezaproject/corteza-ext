@@ -29,7 +29,7 @@ export default {
         SuppliedName: $record.values.FirstName + ' ' + $record.values.LastName,
         SuppliedEmail: $record.values.Email,
         SuppliedPhone: $record.values.Phone,
-        CaseNumber: nextCaseNumber
+        CaseNumber: ('' + nextCaseNumber).padStart(8, '0')
       }, 'Case').then(async myCase => {
         const mySavedCase = await Compose.saveRecord(myCase)
         const nextCaseNumberUpdated = parseInt(nextCaseNumber, 10) + 1

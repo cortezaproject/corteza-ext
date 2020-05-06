@@ -46,7 +46,7 @@ export default {
           SuppliedName: SuppliedName,
           SuppliedEmail: SuppliedEmail,
           SuppliedPhone: SuppliedPhone,
-          CaseNumber: nextCaseNumber
+          CaseNumber: ('' + nextCaseNumber).padStart(8, '0')
         }, 'Case')
           .then(async myCase => {
             // Save new Case record
