@@ -39,7 +39,7 @@ describe(__filename, () => {
   })
 
   describe('successful setting of contact values', () => {
-    it('should sucessfully set record label of a contact when Account record doesn\t exist', async () => {
+    it('should sucessfully set record label of a contact when Account record doesnt exist', async () => {
       h.findRecordByID.resolves(undefined)
 
       const record = await SetLabel.exec({ $record: contactRecord }, { Compose: h })

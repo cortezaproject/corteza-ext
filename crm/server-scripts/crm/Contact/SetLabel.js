@@ -37,7 +37,7 @@ export default {
     // Check if there is a related account, to map the fields of the account
     const accountId = $record.values.AccountId
     if (accountId) {
-      Compose.findRecordByID(accountId, 'Account').then(accountRecord => {
+      await Compose.findRecordByID(accountId, 'Account').then(accountRecord => {
         if ((accountRecord || { values: {}}).values.AccountName) {
           // Add to the record label
           recordLabel = recordLabel + ` (${accountRecord.values.AccountName})`
