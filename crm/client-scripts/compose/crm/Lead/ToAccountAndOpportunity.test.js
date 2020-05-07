@@ -61,6 +61,7 @@ describe(__filename, () => {
     LastName: 'LastName',
     MobilePhone: 'MobilePhone',
     Title: 'Title',
+    CampaignId: ['1', '2'],
   }
 
   const { Street, City, State, PostalCode, Country } = leadRecord.values
@@ -144,7 +145,8 @@ describe(__filename, () => {
     CloseDate: ToAccountAndOpportunity.getTimestamp(settingsRecord.values.OpportunityCloseDateDays),
     Probability: settingsRecord.values.OpportunityProbability,
     ForecastCategory: settingsRecord.values.OpportunityForecaseCategory,
-    StageName: settingsRecord.values.OpportunityStagename
+    StageName: settingsRecord.values.OpportunityStagename,
+    CampaignId: '1'
   }
 
   const opportunityContactRoleModule = getModuleFromYaml('OpportunityContactRole', modulesYaml)
@@ -166,6 +168,13 @@ describe(__filename, () => {
     ConvertedDate: accountRecord.createdAt
   }
 
+  const campaignModule = getModuleFromYaml('Campaigns', modulesYaml)
+  const campaignRecord1 = new Record(campaignModule)
+  campaignRecord1.recordID = '1'
+
+  const campaignRecord2 = new Record(campaignModule)
+  campaignRecord2.recordID = '2'
+
   const user = {
     email: 'mail'
   }
@@ -176,7 +185,7 @@ describe(__filename, () => {
     s = stub(new SystemHelper({ ComposeAPI: new SystemAPI({}) }))
     ui = stub({ 
       success: () => {},
-      gotoRecordEditor: () => {}
+      gotoRecordViewer: () => {}
     })
   })
 
@@ -191,6 +200,7 @@ describe(__filename, () => {
       h.makeRecord.onCall(1).resolves(contactRecord)
       h.saveRecord.onCall(1).resolves(contactRecord)
       h.findLastRecord.resolves(settingsRecord)
+      h.findRecords.resolves({set: [campaignRecord1, campaignRecord2] })
       h.makeRecord.onCall(2).resolves(opportunityRecord)
       h.saveRecord.onCall(2).resolves(opportunityRecord)
       h.makeRecord.onCall(3).resolves(opportunityContactRoleRecord)
@@ -205,6 +215,7 @@ describe(__filename, () => {
       expect(h.makeRecord.getCall(1).calledWith(contactRecord.values, 'Contact')).true
       expect(h.saveRecord.getCall(1).calledWith(contactRecord)).true
       expect(h.findLastRecord.calledOnceWith('Settings')).true
+      expect(h.findRecords.calledOnceWith({ filter: `${leadRecord.values.CampaignId.join('OR')}`, sort: 'createdAt DESC'}, 'Campaigns')).true
       expect(h.makeRecord.getCall(2).calledWith(opportunityRecord.values, 'Opportunity')).true
       expect(h.saveRecord.getCall(2).calledWith(opportunityRecord)).true
       expect(h.makeRecord.getCall(3).calledWith(opportunityContactRoleRecord.values, 'OpportunityContactRole')).true
@@ -216,7 +227,7 @@ describe(__filename, () => {
       const html = { header: '<h1>The following lead has been converted:</h1>' }
       expect(h.sendRecordToMail.calledOnceWith(to, subject, html, accountRecord )).true
       expect(ui.success.calledOnceWith('The lead has been converted.')).true
-      expect(ui.gotoRecordEditor.calledOnceWith(accountRecord)).true
+      expect(ui.gotoRecordViewer.calledOnceWith(opportunityRecord)).true
     })
   })
 

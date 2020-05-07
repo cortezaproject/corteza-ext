@@ -136,7 +136,7 @@ describe(__filename, () => {
     ui = stub({ 
       success: () => {},
       warning: () => {},
-      gotoRecordEditor: () => {}
+      gotoRecordViewer: () => {}
     })
   })
 
@@ -167,7 +167,7 @@ describe(__filename, () => {
       const html = { header: '<h1>The following lead has been converted:</h1>' }
       expect(h.sendRecordToMail.calledOnceWith(to, subject, html, accountRecord )).true
       expect(ui.success.calledOnceWith('The lead has been converted.')).true
-      expect(ui.gotoRecordEditor.calledOnceWith(accountRecord)).true
+      expect(ui.gotoRecordViewer.calledOnceWith(accountRecord)).true
     })
 
     it('should inform if lead is already converted', async () => {

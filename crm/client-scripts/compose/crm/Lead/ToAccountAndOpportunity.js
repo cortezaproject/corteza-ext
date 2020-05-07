@@ -88,7 +88,7 @@ export default {
         await Compose.saveRecord(mySavedContact)
         // First get the default values
         // Get the default settings
-        return Compose.findLastRecord('Settings').then(settings => {
+        return Compose.findLastRecord('Settings').then(async settings => {
           const opportunityCloseDays = settings.values.OpportunityCloseDateDays
           const opportunityProbability = settings.values.OpportunityProbability
           const opportunityForecaseCategory = settings.values.OpportunityForecaseCategory
@@ -96,6 +96,7 @@ export default {
 
           // Calculate the expiration date
           const closeDate = this.getTimestamp(opportunityCloseDays)
+          const campaign = (await Compose.findRecords({ filter: `${$record.values.CampaignId.join('OR')}`, sort: 'createdAt DESC'}, 'Campaigns')).set[0]
 
           // Create the related opportunity
           return Compose.makeRecord({
@@ -109,44 +110,46 @@ export default {
             CloseDate: closeDate,
             Probability: opportunityProbability,
             ForecastCategory: opportunityForecaseCategory,
-            StageName: opportunityStagename
+            StageName: opportunityStagename,
+            CampaignId: campaign.recordID
           }, 'Opportunity').then(async myOpportunity => {
             const mySavedOpportunity = await Compose.saveRecord(myOpportunity)
             // Create a new contact linked to the opportunity
-            return Compose.makeRecord({
+            Compose.makeRecord({
               ContactId: mySavedContact.recordID,
               OpportunityId: mySavedOpportunity.recordID,
               IsPrimary: '1'
-            }, 'OpportunityContactRole').then(async myOpportunityContactRole => {
-              await Compose.saveRecord(myOpportunityContactRole)
-            })
+            }, 'OpportunityContactRole')
+              .then(async myOpportunityContactRole => {
+                await Compose.saveRecord(myOpportunityContactRole)
+
+                // Update the lead record
+                $record.values.Status = 'Converted'
+                $record.values.IsConverted = 'Yes'
+                $record.values.ConvertedAccountId = mySavedAccount.recordID
+                $record.values.ConvertedContactId = mySavedAccount.recordID
+                $record.values.ConvertedDate = mySavedAccount.createdAt
+
+                await Compose.saveRecord($record)
+                const user = await System.findUserByID($record.values.OwnerId)
+                // Notifies the owner that a new account was created and assigned to him
+                Compose.sendRecordToMail(
+                  user.email,
+                  `Lead ${$record.values.FirstName} ${$record.values.LastName} from ${$record.values.Company} has been converted`,
+                  {
+                    header: '<h1>The following lead has been converted:</h1>'
+                  },
+                  mySavedAccount
+                )
+
+                // Notify current user
+                ComposeUI.success('The lead has been converted.')
+
+                // Go to the record
+                ComposeUI.gotoRecordViewer(mySavedOpportunity)
+              })
           })
         })
-      }).then(async () => {
-        // Update the lead record
-        $record.values.Status = 'Converted'
-        $record.values.IsConverted = 'Yes'
-        $record.values.ConvertedAccountId = mySavedAccount.recordID
-        $record.values.ConvertedContactId = mySavedAccount.recordID
-        $record.values.ConvertedDate = mySavedAccount.createdAt
-
-        await Compose.saveRecord($record)
-        const user = await System.findUserByID($record.values.OwnerId)
-        // Notifies the owner that a new account was created and assigned to him
-        Compose.sendRecordToMail(
-          user.email,
-          `Lead ${$record.values.FirstName} ${$record.values.LastName} from ${$record.values.Company} has been converted`,
-          {
-            header: '<h1>The following lead has been converted:</h1>'
-          },
-          mySavedAccount
-        )
-
-        // Notify current user
-        ComposeUI.success('The lead has been converted.')
-
-        // Go to the record
-        ComposeUI.gotoRecordEditor(mySavedAccount)
       })
     })
   }

@@ -84,7 +84,7 @@ export default {
         $record.values.Status = 'Converted'
         $record.values.IsConverted = 'Yes'
         $record.values.ConvertedAccountId = mySavedAccount.recordID
-        $record.values.ConvertedContactId = mySavedAccount.recordID
+        $record.values.ConvertedContactId = myContact.recordID
         $record.values.ConvertedDate = mySavedAccount.createdAt
 
         await Compose.saveRecord($record)
@@ -103,7 +103,7 @@ export default {
         ComposeUI.success('The lead has been converted.')
 
         // Go to the record
-        ComposeUI.gotoRecordEditor(mySavedAccount)
+        ComposeUI.gotoRecordViewer(mySavedAccount)
       })
     })
   }
