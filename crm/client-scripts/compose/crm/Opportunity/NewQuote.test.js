@@ -157,9 +157,8 @@ describe(__filename, () => {
 
   describe('successful create', () => {
     it('should successfully create new quote', async () => {
+      h.findRecordByID.onCall(0).resolves(accountRecord)
       h.findRecords.onCall(0).resolves({ set: [opportunityContactRoleRecord] })
-      h.findRecordByID.onCall(0).resolves(contactRecord)
-      h.findRecordByID.onCall(1).resolves(accountRecord)
       h.findLastRecord.resolves(settingsRecord)
       h.saveRecord.onCall(0).resolves(newSettingsRecord)
       h.makeRecord.onCall(0).resolves(quoteRecord)
@@ -170,14 +169,13 @@ describe(__filename, () => {
 
       await NewQuote.exec({ $record: opportunityRecord }, { Compose: h, ComposeUI: ui })
 
-      expect(h.findRecords.getCall(0).calledWith(`OpportunityId = ${opportunityRecord.recordID}`, 'OpportunityContactRole')).true
-      expect(h.findRecordByID.getCall(0).calledWith(opportunityContactRoleRecord.values.ContactId, 'Contact')).true
-      expect(h.findRecordByID.getCall(1).calledWith(opportunityRecord.values.AccountId, 'Account')).true
+      expect(h.findRecordByID.getCall(0).calledWith(opportunityRecord.values.AccountId, 'Account')).true
+      expect(h.findRecords.getCall(0).calledWith(`AccountId = ${accountRecord.recordID}`, 'Contact')).true
       expect(h.findLastRecord.calledOnceWith('Settings'))
       expect(h.saveRecord.getCall(0).calledWith(newSettingsRecord))
       expect(h.makeRecord.getCall(0).calledWith(quoteRecord.values, 'Quote'))
       expect(h.saveRecord.getCall(1).calledWith(quoteRecord))
-      expect(h.findRecords.getCall(1).calledWith(`OpportunityId = ${opportunityRecord.recordID}`, 'OpportunityLineItem')).true
+      expect(h.findRecords.getCall(1).calledWith({ filter: `OpportunityId = ${opportunityRecord.recordID}`, perPage: 0 }, 'OpportunityLineItem')).true
       expect(h.makeRecord.getCall(0).calledWith(quoteLineRecord.values, 'QuoteLineItem'))
       expect(h.saveRecord.getCall(2).calledWith(quoteLineRecord))
     })
