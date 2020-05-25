@@ -78,14 +78,14 @@ export default {
         IsPrimary: '1',
         AccountId: mySavedAccount.recordID
       }, 'Contact').then(async myContact => {
-        await Compose.saveRecord(myContact)
+        myContact = await Compose.saveRecord(myContact)
 
         // Update the lead record
         $record.values.Status = 'Converted'
         $record.values.IsConverted = 'Yes'
         $record.values.ConvertedAccountId = mySavedAccount.recordID
         $record.values.ConvertedContactId = myContact.recordID
-        $record.values.ConvertedDate = mySavedAccount.createdAt
+        $record.values.ConvertedDate = mySavedAccount.createdAt.toISOString()
 
         await Compose.saveRecord($record)
         System.findUserByID($record.values.OwnerId).then(user => {

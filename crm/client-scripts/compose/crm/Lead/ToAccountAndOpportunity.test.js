@@ -70,6 +70,7 @@ describe(__filename, () => {
   const accountModule = getModuleFromYaml('Account', modulesYaml)
   const accountRecord = new Record(accountModule)
   accountRecord.recordID = recordID
+  accountRecord.createdAt = new Date()
   accountRecord.values = {
     BillingStreet: Street,
     BillingCity: City,
@@ -165,7 +166,7 @@ describe(__filename, () => {
     IsConverted: 'Yes',
     ConvertedAccountId: accountRecord.recordID,
     ConvertedContactId: accountRecord.recordID,
-    ConvertedDate: accountRecord.createdAt
+    ConvertedDate: accountRecord.createdAt.toISOString()
   }
 
   const campaignModule = getModuleFromYaml('Campaigns', modulesYaml)

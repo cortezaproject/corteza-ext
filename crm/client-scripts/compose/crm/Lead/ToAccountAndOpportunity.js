@@ -85,7 +85,7 @@ export default {
         IsPrimary: '1',
         AccountId: mySavedAccount.recordID
       }, 'Contact').then(async mySavedContact => {
-        await Compose.saveRecord(mySavedContact)
+        mySavedContact = await Compose.saveRecord(mySavedContact)
         // First get the default values
         // Get the default settings
         return Compose.findLastRecord('Settings').then(async settings => {
@@ -100,7 +100,7 @@ export default {
           await Compose.findRecords({ filter: `${$record.values.CampaignId.join('OR')}`, sort: 'createdAt DESC'}, 'Campaigns')
             .catch(() => ({ set: [] }))
             .then(({ set }) => {
-              campaign = set[0]
+              campaign = set[0] || {}
             })
 
           // Create the related opportunity
@@ -133,19 +133,21 @@ export default {
                 $record.values.IsConverted = 'Yes'
                 $record.values.ConvertedAccountId = mySavedAccount.recordID
                 $record.values.ConvertedContactId = mySavedAccount.recordID
-                $record.values.ConvertedDate = mySavedAccount.createdAt
-
+                $record.values.ConvertedDate = mySavedAccount.createdAt.toISOString()
                 await Compose.saveRecord($record)
-                const user = await System.findUserByID($record.values.OwnerId)
-                // Notifies the owner that a new account was created and assigned to him
-                Compose.sendRecordToMail(
-                  user.email,
-                  `Lead ${$record.values.FirstName} ${$record.values.LastName} from ${$record.values.Company} has been converted`,
-                  {
-                    header: '<h1>The following lead has been converted:</h1>'
-                  },
-                  mySavedAccount
-                )
+
+                if ($record.values.OwnerId) {
+                  const user = await System.findUserByID($record.values.OwnerId)
+                  // Notifies the owner that a new account was created and assigned to him
+                  Compose.sendRecordToMail(
+                    user.email,
+                    `Lead ${$record.values.FirstName} ${$record.values.LastName} from ${$record.values.Company} has been converted`,
+                    {
+                      header: '<h1>The following lead has been converted:</h1>'
+                    },
+                    mySavedAccount
+                  )
+                }
 
                 // Notify current user
                 ComposeUI.success('The lead has been converted.')
