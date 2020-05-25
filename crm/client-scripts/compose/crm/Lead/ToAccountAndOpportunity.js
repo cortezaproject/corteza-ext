@@ -96,7 +96,12 @@ export default {
 
           // Calculate the expiration date
           const closeDate = this.getTimestamp(opportunityCloseDays)
-          const campaign = (await Compose.findRecords({ filter: `${$record.values.CampaignId.join('OR')}`, sort: 'createdAt DESC'}, 'Campaigns')).set[0]
+          let campaign = { recordID: undefined }
+          await Compose.findRecords({ filter: `${$record.values.CampaignId.join('OR')}`, sort: 'createdAt DESC'}, 'Campaigns')
+            .catch(() => ({ set: [] }))
+            .then(({ set }) => {
+              campaign = set[0]
+            })
 
           // Create the related opportunity
           return Compose.makeRecord({
@@ -111,7 +116,7 @@ export default {
             Probability: opportunityProbability,
             ForecastCategory: opportunityForecaseCategory,
             StageName: opportunityStagename,
-            CampaignId: campaign.recordID
+            CampaignId: campaign.recordID || ''
           }, 'Opportunity').then(async myOpportunity => {
             const mySavedOpportunity = await Compose.saveRecord(myOpportunity)
             // Create a new contact linked to the opportunity

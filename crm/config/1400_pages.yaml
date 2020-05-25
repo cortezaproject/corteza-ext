@@ -169,6 +169,7 @@ pages:
             - name: Street
             - name: State
             - name: PostalCode
+            - name: GeneratedAddress
           kind: Record
           xywh: [3, 0, 3, 15]
         - title: Other Information

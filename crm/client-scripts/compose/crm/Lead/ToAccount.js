@@ -1,6 +1,6 @@
 export default {
   label: 'Convert this Lead into an Account',
-  description: 'Creates an Account recrod from an existing Lead',
+  description: 'Creates an Account record from an existing Lead',
 
   * triggers ({ on }) {
     yield on('manual')

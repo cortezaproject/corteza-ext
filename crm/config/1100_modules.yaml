@@ -3801,6 +3801,11 @@ modules:
       Website:
         label: Website
         kind: Url
+      GeneratedAddress:
+        label: Address (generated)
+        kind: String
+        options:
+          multiLine: true
   MilestoneType:
     name: MilestoneType
     fields:

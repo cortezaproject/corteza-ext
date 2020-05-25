@@ -28,7 +28,8 @@ export default {
       const closeDate = this.getTimestamp(opportunityCloseDays)
 
       // Find the contact we want to link the new case to (by default, the primary contact)
-      return Compose.findRecords(`AccountId = ${$record.recordID}`, 'Contact')
+      Compose.findRecords(`AccountId = ${$record.recordID}`, 'Contact')
+      .catch(() => ({ set: [] }))
       .then(({ set }) => {
         let ContactId
 

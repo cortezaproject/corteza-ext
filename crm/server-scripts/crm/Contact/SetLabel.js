@@ -32,20 +32,22 @@ export default {
       recordLabel = lastName
     }
 
+    // TODO This doesn't work for some reason...
 
     // Get the company name from the account
     // Check if there is a related account, to map the fields of the account
     const accountId = $record.values.AccountId
     if (accountId) {
-      await Compose.findRecordByID(accountId, 'Account').then(accountRecord => {
+      return await Compose.findRecordByID(accountId, 'Account').then(accountRecord => {
         if ((accountRecord || { values: {}}).values.AccountName) {
           // Add to the record label
           recordLabel = recordLabel + ` (${accountRecord.values.AccountName})`
         }
+        $record.values.RecordLabel = recordLabel
+        return $record
       })
     }
 
-    $record.values.RecordLabel = recordLabel
     return $record
   }
 }

@@ -106,7 +106,7 @@ export default {
 
                 // Add the total price to the amount of the opportunity
                 amount = amount + totalprice
-
+                console.log('savee')
                 // Save the lineitem
                 await Compose.saveRecord(lineitem)
 
@@ -114,10 +114,14 @@ export default {
                 $record.values.Amount = amount
 
                 const newRecord = await Compose.saveRecord($record)
-                ComposeUI.gotoRecordViewer(newRecord)
-                ComposeUI.success('Pricebook applied')
-
-                return newRecord
+                if (newRecord) {
+                  ComposeUI.gotoRecordViewer(newRecord)
+                  ComposeUI.success('Pricebook applied') 
+                  return newRecord
+                } else {
+                  ComposeUI.warning('Pricebook failed to apply') 
+                  return $record
+                }
               }
             })
         })

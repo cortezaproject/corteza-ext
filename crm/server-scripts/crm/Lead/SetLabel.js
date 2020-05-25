@@ -51,6 +51,11 @@ export default {
 
     // Set the label
     $record.values.RecordLabel = recordLabel
+
+    // Set generated address
+    const { Street, City, State, PostalCode, Country } = $record.values
+    const generatedAddress = [Street, City, State, PostalCode, Country ].filter(a => a).join('\n')
+    $record.values.GeneratedAddress = generatedAddress
     return $record
   }
 }

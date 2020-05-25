@@ -20,7 +20,9 @@ export default {
       }
 
       // Find the contact we want to link the new case to (by default, the primary contact)
-      return Compose.findRecords(`AccountId = ${$record.recordID}`, 'Contact').then(({ set }) => {
+      return Compose.findRecords(`AccountId = ${$record.recordID}`, 'Contact')
+        .catch(() => ({ set: [] }))
+        .then(({ set }) => {
           let ContactId, SuppliedName, SuppliedEmail, SuppliedPhone
 
           // Loop through the contacts of the account, to save the primary contact
