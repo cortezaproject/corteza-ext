@@ -205,6 +205,11 @@ ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
+node-fetch@^2.2.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
+  integrity sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==
+
 oauth@0.9.x:
   version "0.9.15"
   resolved "https://registry.yarnpkg.com/oauth/-/oauth-0.9.15.tgz#bd1fefaf686c96b75475aed5196412ff60cfb9c1"
@@ -224,6 +229,13 @@ passport-strategy@1.x.x:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/passport-strategy/-/passport-strategy-1.0.0.tgz#b5539aa8fc225a3d1ad179476ddf236b440f52e4"
   integrity sha1-tVOaqPwiWj0a0XlHbd8ja0QPUuQ=
+
+pdf-to-base64@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/pdf-to-base64/-/pdf-to-base64-1.0.2.tgz#61451214ccfc2d96a57ca3414eb7cd6e2f180763"
+  integrity sha512-kA2dq6pagYPWJi8NITtTp78Rzh89OOltLQP2/mo1w9mvWeoQjDHlLJ0ehbThsoH0d0YZBoLlz5NAGz93gc72pw==
+  dependencies:
+    node-fetch "^2.2.0"
 
 process-nextick-args@~2.0.0:
   version "2.0.1"

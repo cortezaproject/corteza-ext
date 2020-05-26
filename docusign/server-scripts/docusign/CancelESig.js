@@ -29,7 +29,7 @@ export default {
       $record.values.DocuSignId = undefined
       $record.values.SignatureStatus = 'voided'
 
-      return $record
+      return Compose.saveRecord($record)
     } else {
       throw new Error('Cannot update E-Signature status for unexisting document')
     }

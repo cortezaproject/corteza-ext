@@ -1,4 +1,4 @@
-import DocuSignClient from '../lib'
+import DocuSignClient from '../../lib'
 import axios from 'axios'
 import FormData from 'form-data'
 
@@ -58,17 +58,17 @@ export default {
         const status = await client.GetSignatureStatus(record.values.DocuSignId)
 
         if (status === 'completed') {
-          Compose.findRecordByID(record.values.OpportunityId, 'Opportunity')
+          await Compose.findRecordByID(record.values.OpportunityId, 'Opportunity')
             .then(async opportunityRecord => {
               opportunityRecord.values.IsClosed = true
               opportunityRecord.values.IsWon = true
               await Compose.saveRecord(opportunityRecord)
             })
 
-          client.GetDocument(record.values.DocuSignId)
+          await client.GetDocument(record.values.DocuSignId)
             .then(async res => {
               const fd = new FormData()
-              fd.append('upload', Buffer.from(res, 'base64'), {
+              fd.append('upload', Buffer.from(res, 'binary'), {
                 filename: `${record.values.QuoteNumber}_signed.pdf`,
                 contentType: 'application/pdf'
               })
@@ -76,7 +76,7 @@ export default {
             })
         }
 
-        record.SignatureStatus = status
+        record.values.SignatureStatus = status
         await Compose.saveRecord(record)
       } else {
         throw new Error('Cannot update E-Signature status for unexisting document')

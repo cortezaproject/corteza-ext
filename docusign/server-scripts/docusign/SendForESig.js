@@ -14,7 +14,7 @@ export default {
   async exec ({ $record, $namespace }, { Compose }) {
     const name = $record.values.Name
     let Document = $record.values.QuoteFile
-  
+
     Document = await Compose.findAttachmentByID(Document, $namespace)
     const fileUrl = Compose.ComposeAPI.baseURL + Document.url
 
@@ -60,7 +60,7 @@ export default {
         })
       }
 
-      return $record
+      return Compose.saveRecord($record)
     }).catch(e => {
       throw new Error(e)
     })
