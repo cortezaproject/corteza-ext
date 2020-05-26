@@ -1,0 +1,14 @@
+{
+  "name": "docusign",
+  "version": "1.0.0",
+  "description": "Corteza Official DocVerify Extension",
+  "main": "lib/index.js",
+  "license": "Apache-2.0",
+  "scripts": {
+    "start": "node -r esm lib/index.js"
+  },
+  "dependencies": {
+    "docusign-esign": "^5.3.0",
+    "esm": "^3.2.25"
+  }
+}
