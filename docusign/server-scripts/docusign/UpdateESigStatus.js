@@ -58,12 +58,14 @@ export default {
         const status = await client.GetSignatureStatus(record.values.DocuSignId)
 
         if (status === 'completed') {
-          await Compose.findRecordByID(record.values.OpportunityId, 'Opportunity')
-            .then(async opportunityRecord => {
-              opportunityRecord.values.IsClosed = true
-              opportunityRecord.values.IsWon = true
-              await Compose.saveRecord(opportunityRecord)
-            })
+          if (record.values.OpportunityId) {
+            await Compose.findRecordByID(record.values.OpportunityId, 'Opportunity')
+              .then(async opportunityRecord => {
+                opportunityRecord.values.IsClosed = true
+                opportunityRecord.values.IsWon = true
+                await Compose.saveRecord(opportunityRecord)
+              })
+          }
 
           await client.GetDocument(record.values.DocuSignId)
             .then(async res => {
@@ -78,8 +80,6 @@ export default {
 
         record.values.SignatureStatus = status
         await Compose.saveRecord(record)
-      } else {
-        throw new Error('Cannot update E-Signature status for unexisting document')
       }
     })
   }
