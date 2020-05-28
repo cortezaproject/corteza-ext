@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>
+    Authentication was not successful
+  </title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+</head>
+<body>
+  <main>
+    <div>
+      <h2>
+        Authentication was not successful
+      </h2>
+      <p>
+        Please contact your administrator with the following error:
+        <pre>Error: {{ this.error }}</pre>
+      </p>
+      <p>
+        You can safely close this page.
+      </p>
+    </div>
+  </main>
+</body>
+</html>
+
+<style>
+  body {
+    width: 100%;
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+  main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    text-align: center;
+  }
+</style>

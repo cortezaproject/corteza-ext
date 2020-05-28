@@ -8,6 +8,8 @@
     "start": "node -r esm lib/index.js"
   },
   "dependencies": {
+    "@cortezaproject/corteza-ext-renderer": "^2020.3.0",
+    "base-64": "^0.1.0",
     "docusign-esign": "^5.3.0",
     "esm": "^3.2.25",
     "pdf-to-base64": "^1.0.2"
