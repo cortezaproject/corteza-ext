@@ -16,7 +16,7 @@ export default {
       baseURL = 'https://account-d.docusign.com/oauth/auth'
     }
     let rdrURL = cfg.values.RedirectURL
-    let query = `?response_type=code&scope=signature&client_id=${cfg.values.ClientID}&redirect_uri=`
+    let query = `?response_type=code&scope=signature%20extended&client_id=${cfg.values.IntegrationKey}&redirect_uri=`
 
     const url = `${baseURL}${query}${rdrURL}`
     window.open(url, 'blank')
