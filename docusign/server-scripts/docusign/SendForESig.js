@@ -47,7 +47,7 @@ export default {
       }
 
       const cfg = await loadCreds(Compose)
-      const client = new DocuSignClient(cfg.AccessToken, cfg.AccountID)
+      const client = new DocuSignClient(cfg.AccessToken, cfg.AccountID, cfg.InProduction)
 
       const subject = 'Document ready for signing'
       const documentId = await client.SendEnvelope({ document, name, subject, signers })

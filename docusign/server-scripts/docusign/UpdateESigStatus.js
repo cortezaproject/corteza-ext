@@ -50,7 +50,7 @@ export default {
     }
 
     const cfg = await loadCreds(Compose)
-    const client = new DocuSignClient(cfg.AccessToken, cfg.AccountID)
+    const client = new DocuSignClient(cfg.AccessToken, cfg.AccountID, cfg.InProduction)
 
     records.forEach(async record => {
       if (record.values.DocuSignId && record.values.SignatureStatus !== 'completed') {

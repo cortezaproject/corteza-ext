@@ -14,7 +14,7 @@ export default {
   async exec ({ $record }, { Compose }) {
     if ($record.values.DocuSignId) {
       const cfg = await loadCreds(Compose)
-      const client = new DocuSignClient(cfg.AccessToken, cfg.AccountID)
+      const client = new DocuSignClient(cfg.AccessToken, cfg.AccountID, cfg.InProduction)
 
       await client.VoidEnvelope($record.values.DocuSignId)
 
