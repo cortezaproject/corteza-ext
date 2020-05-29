@@ -23,7 +23,7 @@ export default {
       throw new Error('Document is already out to be signed')
     } else if (!Document.url) {
       throw new Error('Document URL is missing')
-    } else if (!Document.meta.ext !== 'pdf') {
+    } else if (Document.meta.original.ext !== 'pdf') {
       throw new Error('Document is not PDF')
     }
 
