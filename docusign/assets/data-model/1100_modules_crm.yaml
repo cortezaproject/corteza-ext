@@ -1,5 +1,20 @@
 namespace: crm
 modules:
+  Quote:
+    name: Quote
+    fields:
+      SignatureStatus:
+        label: Signature status
+        kind: String
+
+      DocuSignId:
+        label: DocuSign Document ID
+        kind: String
+
+      QuoteFile:
+        label: Quote File
+        kind: File
+
   ext_docusign_configuration:
     name: Docusign Configuration
     fields:
