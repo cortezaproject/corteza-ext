@@ -1,0 +1,44 @@
+namespace: crm
+modules:
+  ext_docusign_configuration:
+    name: Docusign Configuration
+    fields:
+      InProduction:
+        label: In Production?
+        kind: Bool
+        required: false
+
+      RedirectURL:
+        label: Redirect URL
+        kind: URL
+        required: true
+
+        AccountID:
+          label: Account ID
+          kind: String
+          required: true
+
+        IntegrationKey:
+          label: Integration Key
+          kind: String
+          required: true
+
+        IntegrationSecret:
+          label: Integration Secret
+          kind: String
+          required: true
+
+        AccessToken:
+          label: Access Token
+          kind: String
+          required: false
+
+        RefreshToken:
+          label: Refresh Token
+          kind: String
+          required: false
+
+        ExpiresAt:
+          label: Expires At
+          kind: DateTime
+          required: false
