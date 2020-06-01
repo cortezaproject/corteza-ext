@@ -1,3 +1,6 @@
+import axios from 'axios'
+import b64 from 'base-64'
+
 export default {
   label: 'Refresh Access Token',
   triggers ({ every }) {
@@ -5,12 +8,24 @@ export default {
       .for('compose:record')
       .where('module', 'ext_docusign_configuration')
   },
+
+  // @todo
+  security: {
+    runAs: 'tomaz.jerman@crust.tech',
+  },
   async exec ({ $record }, { Compose }) {
     const n = new Date()
     const cfg = await Compose.findFirstRecord('ext_docusign_configuration')
     if (!cfg.values.ExpiresAt) {
       return
     }
+
+    // Don't needlessly refresh the token
+    if (n < new Date(cfg.values.ExpiresAt)) {
+      console.debug('[refresh]: Skip')
+      return
+    }
+    console.debug('[refresh]: Refresh')
 
     let ep
     if (cfg.values.InProduction) {
