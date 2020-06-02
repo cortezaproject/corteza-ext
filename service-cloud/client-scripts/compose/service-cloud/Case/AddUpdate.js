@@ -15,11 +15,6 @@ export default {
     return Compose.findLastRecord('Settings').then(settings => {
       const department = settings.values.DefaultDepartment
       const timeSpend = settings.values.DefaultTimeUpdate
-      const defaultCostPerHour = settings.values.DefaultCostPerHour
-      let updateCost = 0
-      if (timeSpend) {
-        updateCost = parseFloat(defaultCostPerHour) * parseFloat(timeSpend)
-      }
 
       // Create the related update
       return Compose.makeRecord({
@@ -27,7 +22,6 @@ export default {
         AccountId: $record.values.AccountId,
         ContactId: $record.values.ContactId,
         Department: department,
-        Cost: updateCost,
         TimeSpend: timeSpend
       }, 'Update')
         .then(async myUpdate => {

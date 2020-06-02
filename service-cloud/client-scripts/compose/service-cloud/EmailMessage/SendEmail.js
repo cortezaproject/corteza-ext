@@ -32,17 +32,7 @@ export default {
           // First, get the default settings
           Compose.findLastRecord('Settings').then(async settings => {
             const defaultTimeSpend = settings.values.DefaultTimeUpdate
-            let defaultCost = settings.values.DefaultCostPerHour
             const defaultDepartment = settings.values.DefaultDepartment
-
-            // Get the record from the department
-            const departmentRecord = await Compose.findRecordByID(defaultDepartment, 'Department')
-            // Get the cost associated to the department
-            if (departmentRecord.values.HourCost) {
-              defaultCost = departmentRecord.values.HourCost
-            }
-              // calculat the total cost
-              const totalCost = parseFloat(defaultCost) * parseFloat(defaultTimeSpend)
 
               // Make the update record
               return Compose.makeRecord({
@@ -55,7 +45,6 @@ export default {
                 Content: $record.values.HtmlBody,
                 Department: defaultDepartment,
                 TimeSpend: defaultTimeSpend,
-                Cost: totalCost
               }, 'Update')
                 .then(async myUpdate => {
                   await Compose.saveRecord(myUpdate)
