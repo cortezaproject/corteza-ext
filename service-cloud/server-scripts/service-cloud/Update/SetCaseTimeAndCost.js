@@ -46,7 +46,7 @@ export default {
 
     // The given case
     const caseRecord = await Compose.findRecordByID($record.values.CaseId, 'Case')
-    const { set: updates = [] } = await Compose.findRecords(`CaseId = ${$record.values.CaseId}`, 'Update')
+    const { set: updates = [] } = await Compose.findRecords(`(CaseId = ${$record.values.CaseId}) AND (id != ${$record.recordID})`, 'Update')
       .catch(() => ({ set: [] }))
 
     updates.push($record)
@@ -141,7 +141,7 @@ export default {
 
     // The given department
     if (departmentRecord) {
-      const { set: updates = [] } = await Compose.findRecords(`Department = ${$record.values.Department}`, 'Update')
+      const { set: updates = [] } = await Compose.findRecords(`(Department = ${$record.values.Department}) AND (id != ${$record.recordID})`, 'Update')
         .catch(() => ({ set: [] }))
 
       updates.push($record)
