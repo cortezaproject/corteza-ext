@@ -56,7 +56,7 @@ export default {
                 Department: defaultDepartment,
                 TimeSpend: defaultTimeSpend,
                 Cost: totalCost
-              }, 'CaseUpdate')
+              }, 'Update')
                 .then(async myUpdate => {
                   await Compose.saveRecord(myUpdate)
                 })

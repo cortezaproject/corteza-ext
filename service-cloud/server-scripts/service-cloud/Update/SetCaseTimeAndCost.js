@@ -16,6 +16,10 @@ export default {
         // Find all updates in the case
         return Compose.findRecords(`CaseId = ${$record.values.CaseId}`, 'Update')
           .then(async ({ set }) => {
+            // We must manually include the current update, as the transaction has not been
+            // resolved yet
+            set.push($record)
+
             // Start the time and cost with the values of the current update, because the update
             // is not saved until after the complete script has run
             let caseTime = 0

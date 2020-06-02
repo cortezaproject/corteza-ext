@@ -29,7 +29,7 @@ export default {
         Department: department,
         Cost: updateCost,
         TimeSpend: timeSpend
-      }, 'CaseUpdate')
+      }, 'Update')
         .then(async myUpdate => {
           const mySavedUpdate = await Compose.saveRecord(myUpdate)
           ComposeUI.gotoRecordEditor(mySavedUpdate)

@@ -61,7 +61,7 @@ describe(__filename, () => {
       await AddUpdate.exec({ $record: caseRecord }, { Compose: h, ComposeUI: ui })
       
       expect(h.findLastRecord.calledOnceWith('Settings')).true
-      expect(h.makeRecord.calledOnceWith(newUpdateRecord.values, 'CaseUpdate')).true
+      expect(h.makeRecord.calledOnceWith(newUpdateRecord.values, 'Update')).true
       expect(h.saveRecord.calledOnceWith(newUpdateRecord)).true
       expect(ui.gotoRecordEditor.calledOnceWith(newUpdateRecord)).true
     })
