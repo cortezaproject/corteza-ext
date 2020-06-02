@@ -62,7 +62,7 @@ export default {
 
             // Get default settings to find if there is a channel to inform
             if (defaultChannel && defaultCaseRecordLink) {
-              await Messaging.sendMessage('Automatic update. "' + caseRecord.values.Number + '" has been updated: ' + $record.values.Subject + ' (type: ' + $record.values.Type + '). Direct link: ' + defaultCaseRecordLink + $record.recordID, defaultChannel)
+              await Messaging.sendMessage('Automatic update. "' + caseRecord.values.Number + '" has been updated: ' + $record.values.Subject + ' (type: ' + $record.values.Type + '). Direct link: ' + defaultCaseRecordLink + '/' + caseRecord.recordID, defaultChannel)
             }
             // Get the contact of the case record to infor via email
             if (caseRecord.values.ContactId) {
