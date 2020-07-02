@@ -35,7 +35,7 @@ export default {
 
   async exec ({ $record, $module, $namespace }, { Compose }) {
     const cfg = await loadCreds(Compose)
-    const client = new DocuSignClient(cfg.AccessToken, cfg.AccountID, cfg.InProduction)
+    const client = new DocuSignClient(cfg.AccessToken, cfg.AccountID, cfg.BaseURL, cfg.InProduction)
 
     if ($record.values.DocuSignId) {
       const status = await client.GetSignatureStatus($record.values.DocuSignId)

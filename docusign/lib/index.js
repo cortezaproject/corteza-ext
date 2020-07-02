@@ -1,7 +1,7 @@
 import docusign from 'docusign-esign'
 
 export default class DocusignClient {
-	constructor (accessToken, accountId, production = false) {
+	constructor (accessToken, accountId, baseUrl, production = false) {
     if (!accessToken) {
       throw new Error('Invalid access token')
 		}
@@ -10,12 +10,11 @@ export default class DocusignClient {
       throw new Error('Invalid accountID')
 		}
 
-		if (production) {
-			this.baseUrl = 'https://docusign.net/restapi'
-		} else {
-			this.baseUrl = 'https://demo.docusign.net/restapi'
+		if (!baseUrl) {
+			throw new Error('Missing baseUrl')
 		}
 
+		this.baseUrl = baseUrl.replace(/\/$/gi, '') + '/restapi'
 		this.accessToken = accessToken
 		this.accountId = accountId
 
