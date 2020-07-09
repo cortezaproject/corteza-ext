@@ -94,7 +94,7 @@ pages:
           label: ""
           labelStyle: {}
           metricField: count
-          moduleID: "69055788898975761"
+          module: Lead
           valueStyle:
             color: '#379cd3'
             fontSize: "120"
@@ -108,7 +108,7 @@ pages:
         - filter: Status = 'Converted'
           labelStyle: {}
           metricField: count
-          moduleID: "69055788898975761"
+          module: Lead
           valueStyle:
             color: '#379cd3'
             fontSize: "120"
@@ -123,7 +123,7 @@ pages:
             Amount IS NOT NULL
           labelStyle: {}
           metricField: Amount
-          moduleID: "69055788831801361"
+          module: Opportunity
           numberFormat: "0.0"
           operation: sum
           prefix: ""
@@ -158,7 +158,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#5680a6'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type = 'Call'
           resource: compose:record
           startField: ActivityDate
@@ -167,7 +167,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#e38e3f'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type = 'Email'
           resource: compose:record
           startField: ActivityDate
@@ -176,7 +176,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#ce6462'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type = 'Meeting'
           resource: compose:record
           startField: ActivityDate
@@ -185,7 +185,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#88b5b2'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type = 'Send Letter / Quote'
           resource: compose:record
           startField: ActivityDate
@@ -194,7 +194,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#70974d'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type = 'Other'
           resource: compose:record
           startField: ActivityDate
@@ -203,7 +203,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#e9c153'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type IS NULL
           resource: compose:record
           startField: ActivityDate
@@ -1154,52 +1154,10 @@ pages:
             allowExport: true
             draggable: true
             editFields:
-            - isPrivate: false
-              isRequired: false
-              isVisible: false
-              kind: Record
-              label: Product
-              maxLength: 0
-              moduleID: "0"
-              name: ProductId
-              options:
-                moduleID: "69055788915621905"
-            - isPrivate: false
-              isRequired: false
-              isVisible: false
-              kind: Number
-              label: Quantity
-              maxLength: 0
-              moduleID: "0"
-              name: Quantity
-              options:
-                format: ""
-                prefix: ""
-                suffix: ""
-            - isPrivate: false
-              isRequired: false
-              isVisible: false
-              kind: Number
-              label: Sales Price
-              maxLength: 0
-              moduleID: "0"
-              name: UnitPrice
-              options:
-                format: ""
-                prefix: ""
-                suffix: ""
-            - helpText: ""
-              isMulti: false
-              isPrivate: false
-              kind: Number
-              label: Discount
-              maxLength: 0
-              name: Discount
-              options:
-                format: 0
-                precision: 2
-                prefix: ""
-                suffix: €
+            - name: ProductId
+            - name: Quantity
+            - name: UnitPrice
+            - name: Discount
             editable: true
             fields:
             - name: ProductId
@@ -1559,88 +1517,13 @@ pages:
             allowExport: true
             draggable: true
             editFields:
-            - isPrivate: false
-              isRequired: false
-              isVisible: false
-              kind: Record
-              label: Product
-              maxLength: 0
-              moduleID: "0"
-              name: ProductId
-              options:
-                moduleID: "69055788915621905"
-            - isPrivate: false
-              isRequired: false
-              isVisible: false
-              kind: Number
-              label: List Price
-              maxLength: 0
-              moduleID: "0"
-              name: ListPrice
-              options:
-                format: ""
-                prefix: ""
-                suffix: ""
-            - isPrivate: false
-              isRequired: false
-              isVisible: false
-              kind: Number
-              label: Sales Price
-              maxLength: 0
-              moduleID: "0"
-              name: UnitPrice
-              options:
-                format: ""
-                prefix: ""
-                suffix: ""
-            - isPrivate: false
-              isRequired: false
-              isVisible: false
-              kind: Number
-              label: Quantity
-              maxLength: 0
-              moduleID: "0"
-              name: Quantity
-              options:
-                format: ""
-                prefix: ""
-                suffix: ""
-            - isPrivate: false
-              isRequired: false
-              isVisible: false
-              kind: Number
-              label: Subtotal
-              maxLength: 0
-              moduleID: "0"
-              name: Subtotal
-              options:
-                format: ""
-                prefix: ""
-                suffix: ""
-            - isPrivate: false
-              isRequired: false
-              isVisible: false
-              kind: Number
-              label: Discount
-              maxLength: 0
-              moduleID: "0"
-              name: Discount
-              options:
-                format: ""
-                prefix: ""
-                suffix: ""
-            - isPrivate: false
-              isRequired: false
-              isVisible: false
-              kind: Number
-              label: Total Price
-              maxLength: 0
-              moduleID: "0"
-              name: TotalPrice
-              options:
-                format: ""
-                prefix: ""
-                suffix: ""
+            - name: ProductId
+            - name: ListPrice
+            - name: UnitPrice
+            - name: Quantity
+            - name: Subtotal
+            - name: Discount
+            - name: TotalPrice
             editable: true
             fields:
             - name: ProductId
@@ -2001,129 +1884,12 @@ pages:
             allowExport: true
             draggable: true
             editFields:
-            - canReadRecordValue: true
-              canUpdateRecordValue: true
-              defaultValue: []
-              fieldID: "147320413955817476"
-              isMulti: false
-              isPrivate: false
-              isRequired: false
-              isSystem: false
-              kind: Record
-              label: Product
-              maxLength: 0
-              name: ProductId
-              options:
-                labelField: Name
-                moduleID: "69055788915621905"
-                multiDelimiter: |2+
-
-                queryFields:
-                - Name
-                selectType: default
-            - canReadRecordValue: true
-              canUpdateRecordValue: true
-              defaultValue: []
-              fieldID: "69055788898844698"
-              isMulti: false
-              isPrivate: false
-              isRequired: false
-              isSystem: false
-              kind: DateTime
-              label: Start Date
-              maxLength: 0
-              name: StartDate
-              options:
-                format: ""
-                multiDelimiter: |2+
-
-                onlyDate: true
-                onlyFutureValues: false
-                onlyPastValues: false
-                onlyTime: false
-                outputRelative: false
-            - canReadRecordValue: true
-              canUpdateRecordValue: true
-              defaultValue: []
-              fieldID: "69055788898844692"
-              isMulti: false
-              isPrivate: false
-              isRequired: false
-              isSystem: false
-              kind: DateTime
-              label: End Date
-              maxLength: 0
-              name: EndDate
-              options:
-                format: ""
-                multiDelimiter: |2+
-
-                onlyDate: true
-                onlyFutureValues: false
-                onlyPastValues: false
-                onlyTime: false
-                outputRelative: false
-            - canReadRecordValue: true
-              canUpdateRecordValue: true
-              defaultValue: []
-              fieldID: "69055788898844699"
-              isMulti: false
-              isPrivate: false
-              isRequired: false
-              isSystem: false
-              kind: Select
-              label: Status
-              maxLength: 0
-              name: Status
-              options:
-                multiDelimiter: |2+
-
-                options:
-                - text: Active
-                  value: Active
-                - text: Expired
-                  value: Expired
-                - text: Inactive
-                  value: Inactive
-                selectType: default
-            - canReadRecordValue: true
-              canUpdateRecordValue: true
-              defaultValue: []
-              fieldID: "69055788898844696"
-              isMulti: false
-              isPrivate: false
-              isRequired: false
-              isSystem: false
-              kind: Number
-              label: Quantity
-              maxLength: 0
-              name: Quantity
-              options:
-                format: "0"
-                multiDelimiter: |2+
-
-                precision: 0
-                prefix: ""
-                suffix: ""
-            - canReadRecordValue: true
-              canUpdateRecordValue: true
-              defaultValue: []
-              fieldID: "69055788898844697"
-              isMulti: false
-              isPrivate: false
-              isRequired: false
-              isSystem: false
-              kind: Number
-              label: Sales Price
-              maxLength: 0
-              name: UnitPrice
-              options:
-                format: "0.00"
-                multiDelimiter: |2+
-
-                precision: 2
-                prefix: ""
-                suffix: €
+            - name: ProductId
+            - name: StartDate
+            - name: EndDate
+            - name: Status
+            - name: Quantity
+            - name: UnitPrice
             editable: true
             fields:
             - name: ProductId
@@ -2351,7 +2117,7 @@ pages:
         metrics:
         - labelStyle: {}
           metricField: NumberOfLeads
-          moduleID: "69055788630474769"
+          module: Campaigns
           operation: sum
           valueStyle:
             color: '#379cd3'
@@ -2365,7 +2131,7 @@ pages:
         metrics:
         - labelStyle: {}
           metricField: NumberOfAccounts
-          moduleID: "69055788630474769"
+          module: Campaigns
           operation: sum
           valueStyle:
             color: '#379cd3'
@@ -2379,7 +2145,7 @@ pages:
         metrics:
         - labelStyle: {}
           metricField: NumberOfContacts
-          moduleID: "69055788630474769"
+          module: Campaigns
           operation: sum
           valueStyle:
             color: '#379cd3'
@@ -2393,7 +2159,7 @@ pages:
         metrics:
         - labelStyle: {}
           metricField: NumberOfOpportunities
-          moduleID: "69055788630474769"
+          module: Campaigns
           operation: sum
           valueStyle:
             color: '#379cd3'
@@ -2793,28 +2559,8 @@ pages:
                 allowExport: true
                 draggable: true
                 editFields:
-                - isPrivate: false
-                  isRequired: false
-                  isVisible: false
-                  kind: Record
-                  label: Product
-                  maxLength: 0
-                  moduleID: "0"
-                  name: ProductId
-                  options:
-                    moduleID: "69055788915621905"
-                - isPrivate: false
-                  isRequired: false
-                  isVisible: false
-                  kind: Number
-                  label: List Price
-                  maxLength: 0
-                  moduleID: "0"
-                  name: UnitPrice
-                  options:
-                    format: ""
-                    prefix: ""
-                    suffix: ""
+                - name: ProductId
+                - name: UnitPrice
                 editable: true
                 fields:
                 - name: ProductId
@@ -2929,7 +2675,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#5680a6'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type = 'Call'
           resource: compose:record
           startField: ActivityDate
@@ -2938,7 +2684,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#e38e3f'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type = 'Email'
           resource: compose:record
           startField: ActivityDate
@@ -2947,7 +2693,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#ce6462'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type = 'Meeting'
           resource: compose:record
           startField: ActivityDate
@@ -2956,7 +2702,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#88b5b2'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type = 'Send Letter / Quote'
           resource: compose:record
           startField: ActivityDate
@@ -2965,7 +2711,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#70974d'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type = 'Other'
           resource: compose:record
           startField: ActivityDate
@@ -2974,7 +2720,7 @@ pages:
           endField: EndDateTime
           options:
             color: '#e9c153'
-            moduleID: "69055788747849745"
+            module: Event
             prefilter: Type IS NULL
           resource: compose:record
           startField: ActivityDate
@@ -3214,7 +2960,7 @@ pages:
             metrics:
             - labelStyle: {}
               metricField: NumberOfLeads
-              moduleID: "69055788630474769"
+              module: Campaigns
               operation: sum
               valueStyle:
                 color: '#379cd3'
@@ -3229,7 +2975,7 @@ pages:
             - label: Number of Accounts in Campaigns
               labelStyle: {}
               metricField: NumberOfAccounts
-              moduleID: "69055788630474769"
+              module: Campaigns
               operation: sum
               valueStyle:
                 color: '#379cd3'
@@ -3243,7 +2989,7 @@ pages:
             metrics:
             - labelStyle: {}
               metricField: NumberOfContacts
-              moduleID: "69055788630474769"
+              module: Campaigns
               operation: sum
               valueStyle:
                 color: '#379cd3'
@@ -3257,7 +3003,7 @@ pages:
             metrics:
             - labelStyle: {}
               metricField: NumberOfOpportunities
-              moduleID: "69055788630474769"
+              module: Campaigns
               operation: sum
               valueStyle:
                 color: '#379cd3'
@@ -3413,7 +3159,7 @@ pages:
             - filter: Status = 'New'
               labelStyle: {}
               metricField: count
-              moduleID: "69055788898975761"
+              module: Lead
               valueStyle:
                 color: '#379cd3'
                 fontSize: "100"
@@ -3427,7 +3173,7 @@ pages:
             - filter: Status = 'Converted'
               labelStyle: {}
               metricField: count
-              moduleID: "69055788898975761"
+              module: Lead
               valueStyle:
                 color: '#379cd3'
                 fontSize: "100"
@@ -3441,7 +3187,7 @@ pages:
             - filter: StageName != 'Closed Won' AND StageName != 'Closed Lost'
               labelStyle: {}
               metricField: count
-              moduleID: "69055788831801361"
+              module: Opportunity
               valueStyle:
                 color: '#379cd3'
                 fontSize: "100"
@@ -3454,7 +3200,7 @@ pages:
             metrics:
             - labelStyle: {}
               metricField: NumberOfLeads
-              moduleID: "69055788630474769"
+              module: Campaigns
               operation: sum
               valueStyle:
                 color: '#379cd3'
@@ -3468,7 +3214,7 @@ pages:
             metrics:
             - labelStyle: {}
               metricField: NumberOfAccounts
-              moduleID: "69055788630474769"
+              module: Campaigns
               operation: sum
               valueStyle:
                 color: '#379cd3'
@@ -3482,7 +3228,7 @@ pages:
             metrics:
             - labelStyle: {}
               metricField: NumberOfContacts
-              moduleID: "69055788630474769"
+              module: Campaigns
               operation: sum
               valueStyle:
                 color: '#379cd3'
@@ -3496,7 +3242,7 @@ pages:
             metrics:
             - labelStyle: {}
               metricField: NumberOfOpportunities
-              moduleID: "69055788630474769"
+              module: Campaigns
               operation: sum
               valueStyle:
                 color: '#379cd3'
@@ -3511,7 +3257,7 @@ pages:
             - filter: YEAR(created_at) = YEAR(NOW()) AND Amount IS NOT NULL
               labelStyle: {}
               metricField: count
-              moduleID: "69055788831801361"
+              module: Opportunity
               valueStyle:
                 color: '#379cd3'
                 fontSize: "100"
@@ -3629,7 +3375,7 @@ pages:
             - filter: StageName != 'Closed Won' AND StageName != 'Closed Lost'
               labelStyle: {}
               metricField: Amount
-              moduleID: "69055788831801361"
+              module: Opportunity
               numberFormat: "0.0"
               operation: sum
               suffix: k
