@@ -21,6 +21,9 @@ charts:
           type: line
         module: Account
         renderer: {}
+        yAxis:
+          label: Accounts
+      colorScheme: tableau.Tableau10
   AccountsByType:
     name: Accounts by type
     config:
@@ -39,6 +42,7 @@ charts:
           type: doughnut
         module: Account
         renderer: {}
+      colorScheme: tableau.Tableau10
   ActiveCampaignsByType:
     name: Active campaigns by type
     config:
@@ -54,6 +58,7 @@ charts:
           type: pie
         module: Campaigns
         renderer: {}
+      colorScheme: tableau.Tableau20
   CampaignAmountAllOpportunitiesVsTarget:
     name: Campaign amount all opportunities vs target
     config:
@@ -63,9 +68,9 @@ charts:
           field: Type
           meta:
             steps:
-            - value: "300000"
-            - value: "1000000"
-            - value: "2000000"
+            - value: "15000"
+            - value: "30000"
+            - value: "60000"
           modifier: (no grouping / buckets)
         filter: AmountAllOpportunities IS NOT NULL
         metrics:
@@ -74,6 +79,7 @@ charts:
           type: gauge
         module: Campaigns
         renderer: {}
+      colorScheme: tableau.Traffic9
   CampaignAmountAllWonOpportunitiesVsTarget:
     name: Campaign amount all won opportunities vs target
     config:
@@ -83,9 +89,9 @@ charts:
           field: Type
           meta:
             steps:
-            - value: "150000"
-            - value: "500000"
-            - value: "1000000"
+            - value: "10000"
+            - value: "20000"
+            - value: "40000"
           modifier: (no grouping / buckets)
         filter: AmountWonOpportunities IS NOT NULL
         metrics:
@@ -94,6 +100,7 @@ charts:
           type: gauge
         module: Campaigns
         renderer: {}
+      colorScheme: tableau.Traffic9
   CampaignCostVsRevenue:
     name: Campaign cost vs revenue
     config:
@@ -104,7 +111,7 @@ charts:
           meta: {}
           modifier: (no grouping / buckets)
           skipMissing: true
-        filter: ""
+        filter: ActualCost IS NOT NULL
         metrics:
         - aggregate: SUM
           field: BudgetedCost
@@ -128,6 +135,33 @@ charts:
           type: bar
         module: Campaigns
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Euro
+      colorScheme: tableau.Tableau10
+  CampaignCosts:
+    name: Campaign costs
+    config:
+      reports:
+      - dimensions:
+        - conditions: {}
+          field: Name
+          meta: {}
+          modifier: (no grouping / buckets)
+        filter: recordID = ${recordID}
+        metrics:
+        - aggregate: SUM
+          field: NumberOfLeads
+          type: bar
+        - aggregate: SUM
+          field: NumberOfOpportunities
+          type: bar
+        module: Campaigns
+        renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Value
+      colorScheme: tableau.Tableau10
   CasesByOrigin:
     name: Cases by origin
     config:
@@ -143,6 +177,7 @@ charts:
           type: pie
         module: Case
         renderer: {}
+      colorScheme: tableau.Tableau10
   CasesByPriority:
     name: Cases by priority
     config:
@@ -159,6 +194,7 @@ charts:
           type: pie
         module: Case
         renderer: {}
+      colorScheme: office.Wisp6
   CasesByStatus:
     name: Cases by status
     config:
@@ -174,6 +210,7 @@ charts:
           type: pie
         module: Case
         renderer: {}
+      colorScheme: tableau.Tableau10
   CasesByType:
     name: Cases by type
     config:
@@ -189,6 +226,7 @@ charts:
           type: pie
         module: Case
         renderer: {}
+      colorScheme: tableau.Tableau10
   CasesPerMonth:
     name: Cases per month
     config:
@@ -212,6 +250,10 @@ charts:
           type: line
         module: Case
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Cases
+      colorScheme: tableau.Tableau20
   ContactsPerCountry:
     name: Contacts per country
     config:
@@ -231,6 +273,10 @@ charts:
           type: line
         module: Contact
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Contacts
+      colorScheme: tableau.Tableau20
   ContactsPerSeniorLeveltitle:
     name: Contacts per senior level title
     config:
@@ -251,6 +297,7 @@ charts:
           type: doughnut
         module: Contact
         renderer: {}
+      colorScheme: tableau.Tableau10
   ContractsByStatus:
     name: Contracts by Status
     config:
@@ -266,6 +313,7 @@ charts:
           type: doughnut
         module: Contract
         renderer: {}
+      colorScheme: tableau.Tableau10
   ContractsPerStartingMonth:
     name: Contracts per starting month
     config:
@@ -290,6 +338,10 @@ charts:
           type: line
         module: Contract
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Activated contracts
+      colorScheme: tableau.Tableau20
   Dealsize:
     name: Dealsize
     config:
@@ -320,6 +372,10 @@ charts:
           type: line
         module: Opportunity
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Euro
+      colorScheme: tableau.Tableau10
   EventsPerMonth:
     name: Events per month
     config:
@@ -338,6 +394,10 @@ charts:
           type: line
         module: Event
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Events
+      colorScheme: tableau.Tableau10
   EventsPerType:
     name: Events per type
     config:
@@ -353,6 +413,7 @@ charts:
           type: doughnut
         module: Event
         renderer: {}
+      colorScheme: tableau.Tableau10
   LeadFunnel:
     name: Lead funnel
     config:
@@ -377,6 +438,7 @@ charts:
           type: funnel
         module: Lead
         renderer: {}
+      colorScheme: tableau.ClassicMedium10
   LeadsByCountry:
     name: Leads by country
     config:
@@ -396,6 +458,11 @@ charts:
           type: line
         module: Lead
         renderer: {}
+        yAxis:
+          axisType: linear
+          beginAtZero: true
+          label: Leads per country
+      colorScheme: tableau.Tableau10
   LeadsByRating:
     name: Leads by rating
     config:
@@ -414,6 +481,7 @@ charts:
           type: line
         module: Lead
         renderer: {}
+      colorScheme: tableau.Tableau10
   LeadsBySource:
     name: Leads by source
     config:
@@ -431,6 +499,7 @@ charts:
           type: doughnut
         module: Lead
         renderer: {}
+      colorScheme: tableau.Tableau20
   LeadsByType:
     name: Leads by type
     config:
@@ -452,6 +521,7 @@ charts:
           type: doughnut
         module: Lead
         renderer: {}
+      colorScheme: tableau.Tableau10
   LeadsPerMonth:
     name: Leads per month
     config:
@@ -475,6 +545,10 @@ charts:
           type: line
         module: Lead
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Leads
+      colorScheme: tableau.Tableau20
   MonthlySales:
     name: Monthly sales
     config:
@@ -504,6 +578,11 @@ charts:
           type: line
         module: Opportunity
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Euro
+          max: ""
+      colorScheme: tableau.Tableau20
   NumberOfOpportunitiesVsTarget:
     name: Number of opportunities vs target
     config:
@@ -523,6 +602,7 @@ charts:
           type: gauge
         module: Opportunity
         renderer: {}
+      colorScheme: tableau.Traffic9
   OpportunitiesCreatedPerMonth:
     name: Opportunities created per month
     config:
@@ -547,6 +627,29 @@ charts:
           type: bar
         module: Opportunity
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Opportunities
+  OpportunityLineItemsValue:
+    name: Opportunity line items value
+    config:
+      reports:
+      - dimensions:
+        - conditions: {}
+          field: Name
+          meta: {}
+          modifier: (no grouping / buckets)
+        filter: OpportunityId = ${recordID}
+        metrics:
+        - aggregate: SUM
+          field: TotalPrice
+          type: bar
+        module: OpportunityLineItem
+        renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: value
+      colorScheme: tableau.Tableau20
   OpportunitySalesPipeline:
     name: Opportunity sales pipeline
     config:
@@ -574,6 +677,7 @@ charts:
           type: funnel
         module: Opportunity
         renderer: {}
+      colorScheme: tableau.ClassicMedium10
   OpportunityStatusFunnel:
     name: Opportunity status funnel
     config:
@@ -600,6 +704,7 @@ charts:
           type: funnel
         module: Opportunity
         renderer: {}
+      colorScheme: tableau.ClassicMedium10
   PriceBookEntriesPerMonth:
     name: Price book entries per month
     config:
@@ -618,6 +723,10 @@ charts:
           type: line
         module: PricebookEntry
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Price book entries
+      colorScheme: tableau.Tableau10
   PriceBooksCreatedPerMonth:
     name: Price books created per month
     config:
@@ -636,6 +745,10 @@ charts:
           type: line
         module: Pricebook
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Price books
+      colorScheme: tableau.Tableau10
   ProductsAddedPerMonth:
     name: Products added per month
     config:
@@ -653,6 +766,10 @@ charts:
           type: line
         module: Product
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Products
+      colorScheme: tableau.Tableau10
   ProductsPerFamily:
     name: Products per family
     config:
@@ -669,6 +786,7 @@ charts:
           type: doughnut
         module: Product
         renderer: {}
+      colorScheme: tableau.Tableau10
   QuotesByStatus:
     name: Quotes by status
     config:
@@ -678,12 +796,14 @@ charts:
           field: Status
           meta: {}
           modifier: (no grouping / buckets)
+          skipMissing: true
         filter: ""
         metrics:
         - field: count
           type: doughnut
         module: Quote
         renderer: {}
+      colorScheme: tableau.Tableau20
   QuotesPerMonth:
     name: Quotes per month
     config:
@@ -709,6 +829,10 @@ charts:
           type: line
         module: Quote
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Quotes
+      colorScheme: tableau.Tableau20
   SalesVsTarget:
     name: Sales vs target
     config:
@@ -730,6 +854,7 @@ charts:
           type: gauge
         module: Opportunity
         renderer: {}
+      colorScheme: tableau.Traffic9
   SalesYTD:
     name: Sales YTD
     config:
@@ -750,6 +875,7 @@ charts:
           type: gauge
         module: Opportunity
         renderer: {}
+      colorScheme: tableau.Traffic9
   SolutionsByStatus:
     name: Solutions by status
     config:
@@ -765,6 +891,7 @@ charts:
           type: doughnut
         module: Solution
         renderer: {}
+      colorScheme: tableau.Tableau10
   SolutionsCreatedPerMonth:
     name: Solutions created per month
     config:
@@ -783,6 +910,10 @@ charts:
           type: line
         module: Solution
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Solutions
+      colorScheme: tableau.Tableau10
   TasksByStatus:
     name: Tasks by status
     config:
@@ -799,6 +930,7 @@ charts:
           type: doughnut
         module: Task
         renderer: {}
+      colorScheme: tableau.ClassicGreenOrange6
   TasksPerMonth:
     name: Tasks per month
     config:
@@ -818,3 +950,7 @@ charts:
           type: line
         module: Task
         renderer: {}
+        yAxis:
+          beginAtZero: true
+          label: Tasks
+      colorScheme: tableau.Tableau10
