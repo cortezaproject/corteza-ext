@@ -3,7 +3,7 @@ export default {
   description: 'On Account record, sets the values on update',
 
   * triggers ({ before }) {
-    yield before('update')
+    yield before('create', 'update')
       .for('compose:record')
       .where('module', 'Account')
       .where('namespace', 'crm')

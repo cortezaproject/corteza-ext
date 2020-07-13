@@ -65,7 +65,6 @@ describe(__filename, () => {
   }
 
   const { Street, City, State, PostalCode, Country } = leadRecord.values
-  const generatedAddress = [Street, City, State, PostalCode, Country ].filter(a => a).join('\n')
 
   const accountModule = getModuleFromYaml('Account', modulesYaml)
   const accountRecord = new Record(accountModule)
@@ -77,13 +76,11 @@ describe(__filename, () => {
     BillingState: State,
     BillingPostalCode: PostalCode,
     BillingCountry: Country,
-    GeneratedBillingAddress: generatedAddress,
     ShippingStreet: Street,
     ShippingCity: City,
     ShippingState: State,
     ShippingPostalCode: PostalCode,
     ShippingCountry: Country,
-    GeneratedShippingAddress: generatedAddress,
     AnnualRevenue: leadRecord.values.AnnualRevenue,
     AccountName: leadRecord.values.Company,
     Description: leadRecord.values.Description,
