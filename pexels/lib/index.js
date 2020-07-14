@@ -106,7 +106,7 @@ export default class PexelsClient {
     }
     return this.api.searchVideos(query, perPage, page)
       .then(({ videos }) => {
-        return videos.map(this.convertPhoto)
+        return videos.map(this.convertVideo)
       })
 
   }
