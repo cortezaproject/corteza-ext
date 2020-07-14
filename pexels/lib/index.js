@@ -18,7 +18,7 @@ export default class PexelsClient {
    * @param {Object} src links to photo in different sizes
    * @returns {Object} image object in internal form
    */
-  convert ({ id, url, photographer, src }) {
+  convertPhoto ({ id, url, photographer, src }) {
     return {
       id,
       preview: {
@@ -27,7 +27,7 @@ export default class PexelsClient {
         large: src.large,
         thumbnail: src.tiny,
       },
-      // Author name and a link to the photo - used for credits
+      // Author name and a link to the profile - used for credits
       author: {
         name: photographer,
         url: url,
@@ -43,13 +43,13 @@ export default class PexelsClient {
    * @param {Number} page Specifies the page being requested (Defaults to 1)
    * @returns {Promise}
    */
-  async search ({ query = '', perPage = 10, page = 1 }) {
+  async searchPhotos ({ query = '', perPage = 10, page = 1 }) {
     if (!query) {
       throw new Error('Parameter query is empty')
     }
     return this.api.search(query, perPage, page)
       .then(({ photos }) => {
-        return photos.map(this.convert)
+        return photos.map(this.convertPhoto)
       })
 
   }
@@ -64,6 +64,50 @@ export default class PexelsClient {
       throw new Error('Parameter photoID is empty')
     }
     return this.api.getPhoto(photoID)
-      .then(this.convert)
+      .then(this.convertPhoto)
+  }
+
+  /**
+ * Convert photo to internal form
+ * @param {String} id of the photo
+ * @param {String} ulr to the photo on Pexels
+ * @param {String} photographer that uploaded the photo
+ * @param {Object} src links to photo in different sizes
+ * @returns {Object} image object in internal form
+ */
+  convertVideo ({ id, image, user, url }) {
+    return {
+      id,
+      // Thumbnail
+      preview: {
+        thumbnail: image
+      },
+      // Actual video URL on Pexels
+      video: url,
+      // Author name and a link to the profile - used for credits
+      author: {
+        name: user.name,
+        url: url,
+      },
+      origin: 'Pexels',
+    }
+  }
+
+  /**
+ * Search API for videos
+ * @param {String} query Search term
+ * @param {Number} perPage Specifies the number of items per page (Defaults to 10)
+ * @param {Number} page Specifies the page being requested (Defaults to 1)
+ * @returns {Promise}
+ */
+  async searchVideos ({ query = '', perPage = 10, page = 1 }) {
+    if (!query) {
+      throw new Error('Parameter query is empty')
+    }
+    return this.api.searchVideos(query, perPage, page)
+      .then(({ videos }) => {
+        return videos.map(this.convertPhoto)
+      })
+
   }
 }
