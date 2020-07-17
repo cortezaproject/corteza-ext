@@ -130,6 +130,7 @@ export default {
                 $record.values.IsConverted = 'Yes'
                 $record.values.ConvertedAccountId = mySavedAccount.recordID
                 $record.values.ConvertedContactId = mySavedContact.recordID
+                $record.values.ConvertedOpportunityId = mySavedOpportunity.recordID
                 $record.values.ConvertedDate = mySavedAccount.createdAt.toISOString()
                 await Compose.saveRecord($record)
 
