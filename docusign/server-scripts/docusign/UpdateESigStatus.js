@@ -54,7 +54,7 @@ export default {
           .then(async res => {
             const fd = new FormData()
             fd.append('upload', Buffer.from(res, 'binary'), {
-              filename: `${$record.values.QuoteNumber}_signed.pdf`,
+              filename: `${$record.values.QuoteNumber || $record.values.Name}_signed.pdf`,
               contentType: 'application/pdf'
             })
             $record.values.QuoteFile = await this.attachFile($namespace, $module, fd, Compose)
