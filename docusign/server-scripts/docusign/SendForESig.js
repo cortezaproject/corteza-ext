@@ -12,7 +12,7 @@ export default {
       .uiProp('app', 'compose')
   },
 
-  async exec ({ $record, $namespace }, { Compose }) {
+  async exec ({ $record, $namespace }, { Compose, ComposeUI }) {
     const name = $record.values.Name
     let Document = $record.values.QuoteFile
 
@@ -20,11 +20,14 @@ export default {
     const fileUrl = Compose.ComposeAPI.baseURL + Document.url
 
     if ($record.values.SignatureStatus === 'sent') {
-      throw new Error('Document is already out to be signed')
+      ComposeUI.warning('Document is already out to be signed')
+      return
     } else if (!Document.url) {
-      throw new Error('Document URL is missing')
+      ComposeUI.warning('Document URL is missing')
+      return
     } else if (Document.meta.original.ext !== 'pdf') {
-      throw new Error('Document is not PDF')
+      ComposeUI.warning('Document is not PDF')
+      return
     }
 
     return pdf2base64(fileUrl).then(async document => {
@@ -35,15 +38,18 @@ export default {
       }
 
       if (!Document) {
-        throw new Error('Document to be signed is missing')
+        ComposeUI.warning('Document to be signed is missing')
+        return
       }
 
       if (!signers) {
-        throw new Error('Emails to E-Sign this document are missing')
+        ComposeUI.warning('Emails to E-Sign this document are missing')
+        return
       }
 
       if (!name) {
-        throw new Error('Document name is missing')
+        ComposeUI.warning('Document name is missing')
+        return
       }
 
       const cfg = await loadCreds(Compose)
@@ -60,6 +66,8 @@ export default {
           await Compose.saveRecord(opportunityRecord)
         })
       }
+
+      ComposeUI.success('Document sent')
 
       return Compose.saveRecord($record)
     }).catch(e => {

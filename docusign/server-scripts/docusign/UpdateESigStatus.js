@@ -59,12 +59,18 @@ export default {
             })
             $record.values.QuoteFile = await this.attachFile($namespace, $module, fd, Compose)
           })
+
+        ComposeUI.success('Document updated with the signed version')
+      } else {
+        ComposeUI.success('Document signature status updated')
       }
+
 
       $record.values.SignatureStatus = status
       return Compose.saveRecord($record)
     } else {
-      throw new Error('Cannot update E-Signature status for unexisting document')
+      ComposeUI.warning('Cannot update E-Signature status for unexisting document')
+      return
     }
   }
 }
