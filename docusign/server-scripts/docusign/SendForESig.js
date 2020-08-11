@@ -12,7 +12,7 @@ export default {
       .uiProp('app', 'compose')
   },
 
-  async exec ({ $record, $namespace }, { Compose }) {
+  async exec ({ $record, $namespace }, { Compose, System }) {
     const name = $record.values.Name
     let Document = $record.values.QuoteFile
 
@@ -34,6 +34,8 @@ export default {
         signers = [signers]
       }
 
+      const cc = []
+
       if (!Document) {
         throw new Error('Document to be signed is missing')
       }
@@ -49,8 +51,12 @@ export default {
       const cfg = await loadCreds(Compose)
       const client = new DocuSignClient(cfg.AccessToken, cfg.AccountID, cfg.BaseURL, cfg.InProduction)
 
+      const salesRep = await System.findUserByID($record.createdBy)
+      if (salesRep) {
+        cc.push(salesRep.email)
+      }
       const subject = 'Document ready for signing'
-      const documentId = await client.SendEnvelope({ document, name, subject, signers })
+      const documentId = await client.SendEnvelope({ document, name, subject, signers, cc })
       $record.values.DocuSignId = documentId
       $record.values.SignatureStatus = 'sent'
 

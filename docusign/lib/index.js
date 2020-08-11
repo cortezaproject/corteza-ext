@@ -33,8 +33,9 @@ export default class DocusignClient {
    * @param {String} name The name of the document
    * @param {String} subject The subject of the document
    * @param {Array<String>} signers The emails of signers that should sign the document
+   * @param {Array<String>} cc The emails of recipients that should recieve a carbon copy of the signed document
 	 */
-	async SendEnvelope ({ document = null, name = '', subject = '', signers = [] }) {
+	async SendEnvelope ({ document = null, name = '', subject = '', signers = [], cc = [] }) {
 		const envelopeDefinition = new docusign.EnvelopeDefinition()
 
 		// Set the Email Subject line and email message
@@ -59,6 +60,7 @@ export default class DocusignClient {
 			return docusign.Signer.constructFromObject({
 				recipientId: index + 1,
 				name: email,
+				roleName: 'signer',
 				email
 			})
 		})
@@ -67,8 +69,18 @@ export default class DocusignClient {
 			throw new Error('Signers not set')
 		}
 
+		// Add cc (Carbon copy) recipients to signers
+		const carbonCopies = cc.map((email, index) => {
+			return docusign.Signer.constructFromObject({
+				recipientId: (signers.length + index + 1),
+				name: email,
+				roleName: 'cc',
+				email
+			})
+		})
+
 		// Add the recipients object to the envelope definition.
-		envelopeDefinition.recipients = docusign.Recipients.constructFromObject({ signers })
+		envelopeDefinition.recipients = docusign.Recipients.constructFromObject({ carbonCopies, signers })
 
 		// Set the Envelope status. For drafts, use 'created' To send the envelope right away, use 'sent'
 		envelopeDefinition.status = 'sent'
