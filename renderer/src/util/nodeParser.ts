@@ -72,8 +72,10 @@ export class NodeParser {
     // repeated rendering
     if (node.attrs && node.attrs['data-for']) {
       return this.buildIterator(node.attrs['data-for'], ctx).map((i: any) => {
+        // When doing loops we should work on cloned nodes
+        const nodeC = JSON.parse(JSON.stringify(node))
         const lCtx: ReportContext = { ...ctx, ...i }
-        return this.parseNodeContent(node, lCtx)
+        return this.parseNodeContent(nodeC, lCtx)
       })
     }
 
