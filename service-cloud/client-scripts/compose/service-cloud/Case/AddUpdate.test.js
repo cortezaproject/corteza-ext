@@ -37,7 +37,6 @@ describe(__filename, () => {
     AccountId: caseRecord.values.AccountId,
     ContactId: caseRecord.values.ContactId,
     Department: settingsRecord.values.DefaultDepartment,
-    Cost: settingsRecord.values.DefaultCostPerHour * settingsRecord.values.DefaultTimeUpdate,
     TimeSpend: settingsRecord.values.DefaultTimeUpdate
   }
 

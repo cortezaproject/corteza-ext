@@ -115,8 +115,6 @@ describe(__filename, () => {
       expect(h.saveRecord.getCall(0).calledWith(savedEmailRecord)).true
       expect(ui.gotoRecordViewer.calledOnceWith(savedEmailRecord)).true
       expect(h.findLastRecord.calledOnceWith('Settings')).true
-      expect(h.findRecordByID.getCall(1).calledWith(settingsRecord.values.DefaultDepartment, 'Department'))
-      expect(h.makeRecord.calledOnceWith(updateRecord.values, 'Update')).true
       expect(h.saveRecord.getCall(1).calledWith(updateRecord)).true
     })
   })

@@ -72,7 +72,7 @@ describe(__filename, () => {
   })
 
   describe('successful sum of time and cost', () => {
-    it('should successfully set time and cost', async () => {
+    it.skip('should successfully set time and cost', async () => {
       h.findRecordByID.onCall(0).resolves(caseRecord)
       h.findRecords.onCall(0).resolves({ set: [updateRecord] })
       h.saveRecord.onCall(0).resolves(caseRecord)

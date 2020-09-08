@@ -41,7 +41,7 @@ export default {
           TimeSpend: defaultTimeSpend,
         }, 'Update')
           .then(async myUpdate => {
-            await Compose.saveRecord(myUpdate)
+            return await Compose.saveRecord(myUpdate)
           })
       })
     }

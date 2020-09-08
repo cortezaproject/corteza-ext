@@ -88,8 +88,7 @@ describe(__filename, () => {
 
       await SendNotifications.exec({ $record: updateRecord }, { Compose: h, Messaging: m })
 
-      expect(h.findRecordByID.getCall(0).calledWith(updateRecord.values.Department, 'Department')).true
-      expect(h.findRecordByID.getCall(1).calledWith(updateRecord.values.CaseId, 'Case')).true
+      expect(h.findRecordByID.getCall(0).calledWith(updateRecord.values.CaseId, 'Case')).true
       expect(h.findLastRecord.calledOnceWith('Settings')).true
       expect(m.sendMessage.calledOnceWith('Automatic update. "' + caseRecord.values.Number + '" has been updated: ' + updateRecord.values.Subject + ' (type: ' + updateRecord.values.Type + '). Direct link: ' + settingsRecord.values.defaultCaseRecordLink + updateRecord.recordID, settingsRecord.values.defaultChannel))
       // @todo unexpected behaviour of commented test
