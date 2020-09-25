@@ -35,7 +35,7 @@ export default class DocusignClient {
    * @param {Array<String>} signers The emails of signers that should sign the document
    * @param {Array<String>} cc The emails of recipients that should recieve a carbon copy of the signed document
 	 */
-	async SendEnvelope ({ document = null, name = '', subject = '', signers = [], cc = [] }) {
+	async SendEnvelope ({ document = null, name = '', subject = '', signers = [], cc = [], tags = {} }) {
 		const envelopeDefinition = new docusign.EnvelopeDefinition()
 
 		// Set the Email Subject line and email message
@@ -57,12 +57,24 @@ export default class DocusignClient {
 		envelopeDefinition.documents = [doc]
 	
 		signers = signers.map((email, index) => {
-			return docusign.Signer.constructFromObject({
+			const pl = {
 				recipientId: index + 1,
 				name: email,
 				roleName: 'signer',
-				email
-			})
+				email,
+			}
+			if (tags.signature) {
+				pl.tabs = {
+					signHereTabs: [{
+						anchorString: tags.signature,
+						anchorXOffset: '0.5',
+						anchorYOffset: '0',
+						anchorIgnoreIfNotPresent: 'false',
+						anchorUnits: 'inches'
+					}]
+				}
+			}
+			return docusign.Signer.constructFromObject(pl)
 		})
 
 		if (!signers.length) {

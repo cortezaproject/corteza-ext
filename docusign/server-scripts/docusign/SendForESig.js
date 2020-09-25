@@ -56,7 +56,10 @@ export default {
         cc.push(salesRep.email)
       }
       const subject = 'Document ready for signing'
-      const documentId = await client.SendEnvelope({ document, name, subject, signers, cc })
+      const tags = {
+        signature: cfg.AutoSignTag,
+      }
+      const documentId = await client.SendEnvelope({ document, name, subject, signers, cc, tags })
       $record.values.DocuSignId = documentId
       $record.values.SignatureStatus = 'sent'
 
