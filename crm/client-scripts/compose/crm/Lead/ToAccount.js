@@ -44,7 +44,8 @@ export default {
       Website: $record.values.Website,
       Twitter: $record.values.Twitter,
       Facebook: $record.values.Facebook,
-      LinkedIn: $record.values.LinkedIn
+      LinkedIn: $record.values.LinkedIn,
+      CampaignId: $record.values.CampaignId
     }, 'Account').then(async myAccount => {
       const mySavedAccount = await Compose.saveRecord(myAccount)
       // Create the related contact
@@ -73,7 +74,8 @@ export default {
         Phone: $record.values.Phone,
         Title: $record.values.Title,
         IsPrimary: '1',
-        AccountId: mySavedAccount.recordID
+        AccountId: mySavedAccount.recordID,
+        CampaignId: $record.values.CampaignId
       }, 'Contact').then(async myContact => {
         myContact = await Compose.saveRecord(myContact)
 
