@@ -53,7 +53,8 @@ export default {
             CloseDate: closeDate,
             Probability: opportunityProbability,
             ForecastCategory: opportunityForecaseCategory,
-            StageName: opportunityStagename
+            StageName: opportunityStagename,
+            CampaignId: $record.values.CampaignId[0],
           }, 'Opportunity')
           .then(async myOpportunity => {
               const mySavedOpportunity = await Compose.saveRecord(myOpportunity)
