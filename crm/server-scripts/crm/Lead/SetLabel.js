@@ -9,15 +9,7 @@ export default {
       .where('namespace', 'crm')
   },
 
-  async exec ({ $record }, { Compose }) {
-    const gen = async (Street, City, State, PostalCode, Country) => {
-      if (Country) {
-        const cr = await Compose.findRecordByID(Country, 'CountryList')
-        Country = cr.values['Name']
-      }
-      return [Street, City, State, PostalCode, Country ].filter(a => a).join('\n').trim()
-    }
-
+  async exec ({ $record }) {
     // Set the record label string
     let recordLabel = ''
 
@@ -62,7 +54,8 @@ export default {
 
     // Set generated address
     const { Street, City, State, PostalCode, Country } = $record.values
-    $record.values.GeneratedAddress = await gen(Street, City, State, PostalCode, Country)
+    const generatedAddress = [Street, City, State, PostalCode, Country ].filter(a => a).join('\n')
+    $record.values.GeneratedAddress = generatedAddress
     return $record
   }
 }
