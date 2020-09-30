@@ -51,7 +51,8 @@ export default {
       Website: $record.values.Website,
       Twitter: $record.values.Twitter,
       Facebook: $record.values.Facebook,
-      LinkedIn: $record.values.LinkedIn
+      LinkedIn: $record.values.LinkedIn,
+      CampaignId: $record.values.CampaignId
     }, 'Account').then(async myAccount => {
       const mySavedAccount = await Compose.saveRecord(myAccount)
       // Create the related contact
@@ -80,7 +81,8 @@ export default {
         Phone: $record.values.Phone,
         Title: $record.values.Title,
         IsPrimary: '1',
-        AccountId: mySavedAccount.recordID
+        AccountId: mySavedAccount.recordID,
+        CampaignId: $record.values.CampaignId
       }, 'Contact').then(async mySavedContact => {
         mySavedContact = await Compose.saveRecord(mySavedContact)
         // First get the default values
@@ -93,8 +95,6 @@ export default {
 
           // Calculate the expiration date
           const closeDate = this.getTimestamp(opportunityCloseDays)
-          const { set: [campaign] } = await Compose.findRecords({ filter: `recordID = ${$record.values.CampaignId}`, sort: 'createdAt DESC' }, 'Campaigns')
-            .catch(() => ({ set: [] }))
 
           // Create the related opportunity
           return Compose.makeRecord({
@@ -109,7 +109,7 @@ export default {
             Probability: opportunityProbability,
             ForecastCategory: opportunityForecaseCategory,
             StageName: opportunityStagename,
-            CampaignId: (campaign || {}).recordID,
+            CampaignId: $record.values.CampaignId[0],
           }, 'Opportunity').then(async myOpportunity => {
             const mySavedOpportunity = await Compose.saveRecord(myOpportunity)
             // Create a new contact linked to the opportunity
@@ -147,7 +147,7 @@ export default {
                 ComposeUI.success('The lead has been converted.')
 
                 // Go to the record
-                ComposeUI.gotoRecordViewer(mySavedOpportunity)
+                ComposeUI.gotoRecordEditor(mySavedOpportunity)
               })
           })
         })
