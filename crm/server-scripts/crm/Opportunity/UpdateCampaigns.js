@@ -44,7 +44,7 @@ export default {
 
                 })
 
-              await ComposeAPI.recordReport({ ...reportFilter, metricsfilter: `(CampaignId = '${campaign.recordID}') AND IsWon` })
+              await ComposeAPI.recordReport({ ...reportFilter, filter: `(CampaignId = '${campaign.recordID}') AND IsWon` })
                 .catch(() => ([]))
                 .then(response => {
                   campaign.values.NumberOfWonOpportunities = response.reduce((a, b) => a + (b.count || 0), 0)
