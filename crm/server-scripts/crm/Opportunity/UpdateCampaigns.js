@@ -15,7 +15,7 @@ export default {
       campaignIDs.add($record.values.CampaignId)
     }
     if ($oldRecord && $oldRecord.values.CampaignId) {
-      campaignIDs.add($record.values.CampaignId)
+      campaignIDs.add($oldRecord.values.CampaignId)
     }
 
     campaignIDs = [...campaignIDs]
@@ -47,7 +47,7 @@ export default {
 
               })
 
-            await ComposeAPI.recordReport({ ...reportFilter, filter: `(CampaignId = '${campaign.recordID}') AND IsWon` })
+            await ComposeAPI.recordReport({ ...reportFilter, filter: `(CampaignId = '${campaign.recordID}') AND (StageName = 'Closed Won')` })
               .catch(() => ([]))
               .then(response => {
                 campaign.values.NumberOfWonOpportunities = response.reduce((a, b) => a + (b.count || 0), 0)
