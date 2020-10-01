@@ -9,21 +9,11 @@ export default {
       .where('namespace', 'crm')
   },
 
-  async exec ({ $record }, { Compose }) {
-    const gen = async (Street, City, State, PostalCode, Country) => {
-      if (Country) {
-        const cr = await Compose.findRecordByID(Country, 'CountryList')
-        Country = cr.values['Name']
-      }
-      return [Street, City, State, PostalCode, Country ].filter(a => a).join('\n').trim()
-    }
-
-    let { BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry } = $record.values
-    $record.values.GeneratedBillingAddress = await gen(BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry)
-
-    let { ShippingStreet, ShippingCity, ShippingState, ShippingPostalCode, ShippingCountry } = $record.values
-    $record.values.GeneratedShippingAddress = await gen(ShippingStreet, ShippingCity, ShippingState, ShippingPostalCode, ShippingCountry)
-
+  async exec ({ $record }) {
+    const { Street, City, State, PostalCode, Country } = $record.values
+    const generatedAddress = [Street, City, State, PostalCode, Country ].filter(a => a).join('\n').trim()
+    $record.values.GeneratedBillingAddress = generatedAddress
+    $record.values.GeneratedShippingAddress = generatedAddress
     return $record
   }
 }
