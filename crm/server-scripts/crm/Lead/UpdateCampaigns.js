@@ -1,9 +1,9 @@
 export default {
-  label: 'Update Campaigns after creation or update',
-  description: 'Update related Campaigns after a Lead is created or updated',
+  label: 'Update Lead Campaigns after creation or update',
+  description: 'Update related Campaigns after a Lead is created, updated or deleted',
 
   * triggers ({ after }) {
-    yield after('create', 'update')
+    yield after('create', 'update', 'delete')
       .for('compose:record')
       .where('module', 'Lead')
       .where('namespace', 'crm')
@@ -11,7 +11,7 @@ export default {
 
   async exec ({ $record, $oldRecord, $module, $namespace }, { Compose, ComposeAPI }) {
     let campaignIDs = []
-    if ($record.values.CampaignId) {
+    if ($record && $record.values.CampaignId) {
       campaignIDs.push(...$record.values.CampaignId)
     }
     if ($oldRecord && $oldRecord.values.CampaignId) {
