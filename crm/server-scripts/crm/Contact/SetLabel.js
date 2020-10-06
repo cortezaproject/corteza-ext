@@ -32,8 +32,6 @@ export default {
       recordLabel = lastName
     }
 
-    // TODO This doesn't work for some reason...
-
     // Get the company name from the account
     // Check if there is a related account, to map the fields of the account
     const accountId = $record.values.AccountId
