@@ -62,17 +62,40 @@ export default class DocusignClient {
 				name: email,
 				roleName: 'signer',
 				email,
+				tabs: {}
 			}
+
 			if (tags.signature) {
-				pl.tabs = {
-					signHereTabs: [{
-						anchorString: tags.signature,
-						anchorXOffset: '0.5',
-						anchorYOffset: '0',
-						anchorIgnoreIfNotPresent: 'false',
-						anchorUnits: 'inches'
-					}]
-				}
+				pl.tabs.signHereTabs = [{
+					anchorString: tags.signature,
+					anchorXOffset: '0.5',
+					anchorYOffset: '0',
+					anchorUnits: 'inches'
+				}]
+			}
+			if (tags.fullName) {
+				pl.tabs.fullNameTabs = [{
+					anchorString: tags.fullName,
+					anchorXOffset: '0.5',
+					anchorYOffset: '0',
+					anchorUnits: 'inches'
+				}]
+			}
+			if (tags.title) {
+				pl.tabs.titleTabs = [{
+					anchorString: tags.title,
+					anchorXOffset: '0.5',
+					anchorYOffset: '-0.1',
+					anchorUnits: 'inches'
+				}]
+			}
+			if (tags.dateSigned) {
+				pl.tabs.dateSignedTabs = [{
+					anchorString: tags.dateSigned,
+					anchorXOffset: '0.5',
+					anchorYOffset: '0',
+					anchorUnits: 'inches'
+				}]
 			}
 			return docusign.Signer.constructFromObject(pl)
 		})

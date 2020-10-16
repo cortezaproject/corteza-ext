@@ -58,6 +58,9 @@ export default {
       const subject = 'Document ready for signing'
       const tags = {
         signature: cfg.AutoSignTag,
+        fullName: cfg.AutoNameTag,
+        title: cfg.AutoTitleTag,
+        dateSigned: cfg.AutoDateTag,
       }
       const documentId = await client.SendEnvelope({ document, name, subject, signers, cc, tags })
       $record.values.DocuSignId = documentId
