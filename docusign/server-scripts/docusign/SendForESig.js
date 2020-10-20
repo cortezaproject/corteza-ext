@@ -34,6 +34,17 @@ export default {
         signers = [signers]
       }
 
+      const contact = await Compose.findRecordByID($record.values.ContactId, 'Contact')
+      let fullName = ''
+      let title = ''
+      if (contact) {
+        fullName = `${contact.values.FirstName || ''} ${contact.values.LastName || ''}`.trim()
+        title = contact.values.Title || ''
+      }
+      signers = signers.map(email => {
+        return { fullName, email, title }
+      })
+
       const cc = []
 
       if (!Document) {
@@ -67,10 +78,11 @@ export default {
       $record.values.SignatureStatus = 'sent'
 
       if ($record.values.OpportunityId) {
-        await Compose.findRecordByID($record.values.OpportunityId, 'Opportunity').then(async opportunityRecord => {
-          opportunityRecord.SignatureStatus = 'sent'
-          await Compose.saveRecord(opportunityRecord)
-        })
+        await Compose.findRecordByID($record.values.OpportunityId, 'Opportunity')
+          .then(async opportunityRecord => {
+            opportunityRecord.values.SignatureStatus = 'sent'
+            await Compose.saveRecord(opportunityRecord)
+          })
       }
 
       return Compose.saveRecord($record)

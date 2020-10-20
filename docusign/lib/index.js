@@ -56,7 +56,7 @@ export default class DocusignClient {
 		// Create a documents object array for the envelope definition and add the doc object
 		envelopeDefinition.documents = [doc]
 	
-		signers = signers.map((email, index) => {
+		signers = signers.map(({ fullName, email, title }, index) => {
 			const pl = {
 				recipientId: index + 1,
 				name: email,
@@ -65,36 +65,45 @@ export default class DocusignClient {
 				tabs: {}
 			}
 
+			pl.tabs.textTabs = []
+
 			if (tags.signature) {
 				pl.tabs.signHereTabs = [{
 					anchorString: tags.signature,
-					anchorXOffset: '0.5',
+					anchorXOffset: '0.8',
 					anchorYOffset: '0',
 					anchorUnits: 'inches'
 				}]
 			}
 			if (tags.fullName) {
-				pl.tabs.fullNameTabs = [{
+				pl.tabs.textTabs.push({
+					tabId: 'fullName_tab',
+					tabLabel: 'Full Name',
 					anchorString: tags.fullName,
-					anchorXOffset: '0.5',
-					anchorYOffset: '0',
-					anchorUnits: 'inches'
-				}]
+					anchorXOffset: '50',
+					anchorYOffset: '-4',
+					anchorUnits: 'pixels',
+					locked: 'false',
+					value: fullName || ''
+				})
 			}
 			if (tags.title) {
-				pl.tabs.titleTabs = [{
+				pl.tabs.textTabs.push({
+					tabLabel: 'Title',
 					anchorString: tags.title,
-					anchorXOffset: '0.5',
-					anchorYOffset: '-0.1',
-					anchorUnits: 'inches'
-				}]
+					anchorXOffset: '50',
+					anchorYOffset: '-4',
+					anchorUnits: 'pixels',
+					locked: 'false',
+					value: title || ''
+				})
 			}
 			if (tags.dateSigned) {
 				pl.tabs.dateSignedTabs = [{
 					anchorString: tags.dateSigned,
-					anchorXOffset: '0.5',
-					anchorYOffset: '0',
-					anchorUnits: 'inches'
+					anchorXOffset: '50',
+					anchorYOffset: '-2',
+					anchorUnits: 'pixels'
 				}]
 			}
 			return docusign.Signer.constructFromObject(pl)
