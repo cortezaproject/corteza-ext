@@ -46,6 +46,7 @@ export default {
             .then(async opportunityRecord => {
               opportunityRecord.values.IsClosed = true
               opportunityRecord.values.IsWon = true
+              opportunityRecord.values.StageName = 'Closed Won'
               await Compose.saveRecord(opportunityRecord)
             })
         }
