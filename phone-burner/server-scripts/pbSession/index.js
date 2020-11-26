@@ -11,7 +11,7 @@ export default {
   description: 'This automation script creates a PhoneBurner session based on te provided resources.',
   security: {
     // @todo...
-    runAs: 'tomaz.jerman@crust.tech'
+    runAs: 'ext_phone-burner',
   },
   triggers (t) {
     return [

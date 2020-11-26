@@ -14,11 +14,11 @@ export function parseBody (req) {
 export default {
   label: 'Oauth callback',
   security: {
-    runAs: 'tomaz.jerman@crust.tech',
+    runAs: 'ext_docusign',
   },
   triggers ({ on }) {
     return on('request')
-      // .where('request.path', '/ext_oauth/callback')
+      .where('request.path', '/ext_oauth/callback')
       .where('request.method', 'GET')
       .for('system:sink')
   },

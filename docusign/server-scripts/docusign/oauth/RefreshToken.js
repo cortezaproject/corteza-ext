@@ -9,9 +9,8 @@ export default {
       .where('module', 'ext_docusign_configuration')
   },
 
-  // @todo
   security: {
-    runAs: 'tomaz.jerman@crust.tech',
+    runAs: 'ext_docusign',
   },
 
   async exec ({ $record }, { Compose }) {

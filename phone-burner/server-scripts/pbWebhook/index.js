@@ -5,8 +5,7 @@ export default {
   label: 'PhoneBurner Webhook',
   description: 'This automation script provides a PhoneBurner webhook.',
   security: {
-    // @todo...
-    runAs: 'tomaz.jerman@crust.tech'
+    runAs: 'ext_phone-burner'
   },
   triggers (t) {
     return [
