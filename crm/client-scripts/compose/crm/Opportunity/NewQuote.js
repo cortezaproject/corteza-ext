@@ -161,7 +161,7 @@ export default {
 
                 // Get the list of products from the opportunity to the quote
                 // @todo improve!
-                return Compose.findRecords({ filter: `OpportunityId = ${$record.recordID}`, perPage: 0 }, 'OpportunityLineItem')
+                return Compose.findRecords({ filter: `OpportunityId = ${$record.recordID}` }, 'OpportunityLineItem')
                   .catch(() => ({ set: [] }))
                   .then(({ set }) => {
                     // Loop through the lineitems related to the opportunity

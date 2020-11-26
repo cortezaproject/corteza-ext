@@ -175,7 +175,7 @@ describe(__filename, () => {
       expect(h.saveRecord.getCall(0).calledWith(newSettingsRecord))
       expect(h.makeRecord.getCall(0).calledWith(quoteRecord.values, 'Quote'))
       expect(h.saveRecord.getCall(1).calledWith(quoteRecord))
-      expect(h.findRecords.getCall(1).calledWith({ filter: `OpportunityId = ${opportunityRecord.recordID}`, perPage: 0 }, 'OpportunityLineItem')).true
+      expect(h.findRecords.getCall(1).calledWith({ filter: `OpportunityId = ${opportunityRecord.recordID}` }, 'OpportunityLineItem')).true
       expect(h.makeRecord.getCall(0).calledWith(quoteLineRecord.values, 'QuoteLineItem'))
       expect(h.saveRecord.getCall(2).calledWith(quoteLineRecord))
     })
