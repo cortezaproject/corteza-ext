@@ -11,17 +11,14 @@ export default {
   },
 
   async exec ({ $record }, { Compose }) {
-    // Update the status
     $record.values.Status = 'Working'
+    await Compose.saveRecord($record)
 
-    // Save the case
-    return Compose.makeRecord({
+    // Create an update
+    return Compose.saveRecord(Compose.makeRecord({
       CaseId: $record.recordID,
       Description: 'State set to "Working"',
       Type: 'State change'
-    }, 'CaseUpdate').then(async myCaseUpdate => {
-      await Compose.saveRecord(myCaseUpdate)
-      return await Compose.saveRecord($record)
-    })
+    }, 'CaseUpdate'))
   }
 }

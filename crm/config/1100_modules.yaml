@@ -52,15 +52,27 @@ modules:
       BillingStreet:
         label: Billing Street
         kind: String
+        expressions:
+          sanitizers:
+            - "trim(value)"
       BillingCity:
         label: Billing City
         kind: String
+        expressions:
+          sanitizers:
+            - "trim(value)"
       BillingState:
         label: Billing State
         kind: String
+        expressions:
+          sanitizers:
+            - "trim(value)"
       BillingPostalCode:
         label: Billing Postal Code
         kind: String
+        expressions:
+          sanitizers:
+            - "trim(value)"
       BillingCountry:
         label: Billing Country
         kind: Select
@@ -555,6 +567,12 @@ modules:
           - text: Zimbabwe
             value: Zimbabwe
           selectType: default
+      GeneratedBillingAddress:
+        label: Generated Billing Address
+        kind: String
+        private: true
+        expressions:
+          valueExpr: trim(trim(trim(BillingStreet?BillingStreet:"") + "\n" + trim(trim(trim(BillingPostalCode?BillingPostalCode:"") + " " + trim(BillingCity?BillingCity:"")) + " " + trim(BillingState?BillingState:""))) + "\n" + trim(BillingCountry?BillingCountry:""))
       Description:
         label: Description
         kind: String
@@ -691,15 +709,27 @@ modules:
       ShippingStreet:
         label: Shipping Street
         kind: String
+        expressions:
+          sanitizers:
+            - "trim(value)"
       ShippingCity:
         label: Shipping City
         kind: String
+        expressions:
+          sanitizers:
+            - "trim(value)"
       ShippingState:
         label: Shipping State
         kind: String
+        expressions:
+          sanitizers:
+            - "trim(value)"
       ShippingPostalCode:
         label: Shipping Postal Code
         kind: String
+        expressions:
+          sanitizers:
+            - "trim(value)"
       ShippingCountry:
         label: Shipping Country
         kind: Select
@@ -1194,6 +1224,12 @@ modules:
           - text: Zimbabwe
             value: Zimbabwe
           selectType: default
+      GeneratedShippingAddress:
+        label: Generated Shipping Address
+        kind: String
+        private: true
+        expressions:
+          valueExpr: trim(trim(trim(ShippingStreet?ShippingStreet:"") + "\n" + trim(trim(trim(ShippingPostalCode?ShippingPostalCode:"") + " " + trim(ShippingCity?ShippingCity:"")) + " " + trim(ShippingState?ShippingState:""))) + "\n" + trim(ShippingCountry?ShippingCountry:""))
       Type:
         label: Type
         kind: Select
@@ -1501,6 +1537,18 @@ modules:
           queryFields:
           - AccountName
           selectType: ""
+      SuppliedEmail:
+        label: Contact Email
+        kind: Email
+        private: true
+      SuppliedName:
+        label: Contact Name
+        kind: String
+        private: true
+      SuppliedPhone:
+        label: Contact Phone
+        kind: String
+        private: true
       CaseNumber:
         label: Case Number
         kind: Number
@@ -4726,18 +4774,30 @@ modules:
         label: Address Street
         kind: String
         private: true
+        expressions:
+          sanitizers:
+            - "trim(value)"
       City:
         label: Address City
         kind: String
         private: true
+        expressions:
+          sanitizers:
+            - "trim(value)"
       State:
         label: Address State
         kind: String
         private: true
+        expressions:
+          sanitizers:
+            - "trim(value)"
       PostalCode:
         label: Address Postal Code
         kind: String
         private: true
+        expressions:
+          sanitizers:
+            - "trim(value)"
       Country:
         label: Address Country
         kind: Select
@@ -5233,6 +5293,12 @@ modules:
             value: Zimbabwe
           selectType: default
         private: true
+      GeneratedAddress:
+        label: Generated Address
+        kind: String
+        private: true
+        expressions:
+          valueExpr: trim(trim(trim(Street?Street:"") + "\n" + trim(trim(trim(PostalCode?PostalCode:"") + " " + trim(City?City:"")) + " " + trim(State?State:""))) + "\n" + trim(Country?Country:""))
       AnnualRevenue:
         label: Annual Revenue
         kind: Select
@@ -5575,6 +5641,8 @@ modules:
         label: Record Label
         kind: String
         private: true
+        expressions:
+          valueExpr: trim(FirstName + " " + LastName)
       CampaignId:
         label: Campaign
         kind: Record
@@ -7443,6 +7511,10 @@ modules:
           format: "0.00"
           precision: 2
           suffix: €
+        expressions:
+          validators:
+            - test: "value < 0"
+              error: Discount can not be a negative number
       Email:
         label: Email
         kind: Email
@@ -7452,13 +7524,6 @@ modules:
       Fax:
         label: Fax
         kind: String
-      GrandTotal:
-        label: Grand Total (calculated)
-        kind: Number
-        options:
-          format: "0.00"
-          precision: 2
-          suffix: €
       LineItemCount:
         label: Line Items
         kind: Number
@@ -8521,6 +8586,11 @@ modules:
           format: "0"
           precision: 2
           suffix: €
+        expressions:
+          validators:
+            - test: "value < 0"
+              error: Shipping and Handling can not be a negative number
+
       Status:
         label: Status
         kind: Select
@@ -8550,6 +8620,10 @@ modules:
           format: "0.00"
           precision: 2
           suffix: €
+        expressions:
+          validators:
+            - test: "value < 0"
+              error: Sub total can not be a negative number
       Tax:
         label: Tax
         kind: Number
@@ -8557,6 +8631,10 @@ modules:
           format: "0.00"
           precision: "2"
           suffix: '%'
+        expressions:
+          validators:
+            - test: "value < 0"
+              error: Tax can not be a negative number
       TotalPrice:
         label: Total Price (calculated)
         kind: Number
@@ -8564,6 +8642,17 @@ modules:
           format: "0.00"
           precision: 2
           suffix: €
+        expressions:
+          valueExpr: max(max((Subtotal?Subtotal:0) - (Discount?Discount:0), 0) + (ShippingHandling?ShippingHandling:0))
+      GrandTotal:
+        label: Grand Total (calculated)
+        kind: Number
+        options:
+          format: "0.00"
+          precision: 2
+          suffix: €
+        expressions:
+          valueExpr: "TotalPrice * (Tax ? 1+Tax/100 : 1)"
       RecordLabel:
         label: Record Label
         kind: String

@@ -11,121 +11,80 @@ export default {
   },
 
   async exec ({ $record }, { Compose, ComposeUI }) {
-    // Get the current price book
     let pricebookId = $record.values.PricebookId
 
-    // Check if there is a price book. If there isn't one, find the standard one
+    // Default to a standard pricebook
     if (!pricebookId) {
-      // If there is no price book selected, get the default price book.
-      const { set } = await Compose.findRecords('IsActive = 1', 'Pricebook')
-        .catch(() => ({ set: [] }))
-      if (set.length === 0) {
-        // return that there are no Price books in the CRM
-        ComposeUI.warning('There are no active price books configured in the CRM. Please insert an active price book in the Price book module.')
-      } else {
-        // Loop through the price books, to find the standard one
-        set.forEach(r => {
-          // Check if the price book is the standard one
-          if (r.values.IsStandard === '1') {
-            // Get the price book id
-            pricebookId = r.recordID
+      const sPricebook = await Compose.findRecords('IsActive = 1', 'Pricebook')
+        .then(({ set: pp }) => {
+          if (pp.length === 0) {
+            ComposeUI.warning('There are no active price books configured in the CRM. Please insert an active price book in the Price book module.')
+            return
           }
+
+          return pp.find(({ values }) => values.IsStandard)
         })
 
-        if (pricebookId) {
-          // Save the price book in the opportunity
-          $record.values.PricebookId = pricebookId
-
-          // Save the price book in the opportunity
-          await Compose.saveRecord($record)
-        }
+      if (sPricebook) {
+        pricebookId = sPricebook.recordID
+        $record.values.PricebookId = pricebookId
+        await Compose.saveRecord($record)
       }
     }
 
-    // Check if a price book is selected or if a standard price book has been found. If not, exit.
     if (!pricebookId) {
       ComposeUI.warning('Please select a Price book for this opportunity first.')
       return
     }
 
-    // Set the total amount of the opportunity
-    let amount = 0
+    // Process line items
+    const lineItems = await Compose.findRecords({ filter: `OpportunityId = ${$record.recordID}`, limit: 0 }, 'OpportunityLineItem')
+      .then(({ set: lineItems }) => lineItems)
 
-    // Find all opportunity lineitems
-    return Compose.findRecords(`OpportunityId = ${$record.recordID}`, 'OpportunityLineItem')
-      .catch(() => ({ set: [] }))
-      .then(({ set }) => {
-        set.forEach(async lineitem => {
-          // Set the default values
-          let quantity = lineitem.values.Quantity
-          const discount = lineitem.values.Discount
-          let listprice = 0
-          let unitprice = 0
-          let subtotal = 0
-          let totalprice = 0
+    let quoteTotal = 0
+    for (const lineItem of lineItems) {
+      const product = await Compose.findRecordByID(lineItem.values.ProductId, 'Product')
+      const pricebookEntry = await Compose.findRecords(`PricebookId = ${pricebookId} AND ProductId = ${lineItem.values.ProductId}`, 'PricebookEntry')
+        .then(({ set: pp }) => pp.reverse().pop())
 
-          // Get the product
-          const product = await Compose.findRecordByID(lineitem.values.ProductId, 'Product')
-          // Set the product name and code
-          lineitem.values.Name = product.values.Name
-          lineitem.values.ProductCode = product.values.ProductCode
-          // Get the right price from the selected price book
-          return Compose.findRecords(`PricebookId = ${pricebookId} AND ProductId = ${lineitem.values.ProductId}`, 'PricebookEntry')
-            .catch(() => ({ set: [] }))
-            .then(async ({ set }) => {
-              if (set.length > 0) {
-                const pricebookEntry = set[0]
+      if (!pricebookEntry) {
+        continue
+      }
 
-                // Get the list price
-                listprice = pricebookEntry.values.UnitPrice
+      // Prepare base params
+      const quantity = parseFloat(lineItem.values.Quantity || 1)
+      const discount = parseFloat(lineItem.values.Discount || 0)
+      const listprice = parseFloat(pricebookEntry.values.UnitPrice || 0)
+      let unitprice = parseFloat(lineItem.values.UnitPrice || 0)
+      if (!lineItem.values.UnitPrice || isNaN(lineItem.values.UnitPrice)) {
+        // Use as default only when unit price is omitted
+        unitprice = listprice
+      }
 
-                // Update unitprice only when the value is empty
-                unitprice = lineitem.values.UnitPrice
-                if (!unitprice || unitprice === '' || isNaN(unitprice)) {
-                  unitprice = listprice
-                }
+      // Calculate costs
+      const subtotal = unitprice * quantity
+      const totalprice = subtotal - discount
 
-                // Calculate the totals
-                if (!quantity || quantity === '' || isNaN(quantity)) {
-                  quantity = 0
-                }
-                subtotal = unitprice * quantity
+      // Update it in the listitem record
+      lineItem.values.Name = product.values.Name
+      lineItem.values.ProductCode = product.values.ProductCode
+      lineItem.values.ListPrice = listprice
+      lineItem.values.UnitPrice = unitprice
+      lineItem.values.Subtotal = subtotal
+      lineItem.values.TotalPrice = totalprice
+      quoteTotal += totalprice
 
-                // Calculate the total
-                if (!discount || discount === '' || isNaN(discount)) {
-                  totalprice = subtotal
-                } else {
-                  totalprice = subtotal - discount
-                }
+      // Update the line item
+      await Compose.saveRecord(lineItem)
+    }
 
-                // Update it in the listitem record
-                lineitem.values.ListPrice = listprice
-                lineitem.values.UnitPrice = unitprice
-                lineitem.values.Subtotal = subtotal
-                lineitem.values.TotalPrice = totalprice
+    // Update the quote
+    $record.values.Amount = quoteTotal
+    await Compose.saveRecord($record)
 
-                // Add the total price to the amount of the opportunity
-                amount = amount + totalprice
-                // Save the lineitem
-                await Compose.saveRecord(lineitem)
-
-                // Save the opportunity record
-                $record.values.Amount = amount
-
-                const newRecord = await Compose.saveRecord($record)
-                if (newRecord) {
-                  ComposeUI.success('Pricebook applied') 
-                  setTimeout(() => {
-                    location.reload()
-                  }, 1000)
-                  return newRecord
-                } else {
-                  ComposeUI.warning('Pricebook failed to apply') 
-                  return $record
-                }
-              }
-            })
-        })
-      })
+    ComposeUI.success('Pricebook applied')
+    setTimeout(() => {
+      location.reload()
+    }, 1000)
   }
 }

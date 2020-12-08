@@ -10,29 +10,33 @@ export default {
       .uiProp('app', 'compose')
   },
 
+  // Just so we don't have this in the exec function
+  prepareBody ($record) {
+    return `
+<h1>Solution of case: ${$record.values.CaseNumber} - ${$record.values.Subject}</h1>
+<br>
+<strong>Solution Title:</strong> ${$record.values.SolutionName || '/'}<br>
+<strong>Solution Details:</strong> ${$record.values.SolutionNote || '/'}
+`
+  },
+
   async exec ({ $record }, { Compose, ComposeUI }) {
-    // Check if the case is closed
-    if ($record.values.Status === 'Closed') {
-      // Get the to address
-      const to = $record.values.SuppliedEmail
-      if (!to) {
-        ComposeUI.warning('There is no supplied email. Please fill in an email address in the supplied email field.')
-        return
-      }
-
-      // Get email body
-      let html = '<h1>Solution of case: ' + $record.values.CaseNumber + ' - ' + $record.values.Subject + '</h1>'
-      html = html + '<br>'
-      html = html + '<strong>Solution Title:</strong> ' + $record.values.SolutionName + '<br>'
-      html = html + '<strong>Solution Details:</strong> ' + $record.values.SolutionNote
-
-      // Send the email
-      await Compose.sendMail(to, `Corteza - Quote: ${$record.values.QuoteNumber} - ${$record.values.Name}`, { html })
-      ComposeUI.success('The case solution has been sent via email.')
-      return true
-    } else {
+    if ($record.values.Status !== 'Closed') {
       ComposeUI.warning('You can only inform the client of a solution when the case status is "Closed".')
       return
     }
+
+    if (!$record.values.SuppliedEmail) {
+      ComposeUI.warning('There is no supplied email. Please fill in an email address in the supplied email field.')
+      return
+    }
+
+    // Send the email
+    await Compose.sendMail(
+      $record.values.SuppliedEmail,
+      `Corteza - Quote: ${$record.values.CaseNumber} - ${$record.values.Subject}`,
+      { html: this.prepareBody($record) }
+    )
+    ComposeUI.success('The case solution has been sent via email.')
   }
 }

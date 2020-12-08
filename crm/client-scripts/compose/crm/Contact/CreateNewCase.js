@@ -11,40 +11,32 @@ export default {
   },
 
   async exec ({ $record }, { Compose, ComposeUI }) {
-    // Get the default settings
-    return Compose.findLastRecord('Settings').then(settings => {
-      // Map the case number
-      let nextCaseNumber = settings.values.CaseNextNumber
-      if (!nextCaseNumber || isNaN(nextCaseNumber)) {
-        nextCaseNumber = 0
-      }
+    const settings = await Compose.findLastRecord('Settings')
 
-      return Compose.makeRecord({
-        OwnerId: $record.values.OwnerId,
-        Subject: '(no subject)',
-        ContactId: $record.recordID,
-        AccountId: $record.values.AccountId,
-        Status: 'New',
-        Priority: 'Low',
-        SuppliedName: $record.values.FirstName + ' ' + $record.values.LastName,
-        SuppliedEmail: $record.values.Email,
-        SuppliedPhone: $record.values.Phone,
-        CaseNumber: ('' + nextCaseNumber).padStart(8, '0')
-      }, 'Case').then(async myCase => {
-        const mySavedCase = await Compose.saveRecord(myCase)
-        const nextCaseNumberUpdated = parseInt(nextCaseNumber, 10) + 1
+    // Map the case number
+    let nextCaseNumber = settings.values.CaseNextNumber
+    if (!nextCaseNumber || isNaN(nextCaseNumber)) {
+      nextCaseNumber = 0
+    }
 
-        // Update the config
-        settings.values.CaseNextNumber = nextCaseNumberUpdated
-        await Compose.saveRecord(settings)
+    const cse = await Compose.saveRecord(Compose.makeRecord({
+      OwnerId: $record.values.OwnerId,
+      Subject: '(no subject)',
+      ContactId: $record.recordID,
+      AccountId: $record.values.AccountId,
+      Status: 'New',
+      Priority: 'Low',
+      SuppliedName: $record.values.FirstName + ' ' + $record.values.LastName,
+      SuppliedEmail: $record.values.Email,
+      SuppliedPhone: $record.values.Phone,
+      CaseNumber: ('' + nextCaseNumber).padStart(8, '0')
+    }, 'Case'))
 
-        // Notify current user
-        ComposeUI.success('The new case has been created.')
+    settings.values.CaseNextNumber = parseInt(nextCaseNumber, 10) + 1
+    await Compose.saveRecord(settings)
 
-        // Go to the record
-        ComposeUI.gotoRecordEditor(mySavedCase)
-        return mySavedCase
-      })
-    })
+    ComposeUI.success('The new case has been created.')
+    ComposeUI.gotoRecordEditor(cse)
+    return cse
   }
 }

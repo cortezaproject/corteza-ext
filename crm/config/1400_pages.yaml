@@ -3598,6 +3598,9 @@ pages:
                 - name: Subject
                 - name: AccountId
                 - name: ContactId
+                - name: SuppliedEmail
+                - name: SuppliedName
+                - name: SuppliedPhone
                 - name: ProductId
               style:
                 variants: {border: primary, headerText: primary}

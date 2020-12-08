@@ -30,8 +30,8 @@ export default {
     const reportFilter = {
       namespaceID: $namespace.namespaceID,
       moduleID: $module.moduleID,
-      dimensions: `DATE_FORMAT(created_at, '%Y-01-01')`,
-      metrics: '',
+      dimensions: 'DATE_FORMAT(created_at, \'%Y-01-01\')',
+      metrics: ''
     }
 
     if (campaignFilter) {

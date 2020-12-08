@@ -10,21 +10,18 @@ export default {
   },
 
   async exec ({ $record }, { Compose }) {
-    // Get the default settings
-    return Compose.findLastRecord('Settings').then(async settings => {
-      // Map the case number
-      let nextSolutionNumber = settings.values.SolutionNextNumber
-      if (!nextSolutionNumber || isNaN(nextSolutionNumber)) {
-        nextSolutionNumber = 0
-      }
-      $record.values.SolutionNumber = nextSolutionNumber
-      const nextSolutionNumberUpdated = parseInt(nextSolutionNumber, 10) + 1
+    const settings = await Compose.findLastRecord('Settings')
 
-      // Update the config
-      settings.values.SolutionNextNumber = nextSolutionNumberUpdated
+    // Map the case number
+    let nextSolutionNumber = settings.values.SolutionNextNumber
+    if (!nextSolutionNumber || isNaN(nextSolutionNumber)) {
+      nextSolutionNumber = 0
+    }
+    $record.values.SolutionNumber = nextSolutionNumber
 
-      await Compose.saveRecord(settings)
-      return $record
-    })
+    settings.values.SolutionNextNumber = parseInt(nextSolutionNumber, 10) + 1
+    await Compose.saveRecord(settings)
+
+    return $record
   }
 }
