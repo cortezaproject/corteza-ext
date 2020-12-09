@@ -203,7 +203,7 @@ charts:
       reports:
       - dimensions:
         - conditions: {}
-          field: AccountSelect
+          field: AccountName
           meta: {}
           modifier: (no grouping / buckets)
         filter: ""
@@ -296,7 +296,7 @@ charts:
       reports:
       - dimensions:
         - conditions: {}
-          field: AccountSelect
+          field: AccountName
           meta: {}
           modifier: (no grouping / buckets)
         filter: ""
@@ -341,7 +341,7 @@ charts:
       reports:
       - dimensions:
         - conditions: {}
-          field: DepartmentSelect
+          field: Name
           meta: {}
           modifier: (no grouping / buckets)
           skipMissing: true
@@ -409,7 +409,7 @@ charts:
       reports:
       - dimensions:
         - conditions: {}
-          field: DepartmentSelect
+          field: Name
           meta: {}
           modifier: (no grouping / buckets)
           skipMissing: true

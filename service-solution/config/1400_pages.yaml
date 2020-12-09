@@ -700,10 +700,16 @@ pages:
                 - title: Actions
                   options:
                     buttons:
-                    - label: Load selected tempate in to email message
+                    - enabled: true
+                      label: Load selected template in to email message
                       variant: primary
-                    - label: Send email to the contact
+                      resourceType: compose:record
+                      script: /client-scripts/compose/service-solution/EmailMessage/TemplateLoad.js:default
+                    - enabled: true
+                      label: Send email to the contact
                       variant: success
+                      resourceType: compose:record
+                      script: /client-scripts/compose/service-solution/EmailMessage/SendEmail.js:default
                   style:
                     variants: {bodyBg: white, border: primary, headerBg: white,
                       headerText: primary}
@@ -1175,7 +1181,7 @@ pages:
             fields:
             - name: TotalTime
             - name: TotalCost
-            - name: DepartmentSelect
+            - name: Name
           style:
             variants: {bodyBg: white, border: primary, headerBg: white, headerText: primary}
           kind: Record

@@ -10,7 +10,6 @@ export default {
   },
 
   async exec ({ $record, $oldRecord }, { Compose }) {
-    // Get the current status of the case
     let currentStatus = $record.values.Status
     let previousStatus = $oldRecord.values.Status
 
@@ -22,28 +21,23 @@ export default {
       previousStatus = 'None'
     }
 
-    // Check if we need to insert a status change update
-    if (currentStatus != previousStatus) {
-      // Insert the status update
-      // First, get the default settings
-      return Compose.findLastRecord('Settings').then(async settings => {
-        const defaultTimeSpend = settings.values.DefaultTimeUpdate
-        const defaultDepartment = settings.values.DefaultDepartment
-
-        // Make the update record
-        return Compose.makeRecord({
-          CaseId: $record.recordID,
-          Type: 'Status change',
-          Subject: 'Status changed from ' + previousStatus + ' to ' + currentStatus,
-          AccountId: $record.values.AccountId,
-          From: 'Automatic message',
-          Department: defaultDepartment,
-          TimeSpend: defaultTimeSpend,
-        }, 'Update')
-          .then(async myUpdate => {
-            return await Compose.saveRecord(myUpdate)
-          })
-      })
+    // No update; no action needed
+    if (currentStatus === previousStatus) {
+      return $record
     }
+
+    // Take note of the update
+    const settings = await Compose.findLastRecord('Settings')
+    const r = await Compose.makeRecord({
+      CaseId: $record.recordID,
+      Type: 'Status change',
+      Subject: 'Status changed from ' + previousStatus + ' to ' + currentStatus,
+      AccountId: $record.values.AccountId,
+      ContactId: $record.values.ContactId,
+      From: 'Automatic message',
+      Department: settings.values.DefaultDepartment,
+      TimeSpend: settings.values.DefaultTimeUpdate
+    }, 'Update')
+    return Compose.saveRecord(r)
   }
 }

@@ -686,12 +686,6 @@ modules:
       Facebook:
         label: Facebook
         kind: String
-      AccountSelect:
-        label: Accounts
-        kind: Select
-        options:
-          options: []
-          selectType: default
       TotalTime:
         label: Total time of all cases
         kind: Number
@@ -845,6 +839,8 @@ modules:
       Number:
         label: Case Number
         kind: String
+        expressions:
+          valueExpr: "\"Ticket#\" + strftime(new.createdAt, \"%Y%m%d%H%M%S%b\")"
       ProductId:
         label: Product
         kind: Record
@@ -1622,12 +1618,6 @@ modules:
           format: "0.00"
           precision: "2"
           prefix: $
-      DepartmentSelect:
-        label: Departments
-        kind: Select
-        options:
-          multiLine: false
-          useRichTextEditor: false
   EmailMessage:
     (envoy): { skipIf: "!missing" }
     name: EmailMessage
