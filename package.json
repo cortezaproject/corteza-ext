@@ -1,6 +1,6 @@
 {
   "name": "corteza-ext",
-  "version": "1.0.0",
+  "version": "2020.12.0",
   "description": "Corteza extensions",
   "main": "dist/index.js",
   "repository": "git@github.com:cortezaproject/corteza-ext.git",
