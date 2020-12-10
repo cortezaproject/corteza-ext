@@ -10,74 +10,47 @@ export default {
       .uiProp('app', 'compose')
   },
 
-  getTimestamp (opportunityCloseDays) {
-    const m = new Date()
-    m.setDate(m.getDate() + parseInt(opportunityCloseDays, 10))
-    return m.toISOString()
-  },
-
   async exec ({ $record }, { Compose, ComposeUI }) {
-    // Get the default settings
-    return Compose.findLastRecord('Settings').then(settings => {
-      const opportunityCloseDays = settings.values.OpportunityCloseDateDays
-      const opportunityProbability = settings.values.OpportunityProbability
-      const opportunityForecaseCategory = settings.values.OpportunityForecaseCategory
-      const opportunityStagename = settings.values.OpportunityStagename
+    const settings = await Compose.findLastRecord('Settings')
 
-      // Calculate the expiration date
-      const closeDate = this.getTimestamp(opportunityCloseDays)
+    // Find the contact we want to link the new case to (by default, the primary contact)
+    const contact = await Compose.findRecords(`AccountId = ${$record.recordID}`, 'Contact')
+      .then(({ set: contacts }) => contacts.find(({ values }) => values.IsPrimary))
 
-      // Find the contact we want to link the new case to (by default, the primary contact)
-      Compose.findRecords(`AccountId = ${$record.recordID}`, 'Contact')
-      .catch(() => ({ set: [] }))
-      .then(({ set }) => {
-        let ContactId
+    if (!contact) {
+      ComposeUI.warning('The primary contact is not defined.')
+      return
+    }
 
-        // Loop through the contacts of the account, to save the primary contact
-        set.forEach(r => {
-          // Check if it's the primary contact
-            if (r.values.IsPrimary === '1') {
-              // Add the contact
-              ContactId = r.recordID
-            }
-          })
+    const getTimestamp = (opportunityCloseDays) => {
+      const m = new Date()
+      m.setDate(m.getDate() + parseInt(opportunityCloseDays, 10))
+      return m.toISOString()
+    }
 
-          // Create the related opportunity
-          return Compose.makeRecord({
-            OwnerId: $record.values.OwnerId,
-            LeadSource: $record.values.LeadSource,
-            Name: '(unnamed)',
-            AccountId: $record.recordID,
-            IsClosed: 'No',
-            IsWon: 'No',
-            CloseDate: closeDate,
-            Probability: opportunityProbability,
-            ForecastCategory: opportunityForecaseCategory,
-            StageName: opportunityStagename,
-            CampaignId: $record.values.CampaignId[0],
-          }, 'Opportunity')
-          .then(async myOpportunity => {
-              const mySavedOpportunity = await Compose.saveRecord(myOpportunity)
+    // Create the opportunity
+    const opportunity = await Compose.saveRecord(Compose.makeRecord({
+      OwnerId: $record.values.OwnerId,
+      LeadSource: $record.values.LeadSource,
+      Name: '(unnamed)',
+      AccountId: $record.recordID,
+      IsClosed: 'No',
+      IsWon: 'No',
+      CloseDate: getTimestamp(settings.values.OpportunityCloseDateDays || 0),
+      Probability: settings.values.OpportunityProbability,
+      ForecastCategory: settings.values.OpportunityForecaseCategory,
+      StageName: settings.values.OpportunityStagename,
+      CampaignId: $record.values.CampaignId[0]
+    }, 'Opportunity'))
 
-              // Create a new contact linked to the opportunity
-              return Compose.makeRecord({
-                ContactId: ContactId,
-                OpportunityId: mySavedOpportunity.recordID,
-                IsPrimary: '1'
-              }, 'OpportunityContactRole')
-                .then(async myOpportunityContactRole => {
-                  await Compose.saveRecord(myOpportunityContactRole)
+    // Create a contact role
+    await Compose.saveRecord(Compose.makeRecord({
+      ContactId: contact.recordID,
+      OpportunityId: opportunity.recordID,
+      IsPrimary: '1'
+    }, 'OpportunityContactRole'))
 
-                  // Notify current user
-                  ComposeUI.success('The new opportunity has been created.')
-
-                  // Go to the record
-                  ComposeUI.gotoRecordEditor(mySavedOpportunity)
-
-                  return mySavedOpportunity
-                })
-            })
-        })
-    })
+    ComposeUI.success('The new opportunity has been created.')
+    ComposeUI.gotoRecordEditor(opportunity)
   }
 }

@@ -30,8 +30,8 @@ export default {
     const reportFilter = {
       namespaceID: $namespace.namespaceID,
       moduleID: $module.moduleID,
-      dimensions: `DATE_FORMAT(created_at, '%Y-01-01')`,
-      metrics: 'sum(Amount) AS amount',
+      dimensions: 'DATE_FORMAT(created_at, \'%Y-01-01\')',
+      metrics: 'sum(Amount) AS amount'
     }
 
     if (campaignFilter) {
@@ -44,7 +44,6 @@ export default {
               .then(response => {
                 campaign.values.NumberOfOpportunities = response.reduce((a, b) => a + (b.count || 0), 0)
                 campaign.values.AmountAllOpportunities = response.reduce((a, b) => a + (b.amount || 0), 0)
-
               })
 
             await ComposeAPI.recordReport({ ...reportFilter, filter: `(CampaignId = '${campaign.recordID}') AND (StageName = 'Closed Won')` })

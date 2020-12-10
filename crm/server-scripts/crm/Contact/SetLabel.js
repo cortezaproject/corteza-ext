@@ -10,40 +10,16 @@ export default {
   },
 
   async exec ({ $record }, { Compose }) {
-    // Set the record label string
-    let recordLabel = ''
+    let recordLabel = `${$record.values.FirstName || ''} ${$record.values.LastName || ''}`.trim()
 
-    // Get the first name
-    let firstName = $record.values.FirstName || ''
-
-    // Get the last name
-    let lastName = $record.values.LastName || ''
-
-    // Create the full name
-    if (firstName && lastName) {
-      recordLabel = firstName + ' ' + lastName
-    }
-
-    else if (firstName) {
-      recordLabel = firstName
-    }
-
-    else if (lastName) {
-      recordLabel = lastName
-    }
-
-    // Get the company name from the account
-    // Check if there is a related account, to map the fields of the account
-    const accountId = $record.values.AccountId
-    if (accountId) {
-      return await Compose.findRecordByID(accountId, 'Account').then(accountRecord => {
-        if ((accountRecord || { values: {}}).values.AccountName) {
-          // Add to the record label
-          recordLabel = recordLabel + ` (${accountRecord.values.AccountName})`
-        }
-        $record.values.RecordLabel = recordLabel
-        return $record
-      })
+    // Include the related account if present
+    if ($record.values.AccountId) {
+      const accountRecord = await Compose.findRecordByID($record.values.AccountId, 'Account')
+      if ((accountRecord || { values: {} }).values.AccountName) {
+        // Add to the record label
+        recordLabel = recordLabel + ` (${accountRecord.values.AccountName})`
+      }
+      $record.values.RecordLabel = recordLabel
     }
 
     return $record

@@ -1,3 +1,5 @@
+import { procTemplate } from '../../../../lib/templates'
+
 export default {
   label: 'Create email for this Case',
   description: 'Creates Email message record in module EmailMessage',
@@ -10,62 +12,31 @@ export default {
       .uiProp('app', 'compose')
   },
 
-  procTemplate (tpl, pairs = {}) {
-    return tpl.replace(/{{\s*(.+?)\s*}}/g, (match) => {
-      // remove {{, }} and extra spaces
-      const token = match.substr(2, match.length - 4).trim().split('.', 2)
-
-      // return the placeholder if we do not find the value
-      const miss = '{{' + token.join('.') + '}}'
-
-      if (token.length === 1) {
-        // handle simpe key-value pairs
-        return pairs[token] || miss
-      } else {
-        // handle complex key-key-value (ie: modulename: recordvalues)
-        const [key, field] = token
-        return pairs[key] && pairs[key][field] ? pairs[key][field] : miss
-      }
-    })
-  },
-
   async exec ({ $record }, { Compose, ComposeUI }) {
-    // Get the default template from the settings.
-    return Compose.findLastRecord('Settings').then(settings => {
-      const templateId = settings.values.DefaultCaseEmailTemplate
+    const settings = await Compose.findLastRecord('Settings')
 
-      if (templateId) {
-        // Get the template
-        Compose.findRecordByID(templateId, 'EmailTemplate').then(async templateRecord => {
-          let subject = templateRecord.values.Subject
-          let body = templateRecord.values.Body
+    if (!settings.values.DefaultCaseEmailTemplate) {
+      return $record
+    }
 
-          subject = this.procTemplate(subject, { Case: $record.values })
-          body = this.procTemplate(body, { Case: $record.values })
+    // There will always be a contact
+    const contact = await Compose.findRecordByID($record.values.ContactId, 'Contact')
 
-          // Find the contact (there will always be a contact)
-          const contactRecord = await Compose.findRecordByID($record.values.ContactId, 'Contact')
-          subject = this.procTemplate(subject, { Contact: contactRecord.values })
-          body = this.procTemplate(body, { Contact: contactRecord.values })
-          // Create the email
-          return Compose.makeRecord({
-            Subject: subject,
-            HtmlBody: body,
-            Status: 'Draft',
-            EmailTemplateId: templateId,
-            CaseId: $record.recordID,
-            ContactId: $record.values.ContactId
-          }, 'EmailMessage')
-            .then(async myEmailMessage => {
-              const mySavedEmailMessage = await Compose.saveRecord(myEmailMessage)
-              ComposeUI.gotoRecordEditor(mySavedEmailMessage)
-              return mySavedEmailMessage
-            })
-        })
-      }
-      return
-    }).catch(({ message }) => {
-      throw new Error(message)
-    })
+    const template = await Compose.findRecordByID(settings.values.DefaultCaseEmailTemplate, 'EmailTemplate')
+    const subject = procTemplate(template.values.Subject || '', { Case: $record.values, Contact: contact.values })
+    const body = procTemplate(template.values.Body || '', { Case: $record.values, Contact: contact.values })
+
+    // Create the email
+    const email = await Compose.saveRecord(Compose.makeRecord({
+      Subject: subject,
+      HtmlBody: body,
+      Status: 'Draft',
+      EmailTemplateId: settings.values.DefaultCaseEmailTemplate,
+      CaseId: $record.recordID,
+      ContactId: $record.values.ContactId
+    }, 'EmailMessage'))
+
+    ComposeUI.gotoRecordEditor(email)
+    return email
   }
 }

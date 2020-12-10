@@ -10,20 +10,18 @@ export default {
   },
 
   async exec ({ $record }, { Compose }) {
-    return Compose.findLastRecord('Settings').then(async settings => {
-      // Map the case number
-      let nextCaseNumber = settings.values.CaseNextNumber
-      if (!nextCaseNumber || isNaN(nextCaseNumber)) {
-        nextCaseNumber = 0
-      }
+    const settings = await Compose.findLastRecord('Settings')
 
-      $record.values.CaseNumber = ('' + nextCaseNumber).padStart(8, '0')
-      const nextCaseNumberUpdated = parseInt(nextCaseNumber, 10) + 1
+    // Map the case number
+    let nextCaseNumber = settings.values.CaseNextNumber
+    if (!nextCaseNumber || isNaN(nextCaseNumber)) {
+      nextCaseNumber = 0
+    }
 
-      // Update the config
-      settings.values.CaseNextNumber = nextCaseNumberUpdated
-      await Compose.saveRecord(settings)
-      return $record
-    })
+    $record.values.CaseNumber = ('' + nextCaseNumber).padStart(8, '0')
+    settings.values.CaseNextNumber = parseInt(nextCaseNumber, 10) + 1
+    await Compose.saveRecord(settings)
+
+    return $record
   }
 }

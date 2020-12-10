@@ -10,21 +10,18 @@ export default {
   },
 
   async exec ({ $record }, { Compose }) {
-    // Get the default settings
-    return Compose.findLastRecord('Settings').then(async settings => {
-      // Map the case number
-      let KBNextNumber = settings.values.KBNextNumber
-      if (!KBNextNumber || isNaN(KBNextNumber)) {
-        KBNextNumber = 0
-      }
+    const settings = await Compose.findLastRecord('Settings')
 
-      $record.values.Number = KBNextNumber
-      const KBNextNumberUpdated = parseInt(KBNextNumber, 10) + 1
+    // Map the case number
+    let KBNextNumber = settings.values.KBNextNumber
+    if (!KBNextNumber || isNaN(KBNextNumber)) {
+      KBNextNumber = 0
+    }
 
-      // Update the config
-      settings.values.KBNextNumber = KBNextNumberUpdated
-      await Compose.saveRecord(settings)
-      return $record
-    })
+    $record.values.Number = KBNextNumber
+
+    settings.values.KBNextNumber = parseInt(KBNextNumber, 10) + 1
+    await Compose.saveRecord(settings)
+    return $record
   }
 }

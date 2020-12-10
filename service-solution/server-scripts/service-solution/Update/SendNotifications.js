@@ -9,75 +9,83 @@ export default {
       .where('namespace', 'service-solution')
   },
 
+  // Just so we don't have this in the exec function
+  prepareBody (cse, $record) {
+    return `
+Hi,
+<br>
+<br>
+The following case has been updated:
+<br>
+<ul>
+  <li><strong>Case ID:</strong> ${cse.values.Number}</li>
+  <li><strong>Subject:</strong> ${cse.values.Subject}</li>
+  <li><strong>Type:</strong> ${cse.values.Type}</li>
+  <li><strong>Status:</strong> ${cse.values.Status}</li>
+  <li><strong>Priority:</strong> ${cse.values.Priority}</li>
+</ul>
+<br>
+Update:
+<br>
+<ul>
+  <li><strong>Type:</strong> ${$record.values.Type}</li>
+  <li><strong>Subject:</strong> ${$record.values.Subject}</li>
+  <li><strong>Content:</strong> ${$record.values.Content}</li>
+</ul>
+<br>
+Kind regards,
+<br>
+<br>
+Service Cloud
+<br>
+<br>
+--
+<br>
+Ticket Summary:
+<hr>
+${cse.values.Description}
+`
+  },
+
   async exec ({ $record }, { Compose, Messaging }) {
-    // Check if the type is NOT an incoming email. If it's not, handle it as an internal update and send notifications
-    if ($record.values.Type !== 'Incoming email') {
-      // Set the notifications values to "1" (sent)
-      if ($record.values.SendToMailingList) {
-        $record.values.NotificationCaseMailingList = 1
-      }
-      $record.values.NotificationCaseCreator = 1
-
-      // Find the related case
-      return Compose.findRecordByID($record.values.CaseId, 'Case').then(caseRecord => {
-        // Create the update text to send out via email.
-        // Only when the Update record has a subject or type.
-        if (($record.values.Subject) || ($record.values.Type)) {
-          let html = 'Hi,'
-          html += '<br>'
-          html += '<br>'
-          html += 'The following case has been updated:'
-          html += '<br>'
-          html += '<ul>'
-          html += '<li><strong>Case ID:</strong> ' + caseRecord.values.Number + '</li>'
-          html += '<li><strong>Subject:</strong> ' + caseRecord.values.Subject + '</li>'
-          html += '<li><strong>Type:</strong> ' + caseRecord.values.Category + '</li>'
-          html += '<li><strong>Status:</strong> ' + caseRecord.values.Status + '</li>'
-          html += '<li><strong>Priority:</strong> ' + caseRecord.values.Priority + '</li>'
-          html += '</ul>'
-          html += '<br>'
-          html += 'Update:'
-          html += '<br>'
-          html += '<ul>'
-          html += '<li><strong>Type:</strong> ' + $record.values.Type + '</li>'
-          html += '<li><strong>Subject:</strong> ' + $record.values.Subject + '</li>'
-          html += '<li><strong>Content:</strong> ' + $record.values.Content + '</li>'
-          html += '</ul>'
-          html += '<br>'
-          html += 'Kind regards,'
-          html += '<br>'
-          html += '<br>'
-          html += 'Service Cloud'
-          html += '<br>'
-          html += '<br>'
-          html += '--'
-          html += '<br>'
-          html += 'Ticket Summary:'
-          html += '<hr>'
-          html += caseRecord.values.Description
-
-          return Compose.findLastRecord('Settings').then(async settings => {
-            const defaultChannel = settings.values.DefaultSupportChannel
-            const defaultCaseRecordLink = settings.values.DefaultCaseRecordLink
-
-            // Get default settings to find if there is a channel to inform
-            if (defaultChannel && defaultCaseRecordLink) {
-              await Messaging.sendMessage('Automatic update. "' + caseRecord.values.Number + '" has been updated: ' + $record.values.Subject + ' (type: ' + $record.values.Type + '). Direct link: ' + defaultCaseRecordLink + '/' + caseRecord.recordID, defaultChannel)
-            }
-            // Get the contact of the case record to infor via email
-            if (caseRecord.values.ContactId) {
-              await Compose.findRecordByID(caseRecord.values.ContactId, 'Contact').then(async contactRecord => {
-                // Check if the contact has an email address
-                if (contactRecord.values.Email) {
-                  // Send the update text
-                  await Compose.sendMail(contactRecord.values.Email, '[' + caseRecord.values.Number + '] Update: ' + caseRecord.values.Subject, { html: html })
-                }
-              })
-            }
-            return $record
-          })
-        }
-      })
+    // When not an internal email, handle it as an internal update and send notifications
+    if ($record.values.Type === 'Incoming email') {
+      return $record
     }
+
+    // Set some flags
+    if ($record.values.SendToMailingList) {
+      $record.values.NotificationCaseMailingList = 1
+    }
+    $record.values.NotificationCaseCreator = 1
+
+    // Don't send emails when no subject or type
+    if (!$record.values.Subject && !$record.values.Type) {
+      return $record
+    }
+
+    // Get related case
+    const cse = await Compose.findRecordByID($record.values.CaseId, 'Case')
+    const settings = await Compose.findLastRecord('Settings')
+
+    // Send a message to the messaging channel
+    if (settings.values.DefaultSupportChannel && settings.values.DefaultCaseRecordLink) {
+      await Messaging.sendMessage('Automatic update. "' + cse.values.Number + '" has been updated: ' + $record.values.Subject + ' (type: ' + $record.values.Type + '). Direct link: ' + settings.values.DefaultCaseRecordLink + '/' + cse.recordID, settings.values.DefaultSupportChannel)
+    }
+
+    // Send an email to the contact
+    if (cse.values.ContactId) {
+      const contact = await Compose.findRecordByID(cse.values.ContactId, 'Contact')
+      if (contact.values.Email) {
+        // Send the update text
+        await Compose.sendMail(
+          contact.values.Email,
+          '[' + cse.values.Number + '] Update: ' + cse.values.Subject,
+          { html: this.prepareBody(cse, $record) }
+        )
+      }
+    }
+
+    return $record
   }
 }

@@ -11,63 +11,41 @@ export default {
   },
 
   async exec ({ $record }, { Compose, ComposeUI }) {
-    // Get the default settings
-    return Compose.findLastRecord('Settings').then(settings => {
-      // Map the case number
-      let nextCaseNumber = settings.values.CaseNextNumber
-      if (!nextCaseNumber || isNaN(nextCaseNumber)) {
-        nextCaseNumber = 0
-      }
+    const settings = await Compose.findLastRecord('Settings')
 
-      // Find the contact we want to link the new case to (by default, the primary contact)
-      return Compose.findRecords(`AccountId = ${$record.recordID}`, 'Contact')
-        .catch(() => ({ set: [] }))
-        .then(({ set }) => {
-          let ContactId, SuppliedName, SuppliedEmail, SuppliedPhone
+    // Map the case number
+    let nextCaseNumber = settings.values.CaseNextNumber
+    if (!nextCaseNumber || isNaN(nextCaseNumber)) {
+      nextCaseNumber = 0
+    }
 
-          // Loop through the contacts of the account, to save the primary contact
-          set.forEach(r => {
-            // Check if it's the primary contact
-            const contactIsPrimary = r.values.IsPrimary
-            if (contactIsPrimary === '1') {
-              // Add the contact
-              ContactId = r.recordID
-              SuppliedName = r.values.FirstName + ' ' + r.values.LastName
-              SuppliedEmail = r.values.Email
-              SuppliedPhone = r.values.Phone
-            }
-          })
+    // Find the contact we want to link the new case to (by default, the primary contact)
+    const contact = await Compose.findRecords(`AccountId = ${$record.recordID}`, 'Contact')
+      .then(({ set: contacts }) => contacts.find(({ values }) => values.IsPrimary))
 
-        return Compose.makeRecord({
-          OwnerId: $record.values.OwnerId,
-          Subject: '(no subject)',
-          ContactId: ContactId,
-          AccountId: $record.recordID,
-          Status: 'New',
-          Priority: 'Low',
-          SuppliedName: SuppliedName,
-          SuppliedEmail: SuppliedEmail,
-          SuppliedPhone: SuppliedPhone,
-          CaseNumber: ('' + nextCaseNumber).padStart(8, '0')
-        }, 'Case')
-          .then(async myCase => {
-            // Save new Case record
-            const mySavedCase = await Compose.saveRecord(myCase)
+    if (!contact) {
+      ComposeUI.warning('The primary contact is not defined.')
+      return
+    }
 
-            // Update the config
-            const nextCaseNumberUpdated = parseInt(nextCaseNumber, 10) + 1
-            settings.values.CaseNextNumber = nextCaseNumberUpdated
-            await Compose.saveRecord(settings)
+    const cse = await Compose.saveRecord(Compose.makeRecord({
+      OwnerId: $record.values.OwnerId,
+      Subject: '(no subject)',
+      ContactId: contact.recordID,
+      AccountId: $record.recordID,
+      Status: 'New',
+      Priority: 'Low',
+      SuppliedName: (contact.values.FirstName + ' ' + contact.values.LastName).trim(),
+      SuppliedEmail: contact.values.Email,
+      SuppliedPhone: contact.values.Phone,
+      CaseNumber: ('' + nextCaseNumber).padStart(8, '0')
+    }, 'Case'))
 
-            // Notify current user
-            ComposeUI.success('The new case has been created.')
+    settings.values.CaseNextNumber = parseInt(nextCaseNumber, 10) + 1
+    await Compose.saveRecord(settings)
 
-            // Go to the record
-            ComposeUI.gotoRecordEditor(mySavedCase)
-
-            return mySavedCase
-          })
-      })
-    })
+    ComposeUI.success('The new case has been created.')
+    ComposeUI.gotoRecordEditor(cse)
+    return cse
   }
 }

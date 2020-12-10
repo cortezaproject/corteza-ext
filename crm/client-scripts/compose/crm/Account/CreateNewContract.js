@@ -12,52 +12,44 @@ export default {
 
   async exec ({ $record }, { Compose, ComposeUI }) {
     // Get the default settings
-    return Compose.findLastRecord('Settings').then(settings => {
-      // Map the case number
-      let ContractDefaultTime = settings.values.ContractDefaultTime
-      if (!ContractDefaultTime|| isNaN(ContractDefaultTime)) {
-        ContractDefaultTime = 0
-      }
+    const settings = await Compose.findLastRecord('Settings')
 
-      // Get the contract number
-      let nextContractNumber = settings.values.ContractNextNumber
-      if (!nextContractNumber || isNaN(nextContractNumber)) {
-        nextContractNumber = 0
-      }
+    // Map the case number
+    let ContractDefaultTime = settings.values.ContractDefaultTime
+    if (!ContractDefaultTime || isNaN(ContractDefaultTime)) {
+      ContractDefaultTime = 0
+    }
 
-      return Compose.makeRecord({
-        OwnerId: $record.values.OwnerId,
-        AccountId: $record.recordID,
-        Status: 'Draft',
-        BillingStreet: $record.values.BillingStreet,
-        BillingCity: $record.values.BillingCity,
-        BillingState: $record.values.BillingState,
-        BillingPostalCode: $record.values.BillingPostalCode,
-        BillingCountry: $record.values.BillingCountry,
-        ShippingStreet: $record.values.BillingStreet,
-        ShippingCity: $record.values.BillingCity,
-        ShippingState: $record.values.BillingState,
-        ShippingPostalCode: $record.values.BillingPostalCode,
-        ShippingCountry: $record.values.BillingCountry,
-        ContractTerm: ContractDefaultTime,
-        ContractNumber: nextContractNumber
-      }, 'Contract').then(async myContract => {
-        // Save new Contract record
-        const mySavedContract = await Compose.saveRecord(myContract)
+    // Get the contract number
+    let nextContractNumber = settings.values.ContractNextNumber
+    if (!nextContractNumber || isNaN(nextContractNumber)) {
+      nextContractNumber = 0
+    }
 
-        // Update the config
-        const nextContractNumberUpdated = parseInt(nextContractNumber, 10) + 1
-        settings.values.ContractNextNumber = nextContractNumberUpdated
-        await Compose.saveRecord(settings)
+    const contact = await Compose.saveRecord(Compose.makeRecord({
+      OwnerId: $record.values.OwnerId,
+      AccountId: $record.recordID,
+      Status: 'Draft',
+      BillingStreet: $record.values.BillingStreet,
+      BillingCity: $record.values.BillingCity,
+      BillingState: $record.values.BillingState,
+      BillingPostalCode: $record.values.BillingPostalCode,
+      BillingCountry: $record.values.BillingCountry,
+      ShippingStreet: $record.values.BillingStreet,
+      ShippingCity: $record.values.BillingCity,
+      ShippingState: $record.values.BillingState,
+      ShippingPostalCode: $record.values.BillingPostalCode,
+      ShippingCountry: $record.values.BillingCountry,
+      ContractTerm: ContractDefaultTime,
+      ContractNumber: nextContractNumber
+    }, 'Contract'))
 
-        // Notify current user
-        ComposeUI.success('The new contract record has been created.')
+    settings.values.ContractNextNumber = parseInt(nextContractNumber, 10) + 1
+    await Compose.saveRecord(settings)
 
-        // Go to the record
-        ComposeUI.gotoRecordEditor(mySavedContract)
+    ComposeUI.success('The new contract record has been created.')
+    ComposeUI.gotoRecordEditor(contact)
 
-        return mySavedContract
-      })
-    })
+    return contact
   }
 }
