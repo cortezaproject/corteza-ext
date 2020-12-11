@@ -1,7 +1,7 @@
 namespace: service-solution
 modules:
   Account:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: Account
     fields:
       AccountName:
@@ -701,7 +701,7 @@ modules:
           precision: "2"
           prefix: $
   Attachement:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: Attachement
     fields:
       File:
@@ -725,7 +725,7 @@ modules:
         label: Name
         kind: String
   Case:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: Case
     fields:
       Status:
@@ -879,7 +879,7 @@ modules:
         label: PreviousStatus
         kind: String
   Contact:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: Contact
     fields:
       AccountId:
@@ -1583,7 +1583,7 @@ modules:
         kind: String
         private: true
   Department:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: Department
     meta: '{}'
     fields:
@@ -1619,7 +1619,7 @@ modules:
           precision: "2"
           prefix: $
   EmailMessage:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: EmailMessage
     meta: '{}'
     fields:
@@ -1674,7 +1674,7 @@ modules:
           - Number
           selectType: default
   EmailTemplate:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: EmailTemplate
     meta: '{}'
     fields:
@@ -1696,7 +1696,7 @@ modules:
         options:
           multiLine: true
   Entitlement:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: Entitlement
     fields:
       AccountId:
@@ -1762,7 +1762,7 @@ modules:
           - Year(s)
           selectType: default
   EntitlementTemplate:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: EntitlementTemplate
     fields:
       Name:
@@ -1795,7 +1795,7 @@ modules:
           selectType: multiple
         multi: true
   KnowledgeBase:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: KnowledgeBase
     fields:
       Number:
@@ -1881,7 +1881,7 @@ modules:
           - Name
           selectType: default
   Product:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: Product
     fields:
       IsActive:
@@ -1957,7 +1957,7 @@ modules:
           options: []
           selectType: default
   Settings:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: Settings
     meta: '{}'
     fields:
@@ -2007,7 +2007,7 @@ modules:
           - Name
           selectType: default
   Update:
-    (envoy): { skipIf: "!missing" }
+    (envoy): { onExisting: "skip" }
     name: Update
     fields:
       CaseId:
