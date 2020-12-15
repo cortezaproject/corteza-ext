@@ -1,6 +1,6 @@
 {
   "name": "corteza-docverify",
-  "version": "1.0.0",
+  "version": "2020.12.0",
   "description": "Corteza Official DocVerify Extension",
   "main": "index.js",
   "license": "Apache-2.0",
