@@ -5659,7 +5659,7 @@ modules:
         kind: String
         private: true
         expressions:
-          valueExpr: trim(FirstName + " " + LastName)
+          valueExpr: "trim((FirstName ? FirstName : \"\") + \" \" + (LastName ? LastName : \"\"))"
       CampaignId:
         label: Campaign
         kind: Record
