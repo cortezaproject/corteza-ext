@@ -34,7 +34,7 @@ export default {
     // Send the email
     await Compose.sendMail(
       $record.values.SuppliedEmail,
-      `Corteza - Quote: ${$record.values.CaseNumber} - ${$record.values.Subject}`,
+      `Corteza - Case: ${$record.values.CaseNumber} - ${$record.values.Subject}`,
       { html: this.prepareBody($record) }
     )
     ComposeUI.success('The case solution has been sent via email.')

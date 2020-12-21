@@ -1769,6 +1769,7 @@ modules:
           - Fax
           - Letter
           - Visit
+          - State change
       File:
         label: File
         kind: File

@@ -54,7 +54,7 @@ export default {
 
     // Notify the owner
     if ($record.values.OwnerId) {
-      const owner = System.findUserByID($record.values.OwnerId)
+      const owner = await System.findUserByID($record.values.OwnerId)
       await Compose.sendRecordToMail(
         owner.email,
         `Lead ${$record.values.FirstName} ${$record.values.LastName} from ${$record.values.Company} has been converted`,
