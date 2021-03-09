@@ -1365,7 +1365,6 @@ pages:
         - name: DefaultCostPerHour
         - name: DefaultDepartment
         - name: DefaultTimeUpdate
-        - name: DefaultSupportChannel
         - name: DefaultCaseRecordLink
         - name: DefaultCaseEmailTemplate
         hideAddButton: true
@@ -1392,7 +1391,6 @@ pages:
             - name: DefaultCostPerHour
             - name: DefaultDepartment
             - name: DefaultTimeUpdate
-            - name: DefaultSupportChannel
             - name: DefaultCaseRecordLink
             - name: DefaultCaseEmailTemplate
           style:

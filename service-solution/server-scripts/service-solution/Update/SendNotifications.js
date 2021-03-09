@@ -66,13 +66,7 @@ ${cse.values.Description}
 
     // Get related case
     const cse = await Compose.findRecordByID($record.values.CaseId, 'Case')
-    const settings = await Compose.findLastRecord('Settings')
-
-    // Send a message to the messaging channel
-    if (settings.values.DefaultSupportChannel && settings.values.DefaultCaseRecordLink) {
-      await Messaging.sendMessage('Automatic update. "' + cse.values.Number + '" has been updated: ' + $record.values.Subject + ' (type: ' + $record.values.Type + '). Direct link: ' + settings.values.DefaultCaseRecordLink + '/' + cse.recordID, settings.values.DefaultSupportChannel)
-    }
-
+    
     // Send an email to the contact
     if (cse.values.ContactId) {
       const contact = await Compose.findRecordByID(cse.values.ContactId, 'Contact')

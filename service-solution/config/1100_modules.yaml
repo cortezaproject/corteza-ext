@@ -1991,9 +1991,6 @@ modules:
           format: "0.00"
           precision: 2
           suffix: ' hour(s)'
-      DefaultSupportChannel:
-        label: Default support channel id
-        kind: String
       DefaultCaseRecordLink:
         label: Default case link
         kind: String
