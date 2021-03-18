@@ -20,7 +20,7 @@
     "@types/pdfmake": "^0.1.9",
     "handlebars": "^4.7.2",
     "html-minifier": "^4.0.0",
-    "html-parse-stringify": "^1.0.3",
+    "html-parse-stringify": "^2.0.1",
     "juice": "^6.0.0",
     "pdfmake": "^0.1.64"
   },
