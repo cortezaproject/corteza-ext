@@ -881,8 +881,8 @@ modules:
       CaseSysTemplate:
         label: Case Email Template
         kind: Select
+        default: case_update
         options:
-          default: case_update
           options:
           - text: Default Case update template
             value: case_update
