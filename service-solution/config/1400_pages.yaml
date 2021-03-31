@@ -230,11 +230,13 @@ pages:
             - enabled: true
               label: Add Update to this Case
               resourceType: compose:record
-              script: /client-scripts/compose/service-solution/Case/AddUpdate.js:default
+              workflowID: ServiceSolution-Case-AddUpdate
+              stepID: 3
             - enabled: true
-              label: Create email for this Case
+              label: Send Email for this Case with custom reason
               resourceType: compose:record
-              script: /client-scripts/compose/service-solution/Case/CreateEmail.js:default
+              workflowID: ServiceSolution-Case-SendEmail
+              stepID: 3
             sealed: false
           style:
             variants: {bodyBg: white, border: primary, headerBg: white, headerText: primary}
