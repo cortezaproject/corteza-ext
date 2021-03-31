@@ -1,0 +1,13 @@
+templates:
+    case_update_subject:
+        type: text/plain
+        template: 'Case: [{{.case.Number}}] {{.case.Subject}}'
+        meta:
+            short: case_update_subject
+            description: case_update_subject
+    case_update_content:
+        type: text/html
+        template: "<p>\n  Dear {{.contact.FirstName}},\n\n  We are contacting you with regard to the case \"{{.case.Subject}}\".\n  \n  {{.reason}}\n  \n  You can reply directly to this email. When replying, please make sure the ticket ID is kept in the subject so we can track your replies.\n  \n  Kind regards,\n  \n  The service team\n</p>"
+        meta:
+            short: case_update_content
+            description: case_update_content
