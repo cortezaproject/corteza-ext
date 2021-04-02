@@ -415,12 +415,12 @@ pages:
             - enabled: true
               label: Convert this Lead into an Account
               resourceType: compose:record
-              workflow: Crm-Lead-ToAccount
+              workflow: CRM-Lead-ToAccount
               stepID: 3
             - enabled: true
               label: Convert this Lead into an Account and Opportunity
               resourceType: compose:record
-              workflow: Crm-Lead-ToAccountAndOpportunity
+              workflow: CRM-Lead-ToAccountAndOpportunity
               stepID: 77
             sealed: false
           style:
@@ -792,17 +792,17 @@ pages:
             - enabled: true
               label: Create new Opportunity from this Account
               resourceType: compose:record
-              workflow: Crm-Account-CreateNewOpportunity
+              workflow: CRM-Account-CreateNewOpportunity
               stepID: 3
             - enabled: true
               label: Create new Contract from this Account
               resourceType: compose:record
-              workflow: Crm-Account-CreateNewContract
+              workflow: CRM-Account-CreateNewContract
               stepID: 3
             - enabled: true
               label: Create new Case from this Account
               resourceType: compose:record
-              workflow: Crm-Account-CreateNewCase
+              workflow: CRM-Account-CreateNewCase
               stepID: 14
           sealed: false
           style:
@@ -1316,12 +1316,12 @@ pages:
               label: Update prices of Products by applying the selected Price
                 Book and inserted discounts
               resourceType: compose:record
-              workflow: Crm-Opportunity-Applypricebook
+              workflow: CRM-Opportunity-ApplyPriceBook
               stepID: 3
             - enabled: true
               label: Create a new Quote for this Opportunity
               resourceType: compose:record
-              workflow: Crm-Opportunity-NewQuote
+              workflow: CRM-Opportunity-NewQuote
               stepID: 3
             sealed: false
           style:
@@ -1657,7 +1657,7 @@ pages:
             buttons:
             - enabled: true
               label: Send this Quote via email to the primary contact
-              resourceType: compose:record,
+              resourceType: compose:record
               workflow: CRM-Quote-SendToPriContact
               stepID: 3
             - enabled: true
@@ -3797,7 +3797,7 @@ pages:
                 - enabled: true
                   label: Set Case status to Working
                   resourceType: compose:record
-                  workflow: CRM-Case-InformContact
+                  workflow: CRM-Case-SetStatusToWorking
                   stepID: 21
                 - enabled: true
                   label: Set Case status to Closed
@@ -3807,7 +3807,7 @@ pages:
                 - enabled: true
                   label: Inform the contact via email of the Case solution
                   resourceType: compose:record
-                  workflow: CRM-Case-SetStatusToWorking
+                  workflow: CRM-Case-InformContact
                   stepID: 14
                 sealed: false
               style:

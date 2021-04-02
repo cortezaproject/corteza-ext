@@ -6055,6 +6055,7 @@ modules:
       CampaignId:
         label: Primary Campaign Source
         kind: Record
+        multi: true
         options:
           labelField: Name
           module: Campaigns

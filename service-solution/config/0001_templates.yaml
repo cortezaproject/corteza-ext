@@ -1,3 +1,4 @@
+templates:
     case_update_subject:
         type: text/plain
         template: 'Case: [{{.case.values.Number}}] {{.case.values.Subject}}'
