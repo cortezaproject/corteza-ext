@@ -2838,7 +2838,7 @@ workflows:
                   tests: []
                 - target: to
                   source: ""
-                  expr: '"a@m"'
+                  expr: 'record.values.Email'
                   value: null
                   type: String
                   tests: []
@@ -8071,7 +8071,7 @@ workflows:
                   value: null
                   type: ""
                   tests: []
-                - target: contectCount
+                - target: contactCount
                   source: ""
                   expr: total
                   value: null
