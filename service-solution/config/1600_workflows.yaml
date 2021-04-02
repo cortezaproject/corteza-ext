@@ -3,6 +3,7 @@ workflows:
         meta:
             name: Service Solution - Contact - Set Label
             description: Set label for contact record
+        enabled: true
         keepSessions: 0
         triggers:
             - resourceType: compose:record
@@ -500,8 +501,9 @@ workflows:
               labels: {}
     ServiceSolution-Update-SendNotifications:
         meta:
-            name: Service Solution - Update- Send Notifications
+            name: Service Solution - Update - Send Notifications
             description: Sends notification about case update
+        enabled: true
         keepSessions: 0
         triggers:
             - resourceType: compose:record
@@ -1841,6 +1843,7 @@ workflows:
         meta:
             name: Service Solution - Knowledge Base - Insert Number
             description: Inserts next Knowledge base number
+        enabled: true
         keepSessions: 0
         triggers:
             - resourceType: compose:record
@@ -2099,6 +2102,7 @@ workflows:
         meta:
             name: Service Solution - Update - Set Case Time And Cost
             description: Sets time and cost of a case by summing up the cost of all case updates
+        enabled: true
         keepSessions: 0
         triggers:
             - resourceType: compose:record
@@ -2414,7 +2418,7 @@ workflows:
                   source: ""
                   expr: updates
                   value: null
-                  type: Any
+                  type: Array
                   tests: []
               results:
                 - target: update
@@ -2696,7 +2700,7 @@ workflows:
                   source: ""
                   expr: cases
                   value: null
-                  type: Any
+                  type: Array
                   tests: []
               results:
                 - target: case
@@ -2948,7 +2952,7 @@ workflows:
                   source: ""
                   expr: cases
                   value: null
-                  type: Any
+                  type: Array
                   tests: []
               results:
                 - target: case
@@ -3236,7 +3240,7 @@ workflows:
                   source: ""
                   expr: updates
                   value: null
-                  type: Any
+                  type: Array
                   tests: []
               results:
                 - target: update
@@ -4470,9 +4474,9 @@ workflows:
                   tests: []
                 - target: subjectRenderVariables.case
                   source: ""
-                  expr: record.values
+                  expr: record
                   value: null
-                  type: ComposeRecordValues
+                  type: ComposeRecord
                   tests: []
               results: []
               meta:
