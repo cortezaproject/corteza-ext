@@ -12291,19 +12291,19 @@ workflows:
                 - target: lookup
                   source: ""
                   expr: ""
-                  value: lead_converted_content
+                  value: lead_converted_subject
                   type: Handle
                   tests: []
                 - target: documentName
                   source: ""
                   expr: ""
-                  value: body
+                  value: subject
                   type: String
                   tests: []
                 - target: documentType
                   source: ""
                   expr: ""
-                  value: text/html
+                  value: text/plain
                   type: String
                   tests: []
                 - target: variables
@@ -12339,19 +12339,19 @@ workflows:
                 - target: lookup
                   source: ""
                   expr: ""
-                  value: lead_converted_subject
+                  value: lead_converted_content
                   type: Handle
                   tests: []
                 - target: documentName
                   source: ""
                   expr: ""
-                  value: subject
+                  value: content
                   type: String
                   tests: []
                 - target: documentType
                   source: ""
                   expr: ""
-                  value: text/plain
+                  value: text/html
                   type: String
                   tests: []
                 - target: variables
@@ -12361,7 +12361,7 @@ workflows:
                   type: Vars
                   tests: []
               results:
-                - target: subject
+                - target: content
                   source: ""
                   expr: document
                   value: null
