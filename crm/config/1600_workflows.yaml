@@ -475,7 +475,7 @@ workflows:
               arguments:
                 - target: subject
                   source: ""
-                  expr: '"Corteza - Case:" + record.values.CaseNumber + " - " + record.values.Subject'
+                  expr: '"Corteza - Case: " + record.values.CaseNumber + " - " + record.values.Subject'
                   value: null
                   type: String
                   tests: []
@@ -2036,7 +2036,7 @@ workflows:
                   source: ""
                   expr: solution.values.File
                   value: null
-                  type: ID
+                  type: Array
                   tests: []
               results: []
               meta:
@@ -5156,6 +5156,29 @@ workflows:
                         - 200
                         - 80
         steps:
+          - id: 56
+              kind: expressions
+              ref: ""
+              arguments:
+                - target: primaryContact
+                  source: ""
+                  expr: "false"
+                  value: null
+                  type: Boolean
+                  tests: []
+              results: []
+              meta:
+                name: ""
+                description: ""
+                visual:
+                    id: "56"
+                    parent: "1"
+                    value: Init primaryContact
+                    xywh:
+                        - 2320
+                        - 2160
+                        - 200
+                        - 80
             - id: 14
               kind: iterator
               ref: composeRecordsEach
@@ -6722,9 +6745,9 @@ workflows:
                   value: null
                   type: Vars
                   tests: []
-                - target: subjectRenderVariables.account
+                - target: subjectRenderVariables.lead
                   source: ""
-                  expr: account
+                  expr: record
                   value: null
                   type: ComposeRecord
                   tests: []
@@ -12162,10 +12185,22 @@ workflows:
               kind: prompt
               ref: notification
               arguments:
+                - target: title
+                  source: ""
+                  expr: ""
+                  value: Success
+                  type: String
+                  tests: []
                 - target: message
                   source: ""
                   expr: ""
                   value: The lead has been converted
+                  type: String
+                  tests: []
+                - target: variant
+                  source: ""
+                  expr: ""
+                  value: success
                   type: String
                   tests: []
               results: []
@@ -12444,9 +12479,9 @@ workflows:
                   value: null
                   type: Vars
                   tests: []
-                - target: subjectRenderVariables.account
+                - target: subjectRenderVariables.lead
                   source: ""
-                  expr: account
+                  expr: record
                   value: null
                   type: ComposeRecord
                   tests: []
