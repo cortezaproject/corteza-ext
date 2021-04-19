@@ -1,3 +1,6 @@
+ // SPDX-FileCopyrightText: 2020, Tomaž Jerman
+ // SPDX-License-Identifier: Apache-2.0
+
 import { ReportContext, ifExists, arrayify, pixelize } from '../../util'
 
 export function genericStyler (style: any, ctx: ReportContext): any {

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun, Tomaž Jerman, Denis Arh 
+// SPDX-License-Identifier: Apache-2.0
+
+
 export default {
   label: 'Create new Contract from this Account',
   description: 'Creates new Contract record from an existing Account',

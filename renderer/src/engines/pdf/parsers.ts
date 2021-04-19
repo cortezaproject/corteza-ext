@@ -1,6 +1,10 @@
+ // SPDX-FileCopyrightText: 2020, Tomaž Jerman
+ // SPDX-License-Identifier: Apache-2.0
+
 import { Node } from '../../types'
 import { ReportContext, splitAttr, ContentParser, ParseNodeFunction, objectify, tagStyle } from '../../util'
 import { genericStyler, textStyler } from './stylers'
+
 
 const parsers: Array<ContentParser> = [
   {

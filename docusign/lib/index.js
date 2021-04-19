@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
 import docusign from 'docusign-esign'
 
 export default class DocusignClient {

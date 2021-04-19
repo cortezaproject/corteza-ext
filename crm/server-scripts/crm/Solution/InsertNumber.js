@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
+
 export default {
   label: 'Insert solution number',
   description: 'Sets the solution number based on the settings',

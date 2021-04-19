@@ -1,3 +1,5 @@
+  // SPDX-FileCopyrightText: 2020, Tomaž Jerman 
+  // SPDX-License-Identifier: Apache-2.0
 import { Node } from '../types'
 import hb from 'handlebars'
 const vm = require('vm')

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
 export default {
   label: 'Send email to the contact',
   description: 'Sends provided email message',

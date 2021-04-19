@@ -1,3 +1,6 @@
+ // SPDX-FileCopyrightText: 2020, Tomaž Jerman 
+ // SPDX-License-Identifier: Apache-2.0
+
 import { ReportContext } from './nodeParser'
 
 export function ifExists (val: any, obj: any, key: any, check: any = undefined): any {

@@ -1,7 +1,11 @@
+ // SPDX-FileCopyrightText: 2020, Tomaž Jerman
+ // SPDX-License-Identifier: Apache-2.0
+
 import { Document, Node } from '../../types'
 import { NodeParser, ReportContext, Render } from '../../util'
 import { fallbackParser, parsers } from './parsers'
 const hps = require('html-parse-stringify')
+
 
 export default async function (tree: Array<Node>, report: Document): Promise<Render> {
   const np = new NodeParser(parsers, fallbackParser)

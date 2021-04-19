@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
 import { parseBody } from '../shared/lib'
 import * as mappers from './provider'
 

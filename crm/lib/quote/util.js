@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
+
 export function quoteToHTML($record, lineItems) {
   return `
 <h1>Details of Quote: ${$record.values.QuoteNumber} - ${$record.values.Name}</h1>

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
+
 export async function toAccountContact($record, Compose) {
   // Create an account
   const acc = await Compose.saveRecord(Compose.makeRecord({

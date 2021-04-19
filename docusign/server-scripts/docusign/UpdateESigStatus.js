@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun, Tomaž Jerman, Peter Grlica 
+// SPDX-License-Identifier: Apache-2.0
+
 import DocuSignClient from '../../lib'
 import axios from 'axios'
 import FormData from 'form-data'

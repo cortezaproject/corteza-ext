@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
 export function procTemplate (tpl, pairs = {}) {
   return tpl.replace(/{{\s*(.+?)\s*}}/g, (match) => {
     // remove {{, }} and extra spaces

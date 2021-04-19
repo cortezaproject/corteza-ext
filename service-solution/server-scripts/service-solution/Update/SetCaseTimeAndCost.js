@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
 export default {
   label: 'Set case time and cost to update',
   description: 'Sets time and cost of a case by summing up the cost of all case updates',

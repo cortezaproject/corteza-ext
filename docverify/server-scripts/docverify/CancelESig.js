@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun 
+// SPDX-License-Identifier: Apache-2.0
+
 import DocVerifyClient from '../../lib'
 
 const docverifysignField = 'docverifyesign__Sent_for_signature__c'

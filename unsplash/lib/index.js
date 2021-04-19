@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun 
+// SPDX-License-Identifier: Apache-2.0
+
 // Require Wrapper Library
 import Unsplash, { toJson } from 'unsplash-js'
 

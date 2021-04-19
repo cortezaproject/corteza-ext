@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
 export default {
   label: 'Change case status',
   description: 'Changes status of case record if previous status is differs from current status',

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun, Tomaž Jerman, Denis Arh 
+// SPDX-License-Identifier: Apache-2.0
+
 export default {
   label: 'Set Case status to Working',
   description: 'Sets status of case to "Working"',
