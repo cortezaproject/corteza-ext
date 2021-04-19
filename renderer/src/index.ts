@@ -1,3 +1,6 @@
+ // SPDX-FileCopyrightText: 2020, Tomaž Jerman
+ // SPDX-License-Identifier: Apache-2.0
+
 import { renderPDF, renderHTML } from './engines'
 import defaultStyle from './assets/defaultStyle'
 import { Render } from './util'

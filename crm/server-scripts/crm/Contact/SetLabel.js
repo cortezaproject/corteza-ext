@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
+
 export default {
   label: 'Set label for Contact',
   description: 'Set label for contact record',

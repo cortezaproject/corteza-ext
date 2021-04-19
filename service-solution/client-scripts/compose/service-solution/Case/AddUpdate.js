@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
 export default {
   label: 'Add Update to this Case',
   description: 'Create update record in CaseUpdate module',

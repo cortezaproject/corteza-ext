@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * phoneTypes object maps friendly phone type names to PB types
  */

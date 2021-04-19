@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun, Tomaž Jerman, Denis Arh 
+// SPDX-License-Identifier: Apache-2.0
+
+
 export default {
   label: 'Create new Case from this Contact',
   description: 'Creates a new Case record from and existing Contact',

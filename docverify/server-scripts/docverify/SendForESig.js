@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun 
+// SPDX-License-Identifier: Apache-2.0
+
 import DocVerifyClient from '../../lib'
 import pdf2base64 from 'pdf-to-base64'
 

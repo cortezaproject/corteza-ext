@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun, Tomaž Jerman, Denis Arh 
+// SPDX-License-Identifier: Apache-2.0
+
+
 export default {
   label: 'Set Case status to Closed',
   description: 'Sets status of Case record to "Closed"',

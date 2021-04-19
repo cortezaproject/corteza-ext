@@ -1,3 +1,5 @@
+ // SPDX-FileCopyrightText: 2020, Tomaž Jerman
+ // SPDX-License-Identifier: Apache-2.0
 // standard HTML4 stylesheet
 // credit: https://stackoverflow.com/a/22510220
 export default `

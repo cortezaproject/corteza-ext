@@ -1,7 +1,11 @@
+ // SPDX-FileCopyrightText: 2020, Tomaž Jerman
+ // SPDX-License-Identifier: Apache-2.0
+
 import { Document, Node } from '../../types'
 import { NodeParser, ReportContext, Render } from '../../util'
 import { parsers, fallbackParser } from './parsers'
 const PdfMake = require('pdfmake')
+
 
 export default async function (tree: Array<Node>, report: Document): Promise<Render> {
   const fonts = {

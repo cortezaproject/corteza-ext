@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
+
 export default {
   label: 'Update Lead Campaigns after creation or update',
   description: 'Update related Campaigns after a Lead is created, updated or deleted',

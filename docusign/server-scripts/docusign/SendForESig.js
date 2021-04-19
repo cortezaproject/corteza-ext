@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
 import DocuSignClient from '../../lib'
 import pdf2base64 from 'pdf-to-base64'
 import { loadCreds } from './util'

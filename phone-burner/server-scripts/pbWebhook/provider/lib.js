@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2020, Tomaž Jerman
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * genericMapper function maps a set of generic values into a target object
  * @param {Array<Object>|Object} values Value or a set of values to map

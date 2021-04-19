@@ -1,3 +1,6 @@
+ // SPDX-FileCopyrightText: 2020, Tomaž Jerman 
+ // SPDX-License-Identifier: Apache-2.0
+
 export enum RendererKind {
   PDF,
   HTML,
@@ -18,3 +21,5 @@ export interface Node {
   children?: Array<Node>;
   content?: string;
 }
+
+

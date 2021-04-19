@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020, Jože Fortun, Tomaž Jerman, Denis Arh 
+// SPDX-License-Identifier: Apache-2.0
+
+
 export default {
   label: 'Apply Price Book',
   description: 'Update prices of Products by applying the selected Price Book and inserted discounts',
