@@ -383,7 +383,7 @@ pages:
         fields:
         - name: AccountName
         - name: BillingCountry
-        - name: OwnerId
+        - name: ownedBy
         - name: Rating
         hideRecordCloneButton: true
         hideRecordEditButton: false
@@ -457,7 +457,7 @@ pages:
             - name: Rating
             - name: ParentId
             - name: AccountSource
-            - name: OwnerId
+            - name: ownedBy
             - name: Description
           style:
             variants: {bodyBg: white, border: primary, headerBg: white, headerText: primary}
@@ -542,7 +542,7 @@ pages:
             - name: Email
             - name: Phone
             - name: AccountId
-            - name: OwnerId
+            - name: ownedBy
             - name: createdAt
             hideRecordCloneButton: true
             hideRecordEditButton: false
@@ -597,7 +597,7 @@ pages:
             - title: Other Information
               options:
                 fields:
-                - name: OwnerId
+                - name: ownedBy
                 - name: DoNotCall
                 - name: HasOptedOutOfEmail
                 - name: Description

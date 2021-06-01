@@ -22,7 +22,7 @@ pages:
         hideRecordViewButton: true
         module: Lead
         perPage: 20
-        prefilter: OwnerId = ${userID} AND Status = 'New'
+        prefilter: ownedBy = ${userID} AND Status = 'New'
         presort: createdAt DESC
         selectMode: multi
         selectable: true
@@ -48,7 +48,7 @@ pages:
         module: Opportunity
         perPage: 20
         prefilter: StageName != 'Closed Won' AND StageName != 'Closed Lost' AND
-          OwnerId = ${userID}
+          ownedBy = ${userID}
         presort: createdAt DESC
         selectMode: multi
         selectable: true
@@ -72,7 +72,7 @@ pages:
         hideRecordViewButton: true
         module: Task
         perPage: 20
-        prefilter: OwnerId = ${userID} AND Status != 'Completed'
+        prefilter: ownedBy = ${userID} AND Status != 'Completed'
         presort: Priority ASC
         selectMode: multi
         selectable: true
@@ -323,7 +323,7 @@ pages:
             - name: CampaignId
             - name: Status
             - name: LeadSource
-            - name: OwnerId
+            - name: ownedBy
             - name: Description
             - name: ConvertedAccountId
             - name: ConvertedContactId
@@ -447,14 +447,14 @@ pages:
             - name: Country
             - name: LeadSource
             - name: Status
-            - name: OwnerId
+            - name: ownedBy
             hideRecordCloneButton: true
             hideRecordEditButton: false
             hideRecordReminderButton: true
             hideRecordViewButton: true
             module: Lead
             perPage: 20
-            prefilter: OwnerId = ${userID}
+            prefilter: ownedBy = ${userID}
             presort: createdAt DESC
             selectMode: multi
             selectable: true
@@ -483,7 +483,7 @@ pages:
             - name: Country
             - name: LeadSource
             - name: Status
-            - name: OwnerId
+            - name: ownedBy
             hideRecordCloneButton: true
             hideRecordEditButton: false
             hideRecordReminderButton: true
@@ -517,7 +517,7 @@ pages:
         - name: Rating
         - name: Industry
         - name: AccountSource
-        - name: OwnerId
+        - name: ownedBy
         - name: createdAt
         hideRecordCloneButton: true
         hideRecordEditButton: false
@@ -590,7 +590,7 @@ pages:
             - name: CampaignId
             - name: ParentId
             - name: AccountSource
-            - name: OwnerId
+            - name: ownedBy
             - name: Description
           style:
             variants: {bodyBg: white, border: primary, headerBg: white, headerText: primary}
@@ -843,7 +843,7 @@ pages:
         - name: AccountId
         - name: Phone
         - name: Email
-        - name: OwnerId
+        - name: ownedBy
         hideRecordCloneButton: true
         hideRecordEditButton: false
         hideRecordReminderButton: true
@@ -1064,7 +1064,7 @@ pages:
         - name: StageName
         - name: createdAt
         - name: CloseDate
-        - name: OwnerId
+        - name: ownedBy
         hideRecordCloneButton: true
         hideRecordEditButton: false
         hideRecordReminderButton: true
@@ -1120,7 +1120,7 @@ pages:
         - title: Additional Information
           options:
             fields:
-            - name: OwnerId
+            - name: ownedBy
             - name: CampaignId
             - name: ForecastCategory
             - name: Type
@@ -1777,7 +1777,7 @@ pages:
         - title: Contract Description and Special Terms
           options:
             fields:
-            - name: OwnerId
+            - name: ownedBy
             - name: Description
             - name: SpecialTerms
             - name: Files
@@ -2360,7 +2360,7 @@ pages:
             - name: AccountName
             - name: Type
             - name: Rating
-            - name: OwnerId
+            - name: ownedBy
             hideRecordCloneButton: true
             hideRecordEditButton: false
             hideRecordReminderButton: true
@@ -2680,7 +2680,7 @@ pages:
         fields:
         - name: Subject
         - name: ActivityDate
-        - name: OwnerId
+        - name: ownedBy
         hideRecordCloneButton: true
         hideRecordEditButton: false
         hideRecordReminderButton: true
@@ -2825,7 +2825,7 @@ pages:
         - title: Assigned To
           options:
             fields:
-            - name: OwnerId
+            - name: ownedBy
           style:
             variants: {border: primary, headerText: primary}
           kind: Record
@@ -2850,7 +2850,7 @@ pages:
         - name: ContactId
         - name: OpportunityId
         - name: ActivityDate
-        - name: OwnerId
+        - name: ownedBy
         hideRecordCloneButton: true
         hideRecordEditButton: false
         hideRecordReminderButton: true
@@ -2922,7 +2922,7 @@ pages:
         - title: Assigned To
           options:
             fields:
-            - name: OwnerId
+            - name: ownedBy
             - name: createdBy
             - name: createdAt
           style:
@@ -3589,7 +3589,7 @@ pages:
             - name: Subject
             - name: Status
             - name: CreatedDate
-            - name: OwnerId
+            - name: ownedBy
             - name: createdAt
             hideRecordCloneButton: true
             hideRecordEditButton: false
@@ -3677,7 +3677,7 @@ pages:
               options:
                 fields:
                 - name: Status
-                - name: OwnerId
+                - name: ownedBy
                 - name: CreatedDate
                 - name: Priority
                 - name: IsEscalated

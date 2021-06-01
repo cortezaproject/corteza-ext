@@ -8,12 +8,6 @@ modules:
         label: Account Name
         kind: String
         required: true
-      OwnerId:
-        label: Account Owner
-        kind: User
-        options:
-          presetWithAuthenticated: false
-          selectType: default
       AccountSource:
         label: Account Source
         kind: Select
@@ -918,12 +912,6 @@ modules:
           module: Contact
           queryFields:
           - RecordLabel
-          selectType: default
-      OwnerId:
-        label: Contact Owner
-        kind: User
-        options:
-          presetWithAuthenticated: false
           selectType: default
       IsDeleted:
         label: Deleted

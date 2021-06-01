@@ -8,12 +8,6 @@ modules:
         label: Account Name
         kind: String
         required: true
-      OwnerId:
-        label: Account Owner
-        kind: User
-        options:
-          presetWithAuthenticated: true
-          selectType: default
       AccountSource:
         label: Account Source
         kind: Select
@@ -1733,12 +1727,6 @@ modules:
         options:
           falseLabel: "No"
           trueLabel: "Yes"
-      OwnerId:
-        label: Case Owner
-        kind: User
-        options:
-          presetWithAuthenticated: true
-          selectType: default
   CaseUpdate:
     (envoy): { onExisting: "skip" }
     name: CaseUpdate
@@ -2972,12 +2960,6 @@ modules:
         label: Record Label
         kind: String
         private: true
-      OwnerId:
-        label: Contact Owner
-        kind: User
-        options:
-          presetWithAuthenticated: true
-          selectType: default
       Photo:
         label: Photo
         kind: File
@@ -3562,12 +3544,6 @@ modules:
         options:
           format: "0000000"
           precision: 0
-      OwnerId:
-        label: Contract Owner
-        kind: User
-        options:
-          presetWithAuthenticated: true
-          selectType: default
       StartDate:
         label: Start Date
         kind: DateTime
@@ -4577,12 +4553,6 @@ modules:
         options:
           falseLabel: "No"
           trueLabel: "Yes"
-      OwnerId:
-        label: Assigned To
-        kind: User
-        options:
-          presetWithAuthenticated: true
-          selectType: default
       ActivityDate:
         label: Start
         kind: DateTime
@@ -5493,12 +5463,6 @@ modules:
           queryFields:
           - RecordLabel
           selectType: default
-      OwnerId:
-        label: Lead Owner
-        kind: User
-        options:
-          presetWithAuthenticated: true
-          selectType: each
       LeadSource:
         label: Lead Source
         kind: Select
@@ -6037,12 +6001,6 @@ modules:
       Name:
         label: Opportunity Name
         kind: String
-      OwnerId:
-        label: Opportunity Owner
-        kind: User
-        options:
-          presetWithAuthenticated: true
-          selectType: default
       PricebookId:
         label: Price Book
         kind: Record
@@ -9050,12 +9008,6 @@ modules:
           module: Account
           queryFields:
           - AccountName
-          selectType: default
-      OwnerId:
-        label: Assigned To
-        kind: User
-        options:
-          presetWithAuthenticated: true
           selectType: default
       CallDurationInSeconds:
         label: Call Duration

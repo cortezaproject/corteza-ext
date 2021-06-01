@@ -1250,9 +1250,9 @@ workflows:
                   value: null
                   type: String
                   tests: []
-                - target: opportunity.values.OwnerId
+                - target: opportunity.ownedBy
                   source: ""
-                  expr: opportunity.values.OwnerId
+                  expr: opportunity.ownedBy
                   value: null
                   type: ID
                   tests: []
@@ -5441,9 +5441,9 @@ workflows:
                 value: null
                 type: String
                 tests: []
-              - target: case.values.OwnerId
+              - target: case.ownedBy
                 source: ""
-                expr: record.values.OwnerId
+                expr: record.ownedBy
                 value: null
                 type: ID
                 tests: []
@@ -6127,9 +6127,9 @@ workflows:
                   value: null
                   type: String
                   tests: []
-                - target: account.values.OwnerId
+                - target: account.ownedBy
                   source: ""
-                  expr: record.values.OwnerId
+                  expr: record.ownedBy
                   value: null
                   type: ID
                   tests: []
@@ -6361,9 +6361,9 @@ workflows:
                   value: null
                   type: ID
                   tests: []
-                - target: contact.values.OwnerId
+                - target: contact.ownedBy
                   source: ""
-                  expr: record.values.OwnerId
+                  expr: record.ownedBy
                   value: null
                   type: ID
                   tests: []
@@ -6705,7 +6705,7 @@ workflows:
               arguments:
                 - target: lookup
                   source: ""
-                  expr: record.values.OwnerId
+                  expr: record.ownedBy
                   value: null
                   type: ID
                   tests: []
@@ -6976,7 +6976,7 @@ workflows:
                     points: []
                     style: exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
                     value: null
-            - expr: record.values.OwnerId != 0
+            - expr: record.ownedBy != 0
               parentid: 136
               childid: 139
               meta:
@@ -7259,9 +7259,9 @@ workflows:
                   value: null
                   type: Integer
                   tests: []
-                - target: contract.values.OwnerId
+                - target: contract.ownedBy
                   source: ""
-                  expr: record.values.OwnerId
+                  expr: record.ownedBy
                   value: null
                   type: ID
                   tests: []
@@ -11465,9 +11465,9 @@ workflows:
                   value: null
                   type: String
                   tests: []
-                - target: account.values.OwnerId
+                - target: account.ownedBy
                   source: ""
-                  expr: record.values.OwnerId
+                  expr: record.ownedBy
                   value: null
                   type: ID
                   tests: []
@@ -11519,9 +11519,9 @@ workflows:
                   value: null
                   type: String
                   tests: []
-                - target: account.values.OwnerId
+                - target: account.ownedBy
                   source: ""
-                  expr: record.values.OwnerId
+                  expr: record.ownedBy
                   value: null
                   type: ID
                   tests: []
@@ -11681,9 +11681,9 @@ workflows:
                   value: null
                   type: Boolean
                   tests: []
-                - target: contact.values.OwnerId
+                - target: contact.ownedBy
                   source: ""
-                  expr: record.values.OwnerId
+                  expr: record.ownedBy
                   value: null
                   type: ID
                   tests: []
@@ -11759,9 +11759,9 @@ workflows:
                   value: null
                   type: ID
                   tests: []
-                - target: contact.values.OwnerId
+                - target: contact.ownedBy
                   source: ""
-                  expr: record.values.OwnerId
+                  expr: record.ownedBy
                   value: null
                   type: ID
                   tests: []
@@ -11945,9 +11945,9 @@ workflows:
                   value: null
                   type: String
                   tests: []
-                - target: opportunity.values.OwnerId
+                - target: opportunity.ownedBy
                   source: ""
-                  expr: record.values.OwnerId
+                  expr: record.ownedBy
                   value: null
                   type: ID
                   tests: []
@@ -12307,7 +12307,7 @@ workflows:
               arguments:
                 - target: lookup
                   source: ""
-                  expr: record.values.OwnerId
+                  expr: record.ownedBy
                   value: null
                   type: ID
                   tests: []
@@ -12770,7 +12770,7 @@ workflows:
                     points: []
                     style: exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
                     value: null
-            - expr: record.values.OwnerId != 0
+            - expr: record.ownedBy != 0
               parentid: 132
               childid: 145
               meta:
@@ -12987,9 +12987,9 @@ workflows:
               kind: expressions
               ref: ""
               arguments:
-                - target: case.values.OwnerId
+                - target: case.ownedBy
                   source: ""
-                  expr: record.values.OwnerId
+                  expr: record.ownedBy
                   value: null
                   type: ID
                   tests: []
