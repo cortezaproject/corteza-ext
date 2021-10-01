@@ -14,7 +14,7 @@
     "test:unit:cc": "nyc mocha"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "base-64": "^0.1.0"
   },
   "devDependencies": {
