@@ -8597,12 +8597,6 @@ workflows:
                   value: null
                   type: String
                   tests: []
-                - target: limit
-                  source: ""
-                  expr: ""
-                  value: "0"
-                  type: UnsignedInteger
-                  tests: []
               results:
                 - target: opportunityLineItem
                   source: ""
